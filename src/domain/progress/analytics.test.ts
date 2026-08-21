@@ -1,0 +1,17 @@
+import { describe,expect,it } from 'vitest';
+import { aggregateHydration, aggregateNutrition, aggregateTraining, calculateWeightTrend } from './analytics';
+import { createProgressPeriod,validateMeasurements,validateWeight,type ProgressRecord } from './progress';
+const stamp='2026-08-21T12:00:00.000Z';
+const record=(date:string,weightKg:number,profileId='a'):ProgressRecord=>({id:date+profileId,profileId,localDate:date,occurredAt:`${date}T12:00:00`,weightKg,source:'manual',createdAt:stamp,updatedAt:stamp});
+describe('progresso corporal',()=>{
+ it('cria intervalos locais reutilizáveis',()=>expect(createProgressPeriod('30d',new Date(2026,7,21,23))).toMatchObject({startLocalDate:'2026-07-23',endLocalDate:'2026-08-21'}));
+ it('calcula tendência com médias de duas janelas de 7 dias',()=>{const rows=[record('2026-08-08',82),record('2026-08-10',81.8),record('2026-08-16',81),record('2026-08-21',80.8)];expect(calculateWeightTrend(rows,'2026-08-21').kind).toBe('down');});
+ it('não inventa tendência com poucos dados',()=>expect(calculateWeightTrend([record('2026-08-21',80)],'2026-08-21').kind).toBe('insufficient'));
+ it('valida peso e medidas sem limites clínicos estreitos',()=>{expect(()=>validateWeight(-1)).toThrow();expect(()=>validateWeight(838)).not.toThrow();expect(()=>validateMeasurements({waistCm:0})).toThrow();});
+});
+describe('agregações reais',()=>{
+ const period={startLocalDate:'2026-08-01',endLocalDate:'2026-08-31',preset:'30d' as const};
+ it('nutrição ignora dias sem diário e usa meta histórica do dia',()=>{const entries=[{id:'e',profileId:'a',date:'2026-08-02',mealCategoryId:'m',item:{sourceType:'food' as const,sourceId:'f',sourceUpdatedAt:stamp,displayName:'Arroz',consumedQuantity:1,consumedUnit:'portion' as const,nutrients:{caloriesKcal:2000,proteinGrams:100}},createdAt:stamp,updatedAt:stamp}];const targets=[{id:'t',profileId:'a',startsAt:'2026-08-01T00:00:00.000Z',input:{} as never,result:{calorieTarget:2200,macros:{protein:{grams:100,calories:400},carbs:{grams:200,calories:800},fat:{grams:70,calories:630}}} as never,createdAt:stamp,updatedAt:stamp}];expect(aggregateNutrition(entries,targets,period)).toMatchObject({registeredDays:1,averageCalories:2000,averageCalorieTarget:2200,proteinDaysAtTarget:1});});
+ it('hidratação não transforma dia sem registro em zero',()=>{const profile={id:'a',currentWeightKg:80,hydrationConfiguration:{mode:'weight-based' as const,mlPerKg:35}} as never;expect(aggregateHydration([{id:'w',profileId:'a',localDate:'2026-08-02',occurredAt:stamp,amountMl:2800,createdAt:stamp,updatedAt:stamp}],profile,[],period)).toMatchObject({registeredDays:1,daysAtTarget:1,averageMl:2800});});
+ it('treino soma apenas volume convencional e respeita período',()=>{const session={id:'s',profileId:'a',planId:'p',planVersion:1,templateId:'t',templateName:'A',localDate:'2026-08-02',status:'completed' as const,startedAt:'2026-08-02T10:00:00Z',completedAt:'2026-08-02T11:00:00Z',currentExerciseIndex:0,exercises:[],skippedExerciseIds:[],createdAt:stamp,updatedAt:stamp};const logs=[{id:'l',profileId:'a',sessionId:'s',exerciseId:'x',exerciseNameSnapshot:'Supino',setIndex:0,setType:'working' as const,target:{metric:'reps' as const,minimum:8,maximum:12},actualLoad:30,loadUnit:'kg' as const,actualReps:10,completed:true,createdAt:stamp,updatedAt:stamp}];expect(aggregateTraining([session],logs,[],period)).toMatchObject({completedSessions:1,completedSets:1,volumeKg:300});});
+});

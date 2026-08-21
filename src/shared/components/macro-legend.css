@@ -1,0 +1,22 @@
+.macro-legend {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .4rem .75rem;
+  font-size: .64rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.macro-legend > span { display: inline-flex; align-items: center; gap: .32rem; white-space: nowrap; }
+.macro-legend i { width: 6px; height: 6px; flex: none; background: currentColor; border-radius: 50%; }
+.macro-legend__protein { color: var(--macro-protein) !important; }
+.macro-legend__carbs { color: var(--macro-carbs) !important; }
+.macro-legend__fat { color: var(--macro-fat) !important; }
+.macro-legend__protein i { box-shadow: 0 0 0 3px var(--macro-protein-soft); }
+.macro-legend__carbs i { box-shadow: 0 0 0 3px var(--macro-carbs-soft); }
+.macro-legend__fat i { box-shadow: 0 0 0 3px var(--macro-fat-soft); }
+.macro-legend--stacked { align-items: flex-end; flex-direction: column; flex-wrap: nowrap; gap: .38rem; }
+
+@media (max-width: 560px) {
+  .macro-legend { gap: .4rem .6rem; }
+}

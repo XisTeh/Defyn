@@ -1,0 +1,55 @@
+.defyn-select { min-width: 0; position: relative; }
+.defyn-select-trigger {
+  width: 100%; min-height: 50px; padding: .65rem .8rem .65rem .9rem;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .7rem; align-items: center;
+  color: var(--text-primary); background: var(--surface-control); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control); text-align: left;
+  transition: border-color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard), box-shadow var(--motion-fast) var(--ease-standard);
+}
+.defyn-select-trigger:hover { background: var(--surface-control-hover); border-color: var(--border-strong); }
+.defyn-select-trigger:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px var(--focus-ring); outline: none; }
+.defyn-select-trigger:disabled { opacity: .48; cursor: not-allowed; }
+.defyn-select-trigger > span { min-width: 0; display: grid; gap: .15rem; }
+.defyn-select-trigger strong { overflow: hidden; font-size: .72rem; font-weight: 720; text-overflow: ellipsis; white-space: nowrap; }
+.defyn-select-trigger small { overflow: hidden; color: var(--text-muted); font-size: .6rem; font-weight: 520; text-overflow: ellipsis; white-space: nowrap; }
+.defyn-select-trigger i { color: var(--accent); font-style: normal; transition: transform var(--motion-fast) var(--ease-standard); }
+.defyn-select-trigger[aria-expanded="true"] i { transform: rotate(180deg); }
+
+.defyn-select-layer { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-select); }
+.defyn-select-options {
+  position: fixed; left: var(--select-left); top: var(--select-top); width: max(var(--select-width), 240px);
+  max-width: min(430px, calc(100vw - 1rem)); max-height: min(340px, calc(100dvh - var(--select-top) - 1rem));
+  padding: .38rem; display: grid; gap: .18rem; color: var(--text-primary); background: var(--surface-popover);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-card); box-shadow: var(--elevation-popover);
+  overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; animation: select-in var(--motion-base) var(--ease-out);
+}
+.defyn-select-options > button { min-height: 50px; padding: .65rem .75rem; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .75rem; align-items: center; color: inherit; background: transparent; border: 1px solid transparent; border-radius: var(--radius-control); text-align: left; }
+.defyn-select-options > button:hover, .defyn-select-options > button:focus-visible { background: var(--surface-control-hover); border-color: var(--border-subtle); outline: none; }
+.defyn-select-options > button.selected { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.defyn-select-options span { min-width: 0; display: grid; gap: .18rem; }
+.defyn-select-options strong { font-size: .72rem; }
+.defyn-select-options small { color: var(--text-muted); font-size: .61rem; line-height: 1.35; }
+.defyn-select-options b { color: var(--accent); }
+
+.defyn-select--dark .defyn-select-trigger { color: var(--foreground-inverse); background: var(--surface-inverse-control); border-color: var(--border-inverse); }
+.defyn-select--dark .defyn-select-trigger:hover { background: #302e28; border-color: #4b473e; }
+.defyn-select--dark .defyn-select-trigger small { color: var(--foreground-inverse-muted); }
+.defyn-select-layer--dark .defyn-select-options { color: var(--foreground-inverse); background: var(--surface-inverse-elevated); border-color: var(--border-inverse); box-shadow: 0 24px 64px rgba(0, 0, 0, .42); }
+.defyn-select-layer--dark .defyn-select-options > button:hover, .defyn-select-layer--dark .defyn-select-options > button:focus-visible { background: var(--surface-inverse-control); border-color: var(--border-inverse); }
+.defyn-select-layer--dark .defyn-select-options small { color: var(--foreground-inverse-muted); }
+
+@keyframes select-in { from { opacity: 0; transform: translateY(-5px) scale(.985); } }
+@keyframes backdrop-in { from { opacity: 0; } }
+@media (max-width: 640px) {
+  .defyn-select-layer { background: rgba(20, 18, 15, .58); backdrop-filter: blur(5px); pointer-events: auto; animation: backdrop-in var(--motion-base) var(--ease-standard); }
+  .defyn-select-options { inset: auto 0 0; width: 100%; max-width: none; max-height: 72dvh; padding: .7rem .7rem calc(.8rem + env(safe-area-inset-bottom)); border-radius: var(--radius-modal) var(--radius-modal) 0 0; }
+  .defyn-select-options::before { content: ""; width: 42px; height: 4px; margin: 0 auto .45rem; background: var(--border-strong); border-radius: 99px; }
+}
+
+/* Puzoto monochrome select */
+.defyn-select-trigger { background: rgba(255,255,255,.62); border-color: var(--border-subtle); }
+.defyn-select-trigger:hover { background: rgba(255,255,255,.88); border-color: var(--border-strong); }
+.defyn-select-options { background: rgba(247,249,250,.97); backdrop-filter: blur(22px); }
+.defyn-select--dark .defyn-select-trigger { background: rgba(255,255,255,.045); border-color: var(--border-subtle); }
+.defyn-select--dark .defyn-select-trigger:hover { background: rgba(255,255,255,.075); border-color: var(--border-strong); }
+.defyn-select-layer--dark .defyn-select-options { background: rgba(18,22,26,.97); border-color: var(--border-strong); }

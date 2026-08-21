@@ -1,0 +1,13 @@
+.pwa-update-banner { position: fixed; right: 1rem; bottom: 1rem; width: min(390px, calc(100vw - 2rem)); padding: .9rem; display: flex; gap: .8rem; align-items: center; color: #f4f7f8; background: rgba(12,15,18,.94); border: 1px solid rgba(220,228,234,.18); border-radius: 1rem; box-shadow: 0 24px 70px rgba(0,0,0,.32); backdrop-filter: blur(18px); z-index: var(--z-toast); }
+.pwa-update-banner div { min-width: 0; display: grid; gap: .2rem; }
+.pwa-update-banner strong { font-size: .76rem; }
+.pwa-update-banner span { color: #aeb7be; font-size: .64rem; line-height: 1.45; }
+.pwa-update-banner button { min-height: 42px; padding: 0 .85rem; flex: none; color: #111519; background: #eef2f4; border: 0; border-radius: 999px; font-size: .66rem; font-weight: 850; }
+.pwa-help-backdrop { position: fixed; inset: 0; padding: 1rem; display: grid; place-items: center; background: rgba(8,11,13,.58); backdrop-filter: blur(8px); z-index: var(--z-modal); }
+.pwa-help { width: min(520px, 100%); padding: 1.2rem; color: var(--text-primary); background: rgba(247,249,250,.97); border: 1px solid var(--border-strong); border-radius: var(--radius-modal); box-shadow: var(--elevation-popover); }
+.pwa-help header { display: flex; gap: 1rem; justify-content: space-between; }
+.pwa-help h2 { margin: .45rem 0 0; font-family: var(--font-display); font-size: clamp(1.8rem, 7vw, 3rem); line-height: .95; text-transform: uppercase; }
+.pwa-help header button { width: 44px; height: 44px; flex: none; color: var(--text-primary); background: var(--surface-control); border: 1px solid var(--border); border-radius: 50%; }
+.pwa-help ol { margin: 1.3rem 0; padding-left: 1.25rem; display: grid; gap: .7rem; line-height: 1.5; }
+.pwa-help p { color: var(--text-secondary); font-size: .78rem; line-height: 1.55; }
+@media (max-width: 900px) { .pwa-update-banner { bottom: calc(5.4rem + env(safe-area-inset-bottom)); } }

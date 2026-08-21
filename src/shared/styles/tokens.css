@@ -1,0 +1,102 @@
+:root {
+  color-scheme: light;
+  --font-display: "Arial Narrow", "Roboto Condensed", "Helvetica Neue", sans-serif;
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Puzoto-inspired neutral foundation */
+  --background: #e7eaec;
+  --surface-1: #eef1f3;
+  --surface-2: #f7f9fa;
+  --surface-3: #d9dee2;
+  --surface-control: rgba(255, 255, 255, .58);
+  --surface-control-hover: rgba(255, 255, 255, .86);
+  --surface-popover: rgba(247, 249, 250, .97);
+  --surface-glass: rgba(255, 255, 255, .42);
+  --surface-glass-strong: rgba(255, 255, 255, .7);
+  --surface-light: #dfe5e9;
+  --surface-light-elevated: #f1f4f6;
+
+  --text-primary: #121619;
+  --text-secondary: #505960;
+  --text-muted: #77818a;
+  --text-on-light: #111519;
+  --text-on-light-muted: #5e6871;
+  --border-subtle: rgba(17, 23, 27, .10);
+  --border-strong: rgba(17, 23, 27, .22);
+
+  --accent: #59646d;
+  --accent-strong: #171d21;
+  --accent-soft: rgba(53, 63, 71, .09);
+  --mineral: #68737c;
+  --mineral-soft: rgba(70, 81, 89, .08);
+  --focus-ring: rgba(55, 66, 74, .18);
+
+  --surface-inverse: #0c0f11;
+  --surface-inverse-elevated: #15191d;
+  --surface-inverse-control: rgba(255, 255, 255, .055);
+  --foreground-inverse: #f5f7f8;
+  --foreground-inverse-muted: #a9b1b8;
+  --border-inverse: rgba(221, 229, 235, .13);
+
+  --surface-canvas: var(--background);
+  --surface-card: var(--surface-2);
+  --foreground: var(--text-primary);
+  --foreground-muted: var(--text-secondary);
+  --border: var(--border-subtle);
+  --primary: var(--accent);
+  --primary-strong: var(--accent-strong);
+
+  --success: #4f956e;
+  --success-soft: rgba(79, 149, 110, .12);
+  --warning: #b47c2f;
+  --warning-soft: rgba(180, 124, 47, .12);
+  --danger: #c55752;
+  --danger-soft: rgba(197, 87, 82, .11);
+  --info: #4f84aa;
+  --info-soft: rgba(79, 132, 170, .11);
+  --water: #4388b8;
+  --water-soft: rgba(67, 136, 184, .12);
+  --macro-protein: #c75e6b;
+  --macro-protein-soft: rgba(199, 94, 107, .14);
+  --macro-carbs: #7d69ad;
+  --macro-carbs-soft: rgba(125, 105, 173, .14);
+  --macro-fat: #c88d36;
+  --macro-fat-soft: rgba(200, 141, 54, .14);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --radius-control: 0.8rem;
+  --radius-sm: var(--radius-control);
+  --radius-card: 1.15rem;
+  --radius-md: var(--radius-card);
+  --radius-modal: 1.5rem;
+  --radius-lg: var(--radius-modal);
+  --radius-xl: 1.85rem;
+  --radius-rail: 1.35rem;
+  --radius-pill: 999px;
+  --elevation-card: 0 18px 46px rgba(34, 41, 46, .09), inset 0 1px rgba(255, 255, 255, .74);
+  --elevation-popover: 0 28px 80px rgba(28, 35, 40, .2), inset 0 1px rgba(255, 255, 255, .8);
+  --motion-fast: 180ms;
+  --motion-base: 300ms;
+  --motion-slow: 460ms;
+  --motion-control: 420ms;
+  --motion-card: 720ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-standard: cubic-bezier(.22, .61, .36, 1);
+  --ease-card: cubic-bezier(.16, .84, .32, 1);
+  --ease-silk: cubic-bezier(.22, .72, .24, 1);
+  --z-sidebar: 30;
+  --z-header: 50;
+  --z-nav: 70;
+  --z-toast: 90;
+  --z-modal: 110;
+  --z-select: 130;
+}

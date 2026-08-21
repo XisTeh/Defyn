@@ -1,0 +1,70 @@
+# Design system
+
+O DEFYN usa uma base neutra inspirada no Puzoto Design: canvas cinza-claro, navegação em preto técnico, tipografia de alto contraste, vidro translúcido e linhas arquitetônicas muito finas. Cores semânticas aparecem somente quando ajudam a interpretar dados, estados ou ações. A aplicação preserva a própria arquitetura e não carrega o template em runtime.
+
+## Paleta e superfícies
+
+Os tokens vivem em `src/shared/styles/tokens.css`:
+
+- `--background` usa cinza frio (`#e7eaec`), sem branco puro;
+- `--surface-1`, `--surface-2` e `--surface-3` formam a profundidade clara;
+- `--surface-glass` e `--surface-glass-strong` representam vidro claro translúcido;
+- `--surface-light` e `--surface-light-elevated` criam cartões cinza-gelo de alto contraste;
+- `--text-primary`, `--text-secondary` e `--text-muted` definem branco, prata e cinza;
+- `--accent`, `--accent-strong` e `--accent-soft` usam prata fria, sem bronze ou verde de marca;
+- `--water` usa azul como semântica de hidratação;
+- `--macro-protein` usa coral, `--macro-carbs` usa violeta e `--macro-fat` usa âmbar/laranja;
+- `--success`, `--warning`, `--danger` e `--info` representam estados positivos, atenção, erro e informação;
+- cada cor semântica possui uma variante `-soft` para fundos e rings discretos.
+
+Cor nunca é o único identificador: pontos, barras e mensagens permanecem acompanhados por rótulos, valores ou ícones.
+
+`MacroLegend` é o componente compartilhado para resumos compactos de P/C/G. Diário, Planejamento, Alimentos e Receitas o reutilizam; páginas futuras devem preferi-lo para manter cores, ordem, rótulos e acessibilidade consistentes.
+
+O fundo combina grid de 74 px, pontos raros, luz difusa e ruído de baixa opacidade. Escudos concêntricos e anéis gravados reinterpretam as referências greco-espartanas e vikings como marca d’água. Nenhum desses elementos interfere em hit testing ou leitura.
+
+## Distribuição de material
+
+A maior parte da interface usa vidro claro com `backdrop-filter`, borda grafite entre 10% e 22% e sombra fria curta. Superfícies escuras aparecem somente onde o contraste ajuda a leitura:
+
+- energia diária no Dashboard;
+- resumo do Diário e metas do Planejamento;
+- painel de estimativas da Ficha;
+- exportação no Backup;
+- botões primários e estados selecionados de alta importância.
+
+Essa distribuição evita uma massa preta plana, melhora leitura e manipulação e mantém a aparência técnica da referência.
+
+## Tipografia e cabeçalhos
+
+Títulos usam a família condensada, `clamp()`, `overflow-wrap` e `text-wrap: balance`. Eyebrow, título e descrição permanecem no fluxo normal com `gap` real; elementos orbitais ficam em pseudo-elementos fora da camada de texto.
+
+## Sidebar e mobile
+
+A arquitetura aprovada da sidebar permanece: rail de 276 px, perfil no topo, ação principal, navegação agrupada e rodapé local-first. O material agora é vidro preto com blur de 22 px. O item ativo usa linha prata e preenchimento translúcido; a ação principal usa cinza-gelo.
+
+No mobile, header e bottom navigation usam o mesmo vidro escuro, respeitam safe area e abrem sheets sobre backdrop com blur.
+
+Instalação, atualização, estado offline e recursos de dispositivo reutilizam os mesmos materiais. Ações impossíveis são ocultadas; alternativas e estados negados são descritos em texto. Sessão de treino eleva inputs e conclusão de série para 52 px em telas estreitas.
+
+## Cards, formulários e modais
+
+Cards usam gradiente transparente de 1% a 3,4%, borda hairline e elevação curta no hover. Inputs usam branco a 4,5% e focus prata. Modais e listboxes usam superfície quase opaca com blur suficiente para separar conteúdo sem perder o contexto.
+
+Alertas destrutivos usam vermelho apenas no ponto de decisão. Avisos usam âmbar, informações usam azul e estados concluídos/offline usam verde. Essas cores não substituem a identidade neutra nem ocupam grandes superfícies.
+
+## Select DEFYN
+
+`DefynSelect` continua acessível, controlado e montado em portal acima de modais. As variantes `light` e `dark` permanecem por compatibilidade estrutural, mas compartilham o mesmo material monocromático. Em telas estreitas, o listbox vira sheet inferior.
+
+## Movimento e acessibilidade
+
+Motion usa os tokens `--motion-*`, `--ease-standard`, `--ease-out` e `--ease-silk`. Cards respondem por escala discreta e sombra em 720 ms, sem salto vertical, e retornam com a mesma curva suave; botões animam cor, borda, sombra e pressão sem clarões. Progressos animam até o valor; sheets e modais entram uma vez. Efeitos de hover só são aplicados em dispositivos com ponteiro fino, e `prefers-reduced-motion` reduz animações globalmente.
+
+Treinos reutiliza superfícies claras e cards dark estratégicos. Fallbacks de exercício recebem cores semânticas por grupo muscular, sempre acompanhadas por abreviação/rótulo. A sessão prioriza touch targets, inputs numéricos, timer persistente e safe areas.
+
+Foco é sempre visível, textos secundários usam contraste próprio e a escala z-index é centralizada. Componentes mantêm `minmax(0, 1fr)`, wrapping e breakpoints para evitar overflow na origem.
+
+## Referências visuais
+
+As capturas do Puzoto e as imagens clássicas fornecidas orientam atmosfera, contraste, transparência e geometria. Nenhuma foi copiada para o bundle: não há custo adicional no PWA nem dependência de `templates/`.

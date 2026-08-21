@@ -1,0 +1,48 @@
+.profile-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.profile-list article { min-height: 104px; padding: 1rem 1.2rem; display: grid; grid-template-columns: 58px 1fr auto; gap: 1rem; align-items: center; background: var(--surface-card); border: 1px solid var(--border); border-radius: var(--radius-md); transition: border-color var(--motion-fast), transform var(--motion-fast); }
+.profile-list article:hover { border-color: #aaa99f; transform: translateY(-1px); }
+.profile-list article.active { border-color: var(--primary-strong); box-shadow: inset 4px 0 var(--primary-strong); }
+.large-avatar { width: 58px; height: 58px; font-size: 0.85rem; }
+.profile-card-copy { min-width: 0; }
+.profile-card-copy > div { display: flex; align-items: center; gap: 0.65rem; }
+.profile-card-copy h2 { margin: 0; font-family: var(--font-display); font-size: 1.55rem; line-height: 1.02; letter-spacing: -0.04em; overflow-wrap: anywhere; text-transform: uppercase; }
+.profile-card-copy span { padding: 0.25rem 0.45rem; color: var(--accent-strong); background: var(--accent-soft); border-radius: 999px; font-size: 0.52rem; font-weight: 800; text-transform: uppercase; }
+.profile-card-copy p { margin: 0.35rem 0 0; color: var(--foreground-muted); font-size: 0.65rem; }
+.profile-card-actions { display: flex; gap: 0.35rem; }
+.profile-card-actions button { min-height: 38px; padding: 0 0.65rem; color: var(--foreground); background: #eceae2; border: 1px solid var(--border); border-radius: 0.55rem; font-size: 0.61rem; font-weight: 700; }
+.profile-card-actions .danger-text { color: var(--danger); background: transparent; border-color: transparent; }
+.add-profile-card { width: 100%; min-height: 86px; margin-top: 0.75rem; padding: 1rem 1.2rem; display: flex; align-items: center; gap: 1rem; color: var(--foreground); background: transparent; border: 1px dashed #bbb9af; border-radius: var(--radius-md); text-align: left; }
+.add-profile-card > span { width: 46px; height: 46px; display: grid; place-items: center; color: var(--foreground-inverse); background: var(--accent); border-radius: 50%; font-size: 1.2rem; }
+.add-profile-card div { display: flex; flex-direction: column; gap: 0.2rem; }
+.add-profile-card small { color: var(--foreground-muted); }
+.modal-backdrop { position: fixed; inset: 0; padding: 1rem; display: grid; place-items: center; background: rgba(9,10,8,0.6); backdrop-filter: blur(4px); z-index: 120; }
+.confirm-modal { width: min(470px, 100%); padding: 2rem; background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: 0 30px 80px rgba(0,0,0,0.25); }
+.danger-mark { width: 46px; height: 46px; display: grid; place-items: center; color: #fff; background: var(--danger); border-radius: 50%; font-weight: 900; }
+.confirm-modal h2 { margin: 1rem 0 0.5rem; font-family: var(--font-display); font-size: 2rem; letter-spacing: -0.04em; text-transform: uppercase; }
+.confirm-modal p { color: var(--foreground-muted); font-size: 0.76rem; line-height: 1.6; }
+.confirm-modal > div { margin-top: 1.4rem; display: flex; justify-content: flex-end; gap: 0.5rem; }
+.confirm-modal button { min-height: 44px; padding: 0 0.9rem; color: var(--foreground); background: #eceae2; border: 0; border-radius: 0.6rem; font-weight: 750; }
+.confirm-modal .danger-button { color: #fff; background: var(--danger); }
+@media (max-width: 760px) {
+  .profile-list article { grid-template-columns: 50px 1fr; }
+  .large-avatar { width: 50px; height: 50px; }
+  .profile-card-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, 1fr); }
+}
+
+.profile-list article { background: linear-gradient(145deg,var(--surface-2),var(--surface-1)); border-color: var(--border-subtle); box-shadow: inset 0 1px rgba(255,255,255,.025); }
+.profile-list article:hover { border-color: var(--border-strong); box-shadow: var(--elevation-card); }.profile-list article.active { border-color: color-mix(in srgb,var(--accent) 42%,var(--border-strong)); box-shadow: inset 4px 0 var(--accent),var(--elevation-card); }
+.profile-card-copy span { color: var(--accent); background: var(--accent-soft); }.profile-card-actions button { color: var(--text-primary); background: var(--surface-control); border-color: var(--border-subtle); }.profile-card-actions button:hover { background: var(--surface-control-hover); border-color: var(--border-strong); }
+.add-profile-card { border-color: var(--border-strong); }.add-profile-card:hover { background: var(--surface-1); border-color: var(--accent); }.confirm-modal { background: var(--surface-popover); border: 1px solid var(--border-strong); }.confirm-modal button { color: var(--text-primary); background: var(--surface-control); }
+.large-avatar { aspect-ratio: 1; overflow: hidden; }.large-avatar img { width: 100%; height: 100%; display: block; object-fit: cover; }
+
+/* Puzoto monochrome profiles */
+.profile-list article { background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,255,255,.38)); backdrop-filter: blur(18px); }
+.profile-list article.active { border-color: rgba(201,210,218,.34); box-shadow: inset 3px 0 var(--accent), var(--elevation-card); }
+.profile-card-copy span { color: var(--accent-strong); background: rgba(201,210,218,.09); border: 1px solid rgba(201,210,218,.14); }
+.profile-card-actions button { color: var(--text-primary); background: rgba(255,255,255,.66); border-color: var(--border-subtle); }
+.add-profile-card { color: var(--text-primary); border-color: var(--border-strong); }
+.add-profile-card:hover { background: rgba(255,255,255,.44); border-color: var(--accent); }
+.add-profile-card > span { color: var(--foreground-inverse); background: #171b1f; }
+.modal-backdrop { background: rgba(4,6,8,.76); backdrop-filter: blur(8px); }
+.confirm-modal { color: var(--text-primary); background: rgba(247,249,250,.97); border-color: var(--border-strong); backdrop-filter: blur(22px); }
+.confirm-modal button { color: var(--text-primary); background: rgba(35,43,48,.07); }

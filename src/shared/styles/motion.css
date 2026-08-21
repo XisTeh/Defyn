@@ -1,0 +1,142 @@
+/*
+ * Final interaction layer.
+ * The explicit priority keeps legacy feature rules from making hover motion abrupt.
+ */
+#root :is(
+  .calorie-card,
+  .macro-card,
+  .water-card,
+  .water-history-card,
+  .diary-empty-card,
+  .catalog-toolbar,
+  .food-card,
+  .recipe-grid article,
+  .meal-card,
+  .target-grid article,
+  .planner-catalog,
+  .profile-list article,
+  .backup-card,
+  .nutrition-empty
+  ,.training-today-card
+  ,.training-week
+  ,.exercise-grid article
+  ,.history-list > button
+) {
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+  transform-origin: 50% 50%;
+  will-change: transform, box-shadow;
+  transition:
+    transform var(--motion-card) var(--ease-silk),
+    border-color 480ms var(--ease-standard),
+    box-shadow var(--motion-card) var(--ease-silk),
+    filter var(--motion-card) var(--ease-silk) !important;
+}
+
+#root :is(
+  button:not(:disabled),
+  .defyn-select-trigger,
+  .restore-card > label,
+  .camera-zone label,
+  .avatar-field label[for="avatar-file"],
+  .goal-options label > span,
+  .segmented span
+) {
+  backface-visibility: hidden;
+  will-change: transform;
+  transition:
+    transform var(--motion-control) var(--ease-silk),
+    background-color var(--motion-control) var(--ease-standard),
+    color 280ms var(--ease-standard),
+    border-color var(--motion-control) var(--ease-standard),
+    box-shadow var(--motion-control) var(--ease-silk),
+    filter var(--motion-control) var(--ease-standard),
+    opacity 280ms var(--ease-standard) !important;
+}
+
+#root :is(input, textarea, select) {
+  transition:
+    background-color var(--motion-control) var(--ease-standard),
+    color 280ms var(--ease-standard),
+    border-color var(--motion-control) var(--ease-standard),
+    box-shadow var(--motion-control) var(--ease-silk),
+    opacity 280ms var(--ease-standard) !important;
+}
+
+#root button:not(:disabled):active {
+  transform: scale(.982) !important;
+  filter: brightness(.96);
+  transition-duration: 110ms !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #root :is(
+    .calorie-card,
+    .macro-card,
+    .water-card,
+    .water-history-card,
+    .diary-empty-card,
+    .catalog-toolbar,
+    .food-card,
+    .recipe-grid article,
+    .meal-card,
+    .target-grid article,
+    .planner-catalog,
+    .profile-list article,
+    .backup-card,
+    .nutrition-empty
+    ,.training-today-card
+    ,.training-week
+    ,.exercise-grid article
+    ,.history-list > button
+  ):hover {
+    transform: translate3d(0, 0, 0) scale(1.006) !important;
+    filter: brightness(1.012) saturate(1.025);
+  }
+
+  #root :is(
+    .calorie-card,
+    .target-grid article,
+    .backup-card.export-card
+  ):hover {
+    box-shadow: 0 28px 64px rgba(20, 26, 30, .24), inset 0 1px rgba(255, 255, 255, .055) !important;
+  }
+
+  #root button:not(:disabled):hover {
+    transform: scale(1.012) !important;
+    filter: brightness(1.025);
+  }
+
+  #root .primary-button:not(:disabled):hover {
+    transform: scale(1.004) !important;
+    filter: none;
+  }
+
+  #root .sidebar-nav button:not(:disabled):hover {
+    transform: translate3d(3px, 0, 0) scale(1.004) !important;
+  }
+
+  #root .sidebar-nav button:not(:disabled):active {
+    transform: translate3d(2px, 0, 0) scale(.982) !important;
+  }
+
+  #root :is(
+    .restore-card > label,
+    .camera-zone label,
+    .avatar-field label[for="avatar-file"],
+    .goal-options label > span,
+    .segmented span
+  ):hover {
+    transform: scale(1.008) !important;
+    filter: brightness(1.018);
+    box-shadow: 0 12px 30px rgba(28, 35, 40, .1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root *,
+  #root *::before,
+  #root *::after {
+    will-change: auto !important;
+  }
+}
