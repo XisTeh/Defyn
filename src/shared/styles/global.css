@@ -29,8 +29,10 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 button, input, select, textarea { font: inherit; }
+button, input[type="button"], input[type="submit"], select { appearance: none; -webkit-appearance: none; }
 button, select { cursor: pointer; }
 button { touch-action: manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [role="button"]:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
 input, textarea { color: var(--text-primary); background: var(--surface-control); border-color: var(--border-subtle); }
 input::placeholder, textarea::placeholder { color: var(--text-muted); }
 a { color: inherit; }
@@ -86,9 +88,10 @@ body:has([aria-modal="true"]) { overflow: hidden; }
   button:active:not(:disabled), [role="button"]:active { transform: scale(.985); }
   input, select, textarea, .defyn-select > button { min-height: 48px; }
   .app-content form { scroll-margin-bottom: var(--mobile-content-bottom-clearance); }
-  body:has([aria-modal="true"]) .mobile-bottom-nav { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(calc(100% + var(--mobile-safe-bottom) + 1rem)); }
-  body:has(.training-modal-backdrop) .mobile-bottom-nav { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(calc(100% + var(--mobile-safe-bottom) + 1rem)); }
-  body:has(.workout-session-page) .mobile-bottom-nav { opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(calc(100% + var(--mobile-safe-bottom) + 1rem)); }
+  .page-container { padding: 1.2rem var(--page-padding-mobile); }
+  .today-header, .nutrition-header, .section-page-header, .training-header, .progress-header { align-items: flex-start; text-align: left; }
+  .today-header h1, .nutrition-header h1, .section-page-header h1, .training-header h1, .progress-header h1 { font-size: var(--mobile-title-size); line-height: .94; }
+  .page-eyebrow { font-size: var(--caption-size); }
 }
 
 /* Shared Puzoto glass material */

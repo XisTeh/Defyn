@@ -2,7 +2,7 @@
 
 Os testes Vitest cobrem regras puras e casos de uso.
 
-Estado atual após Mobile Rescue 06.1: **170 testes em 30 arquivos**, todos aprovados. A cobertura de mídia exige ilustração para cada exercício-base.
+Estado atual após Mobile UX Rebuild 06.2: **178 testes em 33 arquivos**, todos aprovados. A base anterior tinha 170 testes; foram adicionados 12 testes de navegação, OCR, estados de Treino e botão compartilhado, e removidos 4 testes do hook de teclado que existia apenas para a bottom nav eliminada.
 
 ## Cobertura
 
@@ -33,8 +33,11 @@ Estado atual após Mobile Rescue 06.1: **170 testes em 30 arquivos**, todos apro
 - wake lock/notificação opt-in sem chamadas quando não suportados;
 - política offline que aceita shell/chunks/OCR/miniaturas e rejeita mídia pessoal;
 - mensagens de etapas OCR e fixture com colunas por porção/100 g ambíguas.
-- teclado mobile por `visualViewport`: foco editável, limiar de abertura e fechamento;
 - parser OCR adicional: `100 g | porção | %VD`, desalinhamento, ponto decimal e campos parciais.
+- drawer mobile: modo único, rotas completas, estado ativo e fechamento por navegação/overlay/Escape;
+- entrada OCR: câmera traseira, galeria sem `capture` e estágios imagem/revisão/manual;
+- cinco estados da Home de Treinos e seus CTAs operacionais;
+- contrato do botão compartilhado para variantes, densidade e classes contextuais.
 
 ```bash
 npm run test

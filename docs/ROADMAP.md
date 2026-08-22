@@ -48,6 +48,15 @@
 - Hoje, Diário, Ficha, Progresso e Treinos compactados sem regressão desktop;
 - QA real em 320/360/375/390/430, tablets e desktop 1280/1920, sem overflow horizontal.
 
+## Concluído — etapa 06.2 Mobile UX Rebuild
+
+- bottom nav removida e substituída por drawer lateral completo, acessível e rolável;
+- controles críticos padronizados e cabeçalhos mobile alinhados;
+- OCR reorganizado para câmera, galeria ou manual antes de revelar o formulário;
+- sheet do Diário reconstruído para busca, seleção, quantidade, macros e CTA;
+- Home de Treinos com cinco estados operacionais, cards completos e sessão mais direta;
+- QA em 320/360/375/390/430 e 1280/1440/1920 sem regressão desktop.
+
 ## Próxima grande etapa
 
 Recomendação: **DEFYN 07 — Rotina, agenda e lembretes inteligentes**. Calendário, rotinas e lembretes devem respeitar as limitações documentadas de execução em segundo plano. Scanner de código de barras, sincronização e integrações externas continuam posteriores.

@@ -68,3 +68,9 @@ Foco é sempre visível, textos secundários usam contraste próprio e a escala 
 ## Referências visuais
 
 As capturas do Puzoto e as imagens clássicas fornecidas orientam atmosfera, contraste, transparência e geometria. Nenhuma foi copiada para o bundle: não há custo adicional no PWA nem dependência de `templates/`.
+# Adendo 06.2 — controles e navegação mobile
+
+- `Button` é o componente compartilhado para CTAs primários, secundários, ghost, danger e icon; preserva foco visível, loading e disabled.
+- O shell mobile usa somente drawer lateral. A sidebar continua sendo o padrão desktop.
+- Cabeçalhos mobile compartilham `--page-padding-mobile`, `--section-gap-mobile`, `--mobile-page-title-size` e escalas de corpo/caption.
+- Sheets usam altura em `dvh`, rolagem interna, CTA final e safe area inferior.

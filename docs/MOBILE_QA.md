@@ -6,7 +6,7 @@
 - tablets: 768, 820 e 1024 px;
 - desktop: 1280, 1366, 1440 e 1920 px.
 
-Verificar em cada família: ausência de overflow horizontal, cabeçalhos legíveis, bottom nav/sheets sobre safe area, teclado sem ocultar ação primária, alvos de toque, foco visível e uso completo sem hover.
+Verificar em cada família: ausência de overflow horizontal, cabeçalhos legíveis, drawer/sheets sobre safe area, teclado sem ocultar ação primária, alvos de toque, foco visível e uso completo sem hover.
 
 ## Roteiros
 
@@ -22,17 +22,18 @@ Verificar em cada família: ausência de overflow horizontal, cabeçalhos legív
 
 ## Estado desta entrega
 
-QA com viewport controlada foi executado em 320×800, 360×800, 375×812, 390×844, 430×932, 768×1024, 820×1180, 1024×768, 1280×800 e 1920×1080.
+QA da reconstrução 06.2 com viewport controlada foi executado em 320, 360, 375, 390 e 430 px no mobile e em 1280, 1440 e 1920 px no desktop.
 
 Resultados observados:
 
 - documento sem overflow horizontal em todos os tamanhos;
-- navegação inferior fixa dentro da área útil no mobile e ausente no desktop;
+- barra de navegação inferior removida do DOM; drawer mobile completo, rolável e com foco inicial/devolvido;
 - sidebar desktop preservada com 276 px em 1280 e 1920;
-- Quick actions, adição de alimento, entrada OCR e check-in terminando no fundo da viewport e ocultando a bottom nav;
-- check-in corporal de 320 px sem extravasamento de campos ou rodapé;
-- sessão de treino de 320 px sem corte do card, inputs ou navegação Anterior/Próximo;
-- abas de Progresso rolam internamente nas larguras em que não cabem;
-- entradas de arquivo inspecionadas: avatar `capture=user`, corpo/rótulo `capture=environment` e galeria sem `capture`.
+- Hoje, Diário, Alimentos, Receitas, Planejamento, Treinos, Progresso, Ficha e Backup percorridos a 375 px sem overflow do documento;
+- sheet de alimento do Diário com rolagem interna, busca no topo e CTA final visível;
+- OCR começa somente com câmera, galeria e preenchimento manual; câmera usa `capture=environment`, galeria não usa `capture` e nenhum fieldset aparece antes da escolha;
+- Treino validado nos estados sem ficha, planejado e concluído, além de sessão, série salva, descanso, +30/Pular e próximo exercício;
+- cards de exercícios exibem ilustração, músculo/equipamento, séries, alvo e descanso;
+- cabeçalhos, abas e CTA do Treino permanecem contidos a 320 px.
 
-Lint, typecheck, **170 testes em 30 arquivos** e build PWA estão aprovados. **Não houve teste físico em smartphone nesta entrega**; câmera real, teclado de Android/iOS, instalação, safe areas, suspensão de background, wake lock e notificações permanecem obrigatórios antes de publicar.
+Lint, typecheck, **178 testes em 33 arquivos** e build PWA estão aprovados. **Não houve teste físico em smartphone nesta entrega**; câmera real, teclado de Android/iOS, instalação, safe areas, suspensão de background, wake lock e notificações permanecem obrigatórios antes de publicar.

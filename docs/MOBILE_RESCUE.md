@@ -1,5 +1,7 @@
 # Mobile Rescue 06.1
 
+> O estado atual do shell foi substituído pela reconstrução 06.2 descrita ao final deste documento. A seção 06.1 permanece como histórico da entrega anterior.
+
 ## Objetivo e limites
 
 Esta etapa reconstrói a experiência mobile existente sem abrir módulos da etapa 07. Foram preservados os contratos de domínio, a separação por perfil, IndexedDB, backups, service worker, sessão/timer de treino e o comportamento desktop.
@@ -69,3 +71,17 @@ Validação automatizada: lint e typecheck sem erros, **170 testes em 30 arquivo
 ## Limites da validação
 
 Não houve teste físico em smartphone. Câmera real, comportamento do teclado de cada sistema, safe areas de aparelhos com recorte, instalação, suspensão em segundo plano, wake lock e notificações ainda precisam de reteste manual em Android e iOS.
+
+## Reconstrução 06.2
+
+- a bottom nav, seus sheets e o hook de teclado dedicado a ocultá-la foram removidos;
+- o mobile usa um drawer lateral único com todas as áreas, perfil ativo, troca/adição de pessoa, água rápida, Escape, overlay, armadilha e devolução de foco;
+- botão compartilhado com variantes, estados de foco, disabled e loading foi introduzido para CTAs críticos;
+- cabeçalhos mobile usam ritmo, padding e tipografia comuns;
+- OCR abre em câmera/galeria/manual e só revela o formulário após leitura ou opção manual;
+- Diário usa sheet alto com busca, resultados, resumo da seleção, quantidade, macros e CTA final;
+- Home de Treinos cobre sem ficha, planejado, sessão ativa, concluído e descanso; sessão mostra progresso, descanso e próximo exercício;
+- cards de exercício exibem ilustração e prescrição completa no mobile;
+- sem migration, alteração de schema, dependência nova ou mudança nas regras de negócio.
+
+QA no navegador: 320/360/375/390/430 e 1280/1440/1920 px, sem overflow horizontal do documento. Lint, typecheck, 178 testes em 33 arquivos e build PWA aprovados.

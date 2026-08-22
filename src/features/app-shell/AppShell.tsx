@@ -1,21 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react';
 import type { UserProfile } from '../../domain/profile/profile';
 import type { AppView } from '../../app/navigation';
 import { ProfileAvatar } from '../profiles/ProfileAvatar';
 import { PwaCoordinator } from '../pwa/PwaCoordinator';
 import { useDeviceExperience } from '../pwa/use-device-experience';
-import { useMobileKeyboard } from '../../platform/mobile-keyboard';
+import { isActiveNavigation, mobileDrawerReducer, navigationSections } from './mobile-navigation';
 import './app-shell.css';
-
-const navItems: readonly { view: AppView; label: string; symbol: string }[] = [
-  { view: 'today', label: 'Hoje', symbol: '◒' },
-  { view: 'diary', label: 'Diário', symbol: '≡' },
-  { view: 'foods', label: 'Alimentos', symbol: '◇' },
-  { view: 'recipes', label: 'Receitas', symbol: '⌁' },
-  { view: 'planner', label: 'Planejamento', symbol: '◎' },
-  { view: 'training', label: 'Treinos', symbol: '◫' },
-  { view: 'progress', label: 'Progresso', symbol: '↗' },
-];
 
 interface AppShellProps {
   profiles: UserProfile[];
@@ -35,10 +25,9 @@ export function AppShell({
 }: AppShellProps) {
   const deviceExperience = useDeviceExperience(activeProfile.id);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [moreOpen, setMoreOpen] = useState(false);
-  const [quickOpen, setQuickOpen] = useState(false);
-  const keyboardOpen = useMobileKeyboard();
+  const [drawerOpen, dispatchDrawer] = useReducer(mobileDrawerReducer, false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const drawerTriggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function close(event: MouseEvent) {
@@ -52,8 +41,7 @@ export function AppShell({
 
   function navigate(next: AppView) {
     onNavigate(next);
-    setMoreOpen(false);
-    setQuickOpen(false);
+    dispatchDrawer('navigate');
   }
 
   return (
@@ -83,7 +71,7 @@ export function AppShell({
         <button className="sidebar-primary-action" type="button" onClick={onAddProfile}><span>+</span> Adicionar pessoa</button>
         <nav className="sidebar-nav">
           <span className="nav-section-label">Acompanhamento</span>
-          {navItems.map((item) => (
+          {navigationSections[0]?.items.map((item) => (
             <button key={item.view} type="button" className={view === item.view ? 'active' : ''} aria-current={view === item.view ? 'page' : undefined} onClick={() => navigate(item.view)}>
               <span className="nav-symbol" aria-hidden="true">{item.symbol}</span><span>{item.label}</span>
             </button>
@@ -98,42 +86,39 @@ export function AppShell({
 
       <div className="app-main-column">
         <header className="mobile-header">
+          <button ref={drawerTriggerRef} className="mobile-menu-button" type="button" aria-label="Abrir menu" aria-expanded={drawerOpen} aria-controls="defyn-mobile-drawer" onClick={() => dispatchDrawer('open')}><span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" /></button>
           <button className="mobile-brand" type="button" onClick={() => navigate('today')} aria-label="Ir para Hoje"><span className="brand-mark">D</span><b>DEFYN</b></button>
-          <button className="mobile-profile-button" type="button" onClick={() => setMoreOpen(true)} aria-label={`Perfil ativo: ${activeProfile.name}. Abrir menu.`}><ProfileAvatar profile={activeProfile} /><b>{activeProfile.name}</b><i aria-hidden="true">⌄</i></button>
+          <button className="mobile-profile-button" type="button" onClick={() => dispatchDrawer('open')} aria-label={`Perfil ativo: ${activeProfile.name}. Abrir menu.`}><ProfileAvatar profile={activeProfile} /><b>{activeProfile.name}</b><i aria-hidden="true">⌄</i></button>
         </header>
         {notice && <div className="app-notice" role="status" aria-live="polite">{notice}</div>}
         <div className="app-content">{children}</div>
       </div>
 
-      <nav className={`mobile-bottom-nav${keyboardOpen || quickOpen || moreOpen ? ' is-suppressed' : ''}`} aria-label="Navegação mobile" aria-hidden={keyboardOpen || quickOpen || moreOpen}>
-        <button className={view === 'today' ? 'active' : ''} type="button" onClick={() => navigate('today')}><span>◒</span><small>Hoje</small></button>
-        <button className={view === 'diary' ? 'active' : ''} type="button" onClick={() => navigate('diary')}><span>≡</span><small>Diário</small></button>
-        <button className="quick-add-button" type="button" onClick={() => setQuickOpen(true)} aria-label="Abrir ações rápidas"><span>+</span></button>
-        <button className={view === 'progress' ? 'active' : ''} type="button" onClick={() => navigate('progress')}><span>↗</span><small>Progresso</small></button>
-        <button className={moreOpen ? 'active' : ''} type="button" onClick={() => setMoreOpen(true)}><span>•••</span><small>Mais</small></button>
-      </nav>
-
-      {quickOpen && <Sheet title="Ação rápida" onClose={() => setQuickOpen(false)}><div className="sheet-links quick-links"><button type="button" onClick={() => navigate('diary')}>+ Adicionar alimento à refeição</button><button type="button" onClick={() => navigate('foods')}>Fotografar ou cadastrar alimento</button></div><p className="sheet-copy">Registrar água para {activeProfile.name}</p><div className="sheet-water-actions">{[200, 300, 500].map((amount) => <button key={amount} type="button" onClick={async () => { await onQuickWater(amount); setQuickOpen(false); }}>+ {amount} ml</button>)}</div></Sheet>}
-      {moreOpen && <Sheet title={activeProfile.name} onClose={() => setMoreOpen(false)}>
-        <div className="sheet-profile-list">{profiles.map((profile) => <button key={profile.id} type="button" className={profile.id === activeProfile.id ? 'active' : ''} onClick={() => { onSwitchProfile(profile.id); setMoreOpen(false); }}><ProfileAvatar profile={profile} className="mini-avatar" /><span><strong>{profile.name}</strong><small>{profile.id === activeProfile.id ? 'Perfil ativo' : 'Trocar para este perfil'}</small></span><b>{profile.id === activeProfile.id ? '✓' : '›'}</b></button>)}</div>
-        <p className="sheet-device-status"><span className={`status-dot ${deviceExperience.online ? '' : 'offline'}`} />{deviceExperience.online ? 'Online · uso offline disponível' : 'Sem conexão · usando dados locais'}</p>
-        <div className="sheet-links"><button type="button" onClick={() => { onAddProfile(); setMoreOpen(false); }}>+ Adicionar pessoa</button><button type="button" onClick={() => navigate('training')}>Treinos</button><button type="button" onClick={() => navigate('profile')}>Ficha e metas</button><button type="button" onClick={() => navigate('profiles')}>Gerenciar perfis</button><button type="button" onClick={() => navigate('backup')}>Backup local</button>{deviceExperience.canInstall && <button type="button" onClick={() => { setMoreOpen(false); void deviceExperience.install(); }}>Instalar DEFYN</button>}</div>
-      </Sheet>}
+      {drawerOpen && <MobileDrawer profiles={profiles} activeProfile={activeProfile} view={view} deviceExperience={deviceExperience} onClose={() => dispatchDrawer('close')} onNavigate={navigate} onSwitchProfile={(profileId) => { onSwitchProfile(profileId); dispatchDrawer('close'); }} onAddProfile={() => { onAddProfile(); dispatchDrawer('close'); }} onQuickWater={async (amount) => { await onQuickWater(amount); dispatchDrawer('close'); }} />}
       <PwaCoordinator experience={deviceExperience} />
     </div>
   );
 }
 
-function Sheet({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+function MobileDrawer({ profiles, activeProfile, view, deviceExperience, onClose, onNavigate, onSwitchProfile, onAddProfile, onQuickWater }: { profiles: UserProfile[]; activeProfile: UserProfile; view: AppView; deviceExperience: ReturnType<typeof useDeviceExperience>; onClose: () => void; onNavigate: (view: AppView) => void; onSwitchProfile: (profileId: string) => void; onAddProfile: () => void; onQuickWater: (amount: number) => Promise<void> }) {
+  const panel = useRef<HTMLElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
   useEffect(() => {
     const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
     closeButton.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onCloseRef.current(); };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { onCloseRef.current(); return; }
+      if (event.key !== 'Tab' || !panel.current) return;
+      const focusable = Array.from(panel.current.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), [tabindex]:not([tabindex="-1"])'));
+      const first = focusable[0]; const last = focusable.at(-1);
+      if (!first || !last) return;
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
     document.addEventListener('keydown', onKeyDown);
     return () => { document.removeEventListener('keydown', onKeyDown); trigger?.focus(); };
   }, []);
-  return <div className="sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={title}><div className="sheet-handle" /><header><h2>{title}</h2><button ref={closeButton} type="button" onClick={onClose} aria-label="Fechar">×</button></header><div className="sheet-scroll-body">{children}</div></section></div>;
+  return <div className="mobile-drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><aside ref={panel} id="defyn-mobile-drawer" className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Menu principal"><header><div><span className="brand-mark">D</span><span><strong>DEFYN</strong><small>Local-first</small></span></div><button ref={closeButton} type="button" onClick={onClose} aria-label="Fechar menu">×</button></header><div className="mobile-drawer-scroll"><section className="drawer-profile"><span className="drawer-kicker">Perfil atual</span><div><ProfileAvatar profile={activeProfile} className="profile-avatar" /><span><strong>{activeProfile.name}</strong><small>{deviceExperience.online ? 'Offline disponível' : 'Sem conexão · dados locais'}</small></span></div><div className="drawer-profile-list">{profiles.map((profile) => <button key={profile.id} type="button" className={profile.id === activeProfile.id ? 'active' : ''} aria-pressed={profile.id === activeProfile.id} onClick={() => onSwitchProfile(profile.id)}><ProfileAvatar profile={profile} className="mini-avatar" /><span>{profile.name}</span>{profile.id === activeProfile.id && <b>✓</b>}</button>)}</div><button className="drawer-add-profile" type="button" onClick={onAddProfile}>+ Adicionar pessoa</button></section><nav className="mobile-drawer-nav" aria-label="Áreas do DEFYN">{navigationSections.map((section) => <section key={section.label}><span className="drawer-kicker">{section.label}</span>{section.items.map((item) => <button key={item.view} type="button" className={isActiveNavigation(view, item.view) ? 'active' : ''} aria-current={isActiveNavigation(view, item.view) ? 'page' : undefined} onClick={() => onNavigate(item.view)}><span aria-hidden="true">{item.symbol}</span><strong>{item.label}</strong>{item.view === 'profiles' && <small>{profiles.length}</small>}</button>)}</section>)}</nav><section className="drawer-quick-water"><span className="drawer-kicker">Água rápida</span><div>{[200, 300, 500].map((amount) => <button key={amount} type="button" onClick={() => void onQuickWater(amount)}>+ {amount} ml</button>)}</div></section>{deviceExperience.canInstall && <button className="drawer-install" type="button" onClick={() => { onClose(); void deviceExperience.install(); }}>Instalar DEFYN</button>}</div></aside></div>;
 }

@@ -1,0 +1,33 @@
+.defyn-button {
+  min-height: var(--control-height);
+  padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .55rem;
+  color: var(--foreground-inverse);
+  background: var(--surface-inverse);
+  border: 1px solid var(--surface-inverse);
+  border-radius: var(--radius-pill);
+  font-size: var(--body-small-size);
+  font-weight: 820;
+  line-height: 1.1;
+  text-align: center;
+  text-decoration: none;
+  transition: transform var(--motion-fast), background var(--motion-fast), border-color var(--motion-fast), box-shadow var(--motion-fast), opacity var(--motion-fast);
+}
+.defyn-button:hover:not(:disabled) { background: #050708; transform: translateY(-1px); box-shadow: 0 12px 28px rgba(17,23,27,.2); }
+.defyn-button.secondary { color: var(--text-primary); background: var(--surface-control); border-color: var(--border-strong); }
+.defyn-button.secondary:hover:not(:disabled) { background: var(--surface-control-hover); }
+.defyn-button.ghost { color: var(--text-primary); background: transparent; border-color: transparent; }
+.defyn-button.danger { color: #fff; background: var(--danger); border-color: var(--danger); }
+.defyn-button.icon { width: var(--touch-target); min-width: var(--touch-target); padding: 0; color: var(--text-primary); background: var(--surface-control); border-color: var(--border-subtle); }
+.defyn-button.compact { min-height: 40px; padding-inline: .8rem; font-size: var(--caption-size); }
+.defyn-button:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.defyn-button:active:not(:disabled) { transform: scale(.985); }
+.defyn-button:disabled { opacity: .48; box-shadow: none; }
+
+@media (max-width: 900px) {
+  .defyn-button { min-height: var(--touch-target); font-size: var(--body-size); }
+  .defyn-button.compact { min-height: var(--control-height); }
+}

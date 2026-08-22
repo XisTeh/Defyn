@@ -7,6 +7,7 @@ import type { WaterEntry } from '../../domain/hydration/hydration';
 import { calculateHydrationPace, hydrationCheckpoints } from '../../domain/hydration/hydration';
 import { repositories } from '../../infrastructure/repositories';
 import { TrainingService, type TodayWorkout } from '../../application/training/training-service';
+import { Button } from '../../shared/components/Button';
 import './today-dashboard.css';
 
 const dashboardService = new GetTodayDashboardService(
@@ -133,7 +134,7 @@ export function TodayDashboard({ profileId, revision, onNotice, onNavigateTraini
 
       {(training?.template || training?.activeSession) && <section className="today-workout-card">
         <div><span className="page-eyebrow">Treino de hoje</span><h2>{training.activeSession?.templateName ?? training.template?.name}</h2><p>{training.activeSession ? 'Há uma sessão em andamento e salva neste dispositivo.' : `${training.template?.focus} · ${training.template?.exercises.length ?? 0} exercícios · ~${training.template?.approximateMinutes ?? 0} min`}</p></div>
-        <button type="button" onClick={onNavigateTraining}>{training.activeSession ? 'Continuar treino' : 'Ver treino de hoje'} <span aria-hidden="true">↗</span></button>
+        <Button className="today-workout-action" type="button" onClick={onNavigateTraining}>{training.activeSession ? 'Continuar treino' : 'Iniciar treino'} <span aria-hidden="true">↗</span></Button>
       </section>}
 
       <section className="lower-grid">

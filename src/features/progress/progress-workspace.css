@@ -60,3 +60,12 @@
   .progress-header h1{font-size:2.45rem}
   .summary-card{min-height:120px;padding:.7rem}
 }
+
+/* 06.2: shared mobile header rhythm. */
+@media (max-width:760px){
+  .progress-page.page-container{padding-inline:var(--page-padding-mobile)}
+  .progress-header{align-items:start;gap:var(--section-gap-mobile)}
+  .progress-header>div:first-child{gap:.45rem}
+  .progress-header h1{font-size:var(--mobile-page-title-size);line-height:1;letter-spacing:-.045em;white-space:normal}
+  .progress-header p{max-width:36rem;font-size:var(--body-small-size);line-height:1.5}
+}
