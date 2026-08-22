@@ -2,7 +2,7 @@
 
 Os testes Vitest cobrem regras puras e casos de uso.
 
-Estado atual após as correções 06.4: **193 testes em 37 arquivos**, todos aprovados. A etapa adiciona cobertura do modelo multicoluna, scaling integral 100→70/80 e 60→70/30, preservação de arredondamentos, base derivada identificada, reconstrução por bounding boxes, ausência sem zero inventado, atualização PWA segura/única, backup v4→v5 e nome livre com snapshot histórico.
+Estado atual após as correções 06.4: **193 testes em 37 arquivos**, todos aprovados. A etapa adiciona cobertura do modelo multicoluna, scaling integral 100→70/80 e 60→70/30, preservação de arredondamentos, base derivada identificada, reconstrução por bounding boxes, ausência sem zero inventado, atualização PWA imediata, backup v4→v5 e nome livre com snapshot histórico.
 
 ## Cobertura
 
@@ -43,7 +43,7 @@ Estado atual após as correções 06.4: **193 testes em 37 arquivos**, todos apr
 - estrutura do OCR com body rolável, footer persistente, safe area e `dvh`;
 - contratos mobile de header/drawer e ações horizontais do editor de ficha.
 - tabela nutricional completa: colunas explícitas/derivadas, `%VD`, kcal/kJ, mg, micronutriente extensível e alertas sem mutação;
-- política de atualização automática: aplica em estado ocioso, espera seção crítica, não duplica aplicação e recarrega uma vez;
+- atualização imediata: `autoUpdate`, worker importado, ativação somente sobre versão anterior, `clientsClaim` e renavegação de todas as janelas, sem estado/callback/botão de confirmação;
 - nome livre de treino persistido em nova versão sem reescrever o nome congelado de uma sessão anterior;
 - backup v5 e leitura compatível de alimento simplificado no v4.
 

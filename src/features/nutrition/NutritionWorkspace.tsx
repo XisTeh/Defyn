@@ -20,7 +20,6 @@ import { browserCapabilities } from '../../platform/device-capabilities';
 import { useDocumentScrollLock } from '../../shared/hooks/use-document-scroll-lock';
 import { nutritionOcrPrimaryAction } from './ocr-image-source';
 import { NutritionLabelTable } from './NutritionLabelTable';
-import { useCriticalUpdateSection } from '../pwa/pwa-update-policy';
 import './nutrition-workspace.css';
 
 const foodService = new FoodService(repositories.foods);
@@ -53,7 +52,6 @@ function FoodsPage({ profile, revision, onChanged, onNotice }: { profile: UserPr
   const [ocrTimings, setOcrTimings] = useState<OcrAttemptTimings>(); const [ocrLabel, setOcrLabel] = useState<NutritionLabel>(); const [previewZoom, setPreviewZoom] = useState(false); const [labelFood, setLabelFood] = useState<Food>();
   const [duplicates, setDuplicates] = useState<Food[]>([]); const [portionLabel, setPortionLabel] = useState(''); const [portionEquivalent, setPortionEquivalent] = useState('');
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]); const [keepLabelPhoto, setKeepLabelPhoto] = useState(false); const labelPreview = useMemo(() => labelMedia ? URL.createObjectURL(labelMedia.blob) : '', [labelMedia]); const sourcePreview = useMemo(() => labelFile ? URL.createObjectURL(labelFile) : '', [labelFile]);
-  useCriticalUpdateSection(Boolean(editor), 'food-or-ocr-editor');
   const load = useCallback(async () => {
     const [results, preferences] = await Promise.all([repositories.foods.search(query), repositories.foodPreferences.listForProfile(profile.id)]);
     setFoods(results); setFavorites(new Set(preferences.filter((item) => item.favorite).map((item) => item.foodId)));
@@ -129,7 +127,6 @@ function FoodsPage({ profile, revision, onChanged, onNotice }: { profile: UserPr
 
 function DiaryPage({ profile, revision, onChanged, onNotice }: { profile: UserProfile; revision: number; onChanged: () => void; onNotice: (message: string) => void }) {
   const [date, setDate] = useState(toLocalDateKey(new Date())); const [meals, setMeals] = useState<MealCategory[]>([]); const [entries, setEntries] = useState<DiaryEntry[]>([]); const [adding, setAdding] = useState<MealCategory>(); const [foods, setFoods] = useState<Food[]>([]); const [selectedFood, setSelectedFood] = useState<Food>(); const [quantity, setQuantity] = useState('100'); const [newMeal, setNewMeal] = useState(''); const [undo, setUndo] = useState<DiaryEntry>(); const [favoriteMeals, setFavoriteMeals] = useState<FavoriteMeal[]>([]);
-  useCriticalUpdateSection(Boolean(adding), 'diary-food-picker');
   const load = useCallback(async () => { const categories = await diaryService.ensureDefaultMeals(profile.id); const [records, favorites] = await Promise.all([repositories.diary.listEntries(profile.id, date), repositories.diary.listFavoriteMeals?.(profile.id) ?? Promise.resolve([])]); setMeals(categories.filter((item) => !item.hidden)); setEntries(records); setFavoriteMeals(favorites); }, [date, profile.id]);
   useEffect(() => { queueMicrotask(() => void load()); }, [load, revision]); const totals = totalDiaryNutrients(entries);
   function shift(days: number) { const value = new Date(`${date}T12:00:00`); value.setDate(value.getDate() + days); setDate(toLocalDateKey(value)); }
@@ -153,7 +150,6 @@ function DiaryPage({ profile, revision, onChanged, onNotice }: { profile: UserPr
 
 function RecipesPage({ profile, revision, onChanged, onNotice }: { profile: UserProfile; revision: number; onChanged: () => void; onNotice: (message: string) => void }) {
   const [recipes, setRecipes] = useState<Recipe[]>([]); const [foods, setFoods] = useState<Food[]>([]); const [open, setOpen] = useState(false); const [name, setName] = useState(''); const [servings, setServings] = useState('4'); const [ingredients, setIngredients] = useState<{ foodId: string; quantity: string }[]>([]);
-  useCriticalUpdateSection(open, 'recipe-editor');
   const load = useCallback(async () => { setRecipes(await repositories.recipes.list()); setFoods(await repositories.foods.list()); }, []); useEffect(() => { queueMicrotask(() => void load()); }, [load, revision]);
   const nutrition = useMemo(() => calculateRecipeNutrition(ingredients.flatMap((item) => { const food = foods.find((candidate) => candidate.id === item.foodId); return food ? [{ foodId: food.id, foodName: food.name, quantity: Number(item.quantity), unit: food.basePortion.unit, nutrientSnapshot: scaleNutrients(food.nutrients, food.basePortion.quantity, Number(item.quantity)) }] : []; }), Number(servings) || 1), [foods, ingredients, servings]);
   async function save(event: FormEvent) { event.preventDefault(); if (!name.trim() || !ingredients.length) return; const timestamp = new Date().toISOString(); const items = ingredients.flatMap((item) => { const food = foods.find((candidate) => candidate.id === item.foodId); return food ? [{ foodId: food.id, foodName: food.name, quantity: Number(item.quantity), unit: food.basePortion.unit, nutrientSnapshot: scaleNutrients(food.nutrients, food.basePortion.quantity, Number(item.quantity)) }] : []; }); const recipe: Recipe = { id: crypto.randomUUID(), name: name.trim(), nameNormalized: normalizeFoodSearch(name), ingredients: items, servings: Number(servings), yieldDescription: `${servings} porções`, nutritionSnapshot: calculateRecipeNutrition(items, Number(servings)), createdAt: timestamp, updatedAt: timestamp }; await repositories.recipes.save(recipe); setOpen(false); setName(''); setIngredients([]); await load(); onChanged(); onNotice('Receita salva com nutrientes por porção.'); }

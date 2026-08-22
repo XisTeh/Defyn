@@ -71,7 +71,7 @@
 - base matemática explícita de 100 g/ml ou derivada e identificada, com scaling único para qualquer quantidade;
 - OCR local com bounding boxes, reconstrução espacial, avaliação de qualidade e revisão editável foto/tabela;
 - compatibilidade aditiva com alimentos anteriores e backup v5 compatível com v1–v4;
-- atualização PWA automática, adiada por formulários, OCR e treino ativos, com um único reload;
+- atualização PWA imediata após cada deploy, sem banner ou clique, ativada e renavegada pelo próprio service worker;
 - nomes livres de treino propagados para versões e sessões futuras sem alterar snapshots históricos.
 
 ## Próxima grande etapa

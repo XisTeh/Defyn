@@ -8,9 +8,9 @@ Em navegadores com `beforeinstallprompt`, “Instalar DEFYN” só aparece depoi
 
 ## Atualizações
 
-O service worker detecta a nova versão e a aplica automaticamente, sem botão manual. Um gate global adia a troca enquanto há formulário de perfil/alimento/receita, revisão OCR, inclusão no diário, edição de ficha ou treino ativo. Quando o último estado crítico termina, o worker pendente assume o controle e a página recarrega uma única vez, protegida por marcador em `sessionStorage` contra loop.
+O service worker detecta a nova versão e a aplica imediatamente, sem banner, pergunta ou botão manual. `registerType: autoUpdate` habilita `skipWaiting`/`clientsClaim`; um script carregado pelo próprio worker identifica quando já havia uma versão ativa e, ao ativar o update, renavega todas as janelas abertas para carregar os assets do novo deploy.
 
-`registerType: prompt` é mantido apenas como mecanismo técnico para que o app decida o instante seguro do `skipWaiting`; a experiência é automática. Dados já persistidos continuam no IndexedDB e o shell offline permanece precacheado.
+Essa renavegação parte do worker novo e não depende do JavaScript antigo nem de interação da pessoa. O primeiro registro não força uma navegação extra. Dados já persistidos continuam no IndexedDB e o shell offline permanece precacheado.
 
 ## Layout e safe areas
 
