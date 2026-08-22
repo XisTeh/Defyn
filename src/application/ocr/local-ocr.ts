@@ -1,8 +1,8 @@
-import type { Worker } from 'tesseract.js';
-import type { NutritionLabelOcrLine } from '../../domain/food/nutrition-label-parser';
+import type { PSM, Worker } from 'tesseract.js';
+import type { NutritionLabelOcrLine, NutritionLabelOcrToken } from '../../domain/food/nutrition-label-parser';
 
 export interface OcrProgress { status: string; progress: number; }
-export interface OcrTimings { workerLoadMs: number; recognizeMs: number; totalMs: number; reusedWorker: boolean; }
+export interface OcrTimings { workerLoadMs: number; recognizeMs: number; documentPassMs: number; numericPassMs: number; totalMs: number; reusedWorker: boolean; }
 export function describeOcrProgress(progress: OcrProgress): string {
   const percent = progress.progress > 0 ? ` ${Math.round(progress.progress * 100)}%` : '';
   const labels: Record<string, string> = {
@@ -40,10 +40,44 @@ export async function recognizeNutritionLabel(image: Blob, onProgress?: (progres
   const { worker, reused, loadMs } = await getWorker();
   const recognizeStarted = performance.now();
   try {
-    const result = await worker.recognize(image, {}, { text: true, blocks: true });
-    const lines = (result.data.blocks ?? []).flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines.map((line) => ({ text: line.text, confidence: line.confidence, bbox: { ...line.bbox } }))));
-    return { text: result.data.text, confidence: result.data.confidence, lines, timings: { workerLoadMs: loadMs, recognizeMs: performance.now() - recognizeStarted, totalMs: performance.now() - totalStarted, reusedWorker: reused } };
+    await worker.setParameters({ preserve_interword_spaces: '1', tessedit_pageseg_mode: '11' as PSM, tessedit_char_whitelist: '' });
+    const documentResult = await worker.recognize(image, {}, { text: true, blocks: true });
+    const documentFinished = performance.now();
+    const bitmap = await createImageBitmap(image);
+    const valueRegion = { left: Math.round(bitmap.width * .3), top: 0, width: Math.max(1, Math.round(bitmap.width * .7)), height: bitmap.height };
+    bitmap.close();
+    await worker.setParameters({ preserve_interword_spaces: '1', tessedit_pageseg_mode: '11' as PSM, tessedit_char_whitelist: '0123456789,.%—–-' });
+    const numericResult = await worker.recognize(image, { rectangle: valueRegion }, { text: true, blocks: true });
+    await worker.setParameters({ preserve_interword_spaces: '1', tessedit_pageseg_mode: '11' as PSM, tessedit_char_whitelist: '' });
+    const numericFinished = performance.now();
+    const lines = [
+      ...ocrLines(documentResult.data.blocks, 'document'),
+      ...ocrLines(numericResult.data.blocks, 'numeric-pass'),
+    ];
+    return {
+      text: documentResult.data.text,
+      confidence: documentResult.data.confidence,
+      lines,
+      timings: {
+        workerLoadMs: loadMs,
+        recognizeMs: numericFinished - recognizeStarted,
+        documentPassMs: documentFinished - recognizeStarted,
+        numericPassMs: numericFinished - documentFinished,
+        totalMs: performance.now() - totalStarted,
+        reusedWorker: reused,
+      },
+    };
   } finally { activeProgress = undefined; }
+}
+
+function ocrLines(blocks: Awaited<ReturnType<Worker['recognize']>>['data']['blocks'], source: NutritionLabelOcrToken['source']): NutritionLabelOcrLine[] {
+  return (blocks ?? []).flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines.map((line) => ({
+    text: line.text,
+    confidence: line.confidence,
+    bbox: { ...line.bbox },
+    source,
+    words: line.words.map((word) => ({ text: word.text, confidence: word.confidence, bbox: { ...word.bbox }, source })),
+  }))));
 }
 
 export async function cancelNutritionLabelRecognition(): Promise<void> {

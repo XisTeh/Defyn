@@ -8,6 +8,7 @@ export const CORE_NUTRIENT_KEYS = [
 
 export type CoreNutrientKey = typeof CORE_NUTRIENT_KEYS[number];
 export type NutritionLabelCellStatus = 'confirmed' | 'probable' | 'review' | 'missing';
+export type NutritionLabelCellDeclaration = 'dash' | 'notProvided' | 'insignificantAmount';
 export type NutritionLabelBasisUnit = 'g' | 'ml';
 
 export interface NutritionLabelColumn {
@@ -19,12 +20,15 @@ export interface NutritionLabelColumn {
   dailyValuesPercent?: Partial<Record<CoreNutrientKey, number>>;
   source: 'explicit' | 'derived';
   cellStatus?: Partial<Record<CoreNutrientKey, NutritionLabelCellStatus>>;
+  cellDeclaration?: Partial<Record<CoreNutrientKey, NutritionLabelCellDeclaration>>;
 }
 
 export interface NutritionLabel {
   version: 1;
   servingsPerContainer?: number;
+  servingsPerContainerText?: string;
   declaredServing?: { quantity: number; unit: NutritionLabelBasisUnit };
+  declaredServingDescription?: string;
   columns: NutritionLabelColumn[];
   calculationBasis: {
     columnId: string;
@@ -33,6 +37,7 @@ export interface NutritionLabel {
     source: 'explicit' | 'derived';
   };
   rawText?: string;
+  originalDeclarations?: string[];
 }
 
 export interface NutritionLabelIssue {

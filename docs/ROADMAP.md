@@ -72,6 +72,7 @@
 - OCR local com bounding boxes, reconstrução espacial, avaliação de qualidade e revisão editável foto/tabela;
 - compatibilidade aditiva com alimentos anteriores e backup v5 compatível com v1–v4;
 - atualização PWA imediata após cada deploy, sem banner ou clique, ativada e renavegada pelo próprio service worker;
+- OCR nutricional 06.5 com tokenização contextual, matriz espacial, passe numérico, correção projetiva por quatro cantos e revisão mobile sem scroll horizontal;
 - nomes livres de treino propagados para versões e sessões futuras sem alterar snapshots históricos.
 
 ## Próxima grande etapa
