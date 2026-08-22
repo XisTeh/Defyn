@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent, type RefObject } from 'react';
 import {
   CreateProfileService,
   type CreateProfileCommand,
@@ -120,13 +120,18 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [error, setError] = useState('');
   const [avatarFile, setAvatarFile] = useState<File>();
+  const [avatarAccepted, setAvatarAccepted] = useState(false);
   const [removeAvatar, setRemoveAvatar] = useState(false);
+  const avatarCameraInput = useRef<HTMLInputElement>(null);
+  const avatarGalleryInput = useRef<HTMLInputElement>(null);
   const [activityHelpOpen, setActivityHelpOpen] = useState(false);
   const [methodHelpOpen, setMethodHelpOpen] = useState(false);
   const [activityGuideOpen, setActivityGuideOpen] = useState(false);
   const [trainingFrequency, setTrainingFrequency] = useState('3-6');
   const [dailyRoutine, setDailyRoutine] = useState<'seated' | 'normal' | 'active'>('normal');
   const preview = useMemo(() => previewFor(form), [form]);
+  const avatarPreview = useMemo(() => avatarFile ? URL.createObjectURL(avatarFile) : '', [avatarFile]);
+  useEffect(() => () => { if (avatarPreview) URL.revokeObjectURL(avatarPreview); }, [avatarPreview]);
   const previousPreview = useMemo(() => profile ? previewFor(formFromProfile(profile)) : undefined, [profile]);
   const weightChanged = profile && Number(form.currentWeightKg) !== profile.currentWeightKg;
   const waterImpact = useMemo(() => {
@@ -160,6 +165,10 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (avatarFile && !avatarAccepted) {
+      setError('Confira a prévia e toque em “Usar foto” antes de salvar.');
+      return;
+    }
     if (!form.name.trim()) {
       setError('Informe como prefere identificar esta pessoa.');
       return;
@@ -223,7 +232,7 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
           </p>
 
           <form className="profile-form" onSubmit={submit} noValidate>
-            <fieldset className="field field-wide avatar-field"><legend>Foto do perfil</legend><div>{profile ? <ProfileAvatar profile={removeAvatar ? { ...profile, avatarMediaId: undefined } : profile} className="large-avatar" size="lg" /> : <span className="large-avatar" aria-hidden="true">+</span>}<div><input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp" capture="user" onChange={(event) => { setAvatarFile(event.target.files?.[0]); setRemoveAvatar(false); }} /><label htmlFor="avatar-file">{avatarFile ? avatarFile.name : 'Tirar foto ou escolher da galeria'}</label>{profile?.avatarMediaId && !removeAvatar && <button type="button" onClick={() => { setRemoveAvatar(true); setAvatarFile(undefined); }}>Remover foto</button>}</div></div><small>O DEFYN corrige orientação, reduz e comprime localmente. Nada é enviado.</small></fieldset>
+            <AvatarField profile={profile} file={avatarFile} preview={avatarPreview} accepted={avatarAccepted} removeAvatar={removeAvatar} cameraInput={avatarCameraInput} galleryInput={avatarGalleryInput} onSelect={(event) => { const file = event.target.files?.[0]; if (!file) return; setAvatarFile(file); setAvatarAccepted(false); setRemoveAvatar(false); event.target.value = ''; }} onAccept={() => setAvatarAccepted(true)} onRemove={() => { setRemoveAvatar(true); setAvatarFile(undefined); setAvatarAccepted(false); }} />
             <div className="field field-wide">
               <label htmlFor="name">Nome ou apelido</label>
               <input id="name" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="Como identificar esta pessoa?" autoComplete="name" required />
@@ -321,6 +330,39 @@ function ActivityHelp({ onClose, onGuide }: { onClose: () => void; onGuide: () =
 
 function MethodHelp({ onClose }: { onClose: () => void }) {
   return <section className="field-help-panel method-help-panel" role="dialog" aria-label="Como escolher o método metabólico"><header><strong>Método metabólico</strong><button type="button" onClick={onClose} aria-label="Fechar ajuda">×</button></header><article><strong>Mifflin–St Jeor <b>Recomendado</b></strong><span>Equação moderna usada para estimar seu metabolismo basal a partir de peso, altura, idade e sexo usado no cálculo.</span></article><article><strong>Harris–Benedict original <b>Método clássico</b></strong><span>Equação histórica de metabolismo basal e método usado como referência na origem do DEFYN.</span></article><p>Ambas são estimativas — não medem diretamente o metabolismo.</p></section>;
+}
+
+interface AvatarFieldProps {
+  profile?: UserProfile;
+  file?: File;
+  preview: string;
+  accepted: boolean;
+  removeAvatar: boolean;
+  cameraInput: RefObject<HTMLInputElement | null>;
+  galleryInput: RefObject<HTMLInputElement | null>;
+  onSelect: (event: ChangeEvent<HTMLInputElement>) => void;
+  onAccept: () => void;
+  onRemove: () => void;
+}
+
+function AvatarField({ profile, file, preview, accepted, removeAvatar, cameraInput, galleryInput, onSelect, onAccept, onRemove }: AvatarFieldProps) {
+  const hasExisting = Boolean(profile?.avatarMediaId && !removeAvatar);
+  return <fieldset className="field field-wide avatar-field">
+    <legend>Foto do perfil</legend>
+    <div className="avatar-preview-row">
+      {preview ? <span className="large-avatar avatar-file-preview"><img src={preview} alt="Prévia da foto selecionada" /></span> : profile ? <ProfileAvatar profile={removeAvatar ? { ...profile, avatarMediaId: undefined } : profile} className="large-avatar" size="lg" /> : <span className="large-avatar" aria-hidden="true">+</span>}
+      <div className="avatar-actions">
+        <button type="button" onClick={() => cameraInput.current?.click()}>{file ? 'Trocar pela câmera' : 'Tirar foto'}</button>
+        <button type="button" onClick={() => galleryInput.current?.click()}>{file ? 'Trocar pela galeria' : 'Escolher da galeria'}</button>
+        {file && <button type="button" className={accepted ? 'accepted' : 'accept-photo'} onClick={onAccept}>{accepted ? 'Foto pronta ✓' : 'Usar foto'}</button>}
+        {(file || hasExisting) && <button type="button" className="remove-photo" onClick={onRemove}>Remover</button>}
+      </div>
+      <input ref={cameraInput} aria-label="Tirar foto do perfil" type="file" accept="image/*" capture="user" onChange={onSelect} />
+      <input ref={galleryInput} aria-label="Escolher foto do perfil na galeria" type="file" accept="image/jpeg,image/png,image/webp" onChange={onSelect} />
+    </div>
+    {file && <small className="avatar-selection-status">{accepted ? 'Esta foto será usada ao salvar.' : `Selecionada: ${file.name}. Confirme em “Usar foto”.`}</small>}
+    <small>O DEFYN corrige orientação, reduz e comprime localmente. Nada é enviado.</small>
+  </fieldset>;
 }
 
 function ResultPanel({ result, method }: { result?: NutritionCalculationResult; method: FormState['metabolicMethod'] }) {

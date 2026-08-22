@@ -15,7 +15,7 @@
 .add-profile-card > span { width: 46px; height: 46px; display: grid; place-items: center; color: var(--foreground-inverse); background: var(--accent); border-radius: 50%; font-size: 1.2rem; }
 .add-profile-card div { display: flex; flex-direction: column; gap: 0.2rem; }
 .add-profile-card small { color: var(--foreground-muted); }
-.modal-backdrop { position: fixed; inset: 0; padding: 1rem; display: grid; place-items: center; background: rgba(9,10,8,0.6); backdrop-filter: blur(4px); z-index: 120; }
+.modal-backdrop { position: fixed; inset: 0; padding: 1rem; display: grid; place-items: center; background: rgba(9,10,8,0.6); backdrop-filter: blur(4px); z-index: var(--z-modal); }
 .confirm-modal { width: min(470px, 100%); padding: 2rem; background: var(--surface-card); border-radius: var(--radius-lg); box-shadow: 0 30px 80px rgba(0,0,0,0.25); }
 .danger-mark { width: 46px; height: 46px; display: grid; place-items: center; color: #fff; background: var(--danger); border-radius: 50%; font-weight: 900; }
 .confirm-modal h2 { margin: 1rem 0 0.5rem; font-family: var(--font-display); font-size: 2rem; letter-spacing: -0.04em; text-transform: uppercase; }

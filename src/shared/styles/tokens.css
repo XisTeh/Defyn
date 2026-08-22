@@ -81,6 +81,14 @@
   --radius-xl: 1.85rem;
   --radius-rail: 1.35rem;
   --radius-pill: 999px;
+  --mobile-header-height: 60px;
+  --mobile-bottom-nav-height: 62px;
+  --mobile-nav-edge: .55rem;
+  --mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-content-bottom-clearance: calc(var(--mobile-bottom-nav-height) + var(--mobile-nav-edge) + var(--mobile-safe-bottom) + 1.25rem);
+  --mobile-card-padding: .9rem;
+  --mobile-card-gap: .7rem;
+  --mobile-card-radius: 1rem;
   --elevation-card: 0 18px 46px rgba(34, 41, 46, .09), inset 0 1px rgba(255, 255, 255, .74);
   --elevation-popover: 0 28px 80px rgba(28, 35, 40, .2), inset 0 1px rgba(255, 255, 255, .8);
   --motion-fast: 180ms;
@@ -93,10 +101,15 @@
   --ease-standard: cubic-bezier(.22, .61, .36, 1);
   --ease-card: cubic-bezier(.16, .84, .32, 1);
   --ease-silk: cubic-bezier(.22, .72, .24, 1);
+  --z-decoration: -1;
+  --z-content: 0;
   --z-sidebar: 30;
+  --z-sticky: 40;
   --z-header: 50;
-  --z-nav: 70;
-  --z-toast: 90;
-  --z-modal: 110;
-  --z-select: 130;
+  --z-nav: 60;
+  --z-overlay: 80;
+  --z-sheet: 90;
+  --z-modal: 100;
+  --z-toast: 110;
+  --z-select: 120;
 }

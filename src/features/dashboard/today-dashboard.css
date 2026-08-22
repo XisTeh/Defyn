@@ -154,3 +154,34 @@
 .custom-water button { color: #fff; }
 .water-empty > span { color: var(--water); background: var(--water-soft); border: 1px solid rgba(67,136,184,.22); }
 .empty-day-mark { -webkit-text-stroke-color: rgba(221,229,235,.22); opacity: .62; }
+
+/* Mobile rescue: useful metrics above the first fold. */
+@media (max-width:620px) {
+  .today-page { padding: 1.15rem .85rem; }
+  .today-page::before { right: -80px; width: 190px; opacity: .28; }
+  .today-header { margin-bottom: 1rem; gap: .7rem; }
+  .today-header h1 { font-size: clamp(2.55rem, 12vw, 3.7rem); line-height: .94; overflow-wrap: normal; word-break: normal; }
+  .today-header p { font-size: .76rem; line-height: 1.4; }
+  .today-profile-chip { width: 100%; padding: .55rem .75rem; display: flex; align-items: center; justify-content: space-between; }
+  .daily-grid, .lower-grid { gap: var(--mobile-card-gap); }
+  .lower-grid { margin-top: var(--mobile-card-gap); }
+  .calorie-card, .macro-card, .water-card, .water-history-card { padding: var(--mobile-card-padding); border-radius: var(--mobile-card-radius); backdrop-filter: none !important; }
+  .calorie-card { min-height: 185px; }
+  .calorie-display { margin: auto 0 .8rem; flex-direction: row; align-items: baseline; gap: .55rem; }
+  .calorie-display strong { align-self: auto; font-size: clamp(3.75rem, 19vw, 5rem); }
+  .calorie-display span { align-self: auto; }
+  .macro-progress { margin-top: .8rem; }
+  .macro-progress > div:first-child { margin-bottom: .35rem; }
+  .water-card-header h2 { margin: .2rem 0 .8rem; font-size: clamp(2.2rem, 11vw, 3.2rem); }
+  .hydration-pace { margin-top: .75rem; padding: .7rem; }
+  .hydration-checkpoints { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .water-actions { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .water-history-card { min-height: 230px; }
+  .water-empty { min-height: 170px; }
+  .diary-empty-card { min-height: 150px; margin-top: var(--mobile-card-gap); padding: var(--mobile-card-padding); border-radius: var(--mobile-card-radius); }
+  .diary-empty-card h2 { font-size: 1.75rem; overflow-wrap: normal; word-break: normal; }
+}
+@media (max-width:340px) {
+  .water-actions button { padding-inline: .25rem; font-size: .6rem; }
+  .hydration-checkpoints span { padding: .45rem; }
+}

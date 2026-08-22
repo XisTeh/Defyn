@@ -4,6 +4,7 @@ import type { AppView } from '../../app/navigation';
 import { ProfileAvatar } from '../profiles/ProfileAvatar';
 import { PwaCoordinator } from '../pwa/PwaCoordinator';
 import { useDeviceExperience } from '../pwa/use-device-experience';
+import { useMobileKeyboard } from '../../platform/mobile-keyboard';
 import './app-shell.css';
 
 const navItems: readonly { view: AppView; label: string; symbol: string }[] = [
@@ -36,6 +37,7 @@ export function AppShell({
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
+  const keyboardOpen = useMobileKeyboard();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -103,7 +105,7 @@ export function AppShell({
         <div className="app-content">{children}</div>
       </div>
 
-      <nav className="mobile-bottom-nav" aria-label="Navegação mobile">
+      <nav className={`mobile-bottom-nav${keyboardOpen || quickOpen || moreOpen ? ' is-suppressed' : ''}`} aria-label="Navegação mobile" aria-hidden={keyboardOpen || quickOpen || moreOpen}>
         <button className={view === 'today' ? 'active' : ''} type="button" onClick={() => navigate('today')}><span>◒</span><small>Hoje</small></button>
         <button className={view === 'diary' ? 'active' : ''} type="button" onClick={() => navigate('diary')}><span>≡</span><small>Diário</small></button>
         <button className="quick-add-button" type="button" onClick={() => setQuickOpen(true)} aria-label="Abrir ações rápidas"><span>+</span></button>
@@ -123,5 +125,15 @@ export function AppShell({
 }
 
 function Sheet({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
-  return <div className="sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={title}><div className="sheet-handle" /><header><h2>{title}</h2><button type="button" onClick={onClose} aria-label="Fechar">×</button></header>{children}</section></div>;
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+  useEffect(() => {
+    const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : undefined;
+    closeButton.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onCloseRef.current(); };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); trigger?.focus(); };
+  }, []);
+  return <div className="sheet-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="bottom-sheet" role="dialog" aria-modal="true" aria-label={title}><div className="sheet-handle" /><header><h2>{title}</h2><button ref={closeButton} type="button" onClick={onClose} aria-label="Fechar">×</button></header><div className="sheet-scroll-body">{children}</div></section></div>;
 }

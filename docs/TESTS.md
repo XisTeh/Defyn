@@ -2,7 +2,7 @@
 
 Os testes Vitest cobrem regras puras e casos de uso.
 
-Estado atual após Mobile/PWA: **163 testes em 29 arquivos**, todos aprovados. A cobertura de mídia exige ilustração para cada exercício-base.
+Estado atual após Mobile Rescue 06.1: **170 testes em 30 arquivos**, todos aprovados. A cobertura de mídia exige ilustração para cada exercício-base.
 
 ## Cobertura
 
@@ -33,6 +33,8 @@ Estado atual após Mobile/PWA: **163 testes em 29 arquivos**, todos aprovados. A
 - wake lock/notificação opt-in sem chamadas quando não suportados;
 - política offline que aceita shell/chunks/OCR/miniaturas e rejeita mídia pessoal;
 - mensagens de etapas OCR e fixture com colunas por porção/100 g ambíguas.
+- teclado mobile por `visualViewport`: foco editável, limiar de abertura e fechamento;
+- parser OCR adicional: `100 g | porção | %VD`, desalinhamento, ponto decimal e campos parciais.
 
 ```bash
 npm run test

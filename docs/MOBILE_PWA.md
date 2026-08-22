@@ -12,7 +12,9 @@ O service worker usa atualização por confirmação. Quando há versão nova, o
 
 ## Layout e safe areas
 
-Header, bottom navigation, sheets, sessão de treino e avisos consideram `env(safe-area-inset-top|bottom)`. Controles mobile usam alvos de pelo menos 42–48 px; entradas críticas do treino usam 52 px. Funcionalidade não depende de hover.
+Header, bottom navigation, sheets, sessão de treino e avisos consideram `env(safe-area-inset-top|bottom)`. A navegação inferior tem geometria fixa, é suprimida por sheets/modais/sessão e também quando `visualViewport` indica teclado virtual sobre um campo editável. Controles mobile usam alvos de pelo menos 42–48 px; entradas críticas do treino usam 52 px. Funcionalidade não depende de hover.
+
+Sheets usam altura baseada em `dvh`, rolagem interna, foco inicial, Escape e devolução do foco ao gatilho. A escala de camadas é centralizada em tokens para evitar disputa entre decoração, header, navegação, overlay, sheet, modal, toast e listbox.
 
 ## Carregamento por demanda
 
@@ -22,4 +24,4 @@ Build de referência antes desta etapa: bundle principal **519,87 kB / 156,45 kB
 
 ## Limite de validação
 
-O comportamento foi validado no navegador local a 1280 px, com inspeção dos breakpoints e roteiro da matriz responsiva. A ferramenta conectada não expôs redimensionamento de viewport nesta execução; a matriz completa e câmera, instalação, safe area, retomada em segundo plano e notificações ainda precisam de conferência física em Android/iOS e nos tamanhos listados em `MOBILE_QA.md`.
+O comportamento foi validado no navegador local com viewport real em 320, 360, 375, 390, 430, 768, 820, 1024, 1280 e 1920 px. A matriz aprovou contenção horizontal, troca entre sidebar/bottom nav, sheets e sessão de treino. Câmera, teclado, instalação, safe area, retomada em segundo plano e notificações ainda precisam de conferência física em Android/iOS. Detalhes: `MOBILE_RESCUE.md` e `MOBILE_QA.md`.

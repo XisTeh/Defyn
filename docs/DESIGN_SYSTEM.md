@@ -43,7 +43,7 @@ Títulos usam a família condensada, `clamp()`, `overflow-wrap` e `text-wrap: ba
 
 A arquitetura aprovada da sidebar permanece: rail de 276 px, perfil no topo, ação principal, navegação agrupada e rodapé local-first. O material agora é vidro preto com blur de 22 px. O item ativo usa linha prata e preenchimento translúcido; a ação principal usa cinza-gelo.
 
-No mobile, header e bottom navigation usam o mesmo vidro escuro, respeitam safe area e abrem sheets sobre backdrop com blur.
+No mobile, header e bottom navigation usam o mesmo vidro escuro e respeitam safe area. A navegação inferior não possui recorte ou botão elevado, mantém altura estável e desaparece durante teclado, sheets, modais e sessão de treino. Sheets usam backdrop escuro sem blur pesado, `dvh`, rolagem interna e bordas superiores arredondadas.
 
 Instalação, atualização, estado offline e recursos de dispositivo reutilizam os mesmos materiais. Ações impossíveis são ocultadas; alternativas e estados negados são descritos em texto. Sessão de treino eleva inputs e conclusão de série para 52 px em telas estreitas.
 
@@ -63,7 +63,7 @@ Motion usa os tokens `--motion-*`, `--ease-standard`, `--ease-out` e `--ease-sil
 
 Treinos reutiliza superfícies claras e cards dark estratégicos. Fallbacks de exercício recebem cores semânticas por grupo muscular, sempre acompanhadas por abreviação/rótulo. A sessão prioriza touch targets, inputs numéricos, timer persistente e safe areas.
 
-Foco é sempre visível, textos secundários usam contraste próprio e a escala z-index é centralizada. Componentes mantêm `minmax(0, 1fr)`, wrapping e breakpoints para evitar overflow na origem.
+Foco é sempre visível, textos secundários usam contraste próprio e a escala z-index é centralizada. Componentes mantêm `minmax(0, 1fr)`, `min-width: 0`, wrapping e breakpoints para evitar overflow na origem. Em 320 px, cabeçalhos importantes permanecem legíveis, abas longas rolam horizontalmente dentro do próprio componente e CTAs sticky conservam a safe area.
 
 ## Referências visuais
 

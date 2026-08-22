@@ -40,6 +40,14 @@
 - fotos corporais mobile, sessão de academia persistente e recursos opt-in;
 - chunks lazy, precache documentado, testes de capacidades e matriz de QA responsivo.
 
+## Concluído — etapa 06.1 Mobile Rescue
+
+- shell mobile com bottom nav estável, safe areas, sheets, foco e detecção de teclado virtual;
+- fotos de perfil/corpo/rótulo com câmera e galeria separadas, prévia e confirmação;
+- OCR local com rotação, recorte, contraste opcional, worker reutilizado e parser multicoluna;
+- Hoje, Diário, Ficha, Progresso e Treinos compactados sem regressão desktop;
+- QA real em 320/360/375/390/430, tablets e desktop 1280/1920, sem overflow horizontal.
+
 ## Próxima grande etapa
 
 Recomendação: **DEFYN 07 — Rotina, agenda e lembretes inteligentes**. Calendário, rotinas e lembretes devem respeitar as limitações documentadas de execução em segundo plano. Scanner de código de barras, sincronização e integrações externas continuam posteriores.

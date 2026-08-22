@@ -22,4 +22,17 @@ Verificar em cada família: ausência de overflow horizontal, cabeçalhos legív
 
 ## Estado desta entrega
 
-Lint, typecheck, testes, build e QA no navegador local a 1280 px fazem parte da validação. A matriz acima foi documentada e os breakpoints foram inspecionados, mas a ferramenta conectada não permitiu redimensionar a viewport nesta execução. **Não houve teste físico em smartphone nesta entrega**; a matriz completa, câmera real, instalação, safe areas e suspensão de background permanecem itens obrigatórios antes de publicar.
+QA com viewport controlada foi executado em 320×800, 360×800, 375×812, 390×844, 430×932, 768×1024, 820×1180, 1024×768, 1280×800 e 1920×1080.
+
+Resultados observados:
+
+- documento sem overflow horizontal em todos os tamanhos;
+- navegação inferior fixa dentro da área útil no mobile e ausente no desktop;
+- sidebar desktop preservada com 276 px em 1280 e 1920;
+- Quick actions, adição de alimento, entrada OCR e check-in terminando no fundo da viewport e ocultando a bottom nav;
+- check-in corporal de 320 px sem extravasamento de campos ou rodapé;
+- sessão de treino de 320 px sem corte do card, inputs ou navegação Anterior/Próximo;
+- abas de Progresso rolam internamente nas larguras em que não cabem;
+- entradas de arquivo inspecionadas: avatar `capture=user`, corpo/rótulo `capture=environment` e galeria sem `capture`.
+
+Lint, typecheck, **170 testes em 30 arquivos** e build PWA estão aprovados. **Não houve teste físico em smartphone nesta entrega**; câmera real, teclado de Android/iOS, instalação, safe areas, suspensão de background, wake lock e notificações permanecem obrigatórios antes de publicar.

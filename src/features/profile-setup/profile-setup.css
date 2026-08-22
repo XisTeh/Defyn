@@ -61,7 +61,7 @@
 .field-help-panel ul { margin: .35rem 0 0; padding-left: 1rem; }
 .field-help-panel b { margin-left: .35rem; padding: .15rem .35rem; color: var(--accent-strong); background: var(--accent-soft); border-radius: 999px; font-size: .52rem; text-transform: uppercase; }
 .help-guide-button { min-height: 40px; color: var(--foreground); background: var(--primary); border: 0; border-radius: var(--radius-pill); font-size: .68rem; font-weight: 800; }
-.help-sheet-backdrop { position: fixed; inset: 0; padding: 1rem; display: grid; place-items: center; background: rgba(8,10,8,.54); backdrop-filter: blur(3px); z-index: 120; }
+.help-sheet-backdrop { position: fixed; inset: 0; padding: 1rem; display: grid; place-items: center; background: rgba(8,10,8,.54); backdrop-filter: blur(3px); z-index: var(--z-modal); }
 .help-sheet { width: min(460px, 100%); max-height: min(680px, calc(100dvh - 2rem)); padding: 1.25rem; display: grid; gap: 1rem; background: var(--surface-card); border-radius: var(--radius-lg); overflow-y: auto; animation: modal-in var(--motion-base) var(--ease-out); }
 .help-sheet header { display: flex; align-items: center; justify-content: space-between; }.help-sheet header h2 { margin: 0; font-family: var(--font-display); font-size: 2rem; text-transform: uppercase; }.help-sheet header button { width: 40px; height: 40px; background: #eceae2; border: 0; border-radius: 50%; font-size: 1.2rem; }.help-sheet label { display: grid; gap: .45rem; font-size: .72rem; font-weight: 750; }.help-sheet select { min-height: 48px; padding: .7rem; color: var(--foreground); background: var(--surface-card); border: 1px solid var(--border); border-radius: var(--radius-sm); }.help-sheet p { margin: 0; padding: .8rem; background: #edf4d8; border-radius: var(--radius-sm); font-size: .72rem; line-height: 1.5; }
 @keyframes panel-in { from { opacity: 0; transform: translateY(-5px); } }
@@ -236,3 +236,33 @@
 .result-panel::before { border-color: rgba(201,210,218,.12); box-shadow: 0 0 0 80px rgba(201,210,218,.018), 0 0 0 160px rgba(201,210,218,.009); }
 .live-pill i { background: var(--success); box-shadow: 0 0 0 3px var(--success-soft); }
 .energy-grid { background: rgba(255,255,255,.018); }
+
+/* Mobile rescue: explicit photo sources and compact single-column editing. */
+.avatar-preview-row { display: grid !important; grid-template-columns: 78px minmax(0,1fr); align-items: center; gap: .85rem; }
+.avatar-preview-row > input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.avatar-file-preview img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-actions { min-width: 0; display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .45rem !important; }
+.avatar-actions button { min-width: 0; min-height: 44px; padding: .45rem .65rem; line-height: 1.2; text-align: center; }
+.avatar-actions .accept-photo, .avatar-actions .accepted { color: #fff; background: var(--success); border-color: var(--success); }
+.avatar-actions .remove-photo { color: var(--danger); }
+.avatar-selection-status { color: var(--success) !important; }
+
+@media (max-width: 620px) {
+  .application-shell .profile-setup-screen { padding-bottom: .5rem; }
+  .application-shell .intro-panel { padding: 1.35rem .85rem 1.75rem; }
+  .intro-panel { padding: 2rem .95rem 2.5rem; }
+  .intro-panel h1 { font-size: clamp(2.55rem, 13vw, 4rem); line-height: .92; overflow-wrap: normal; word-break: normal; hyphens: none; }
+  .intro-copy { margin: 1rem 0 1.5rem; font-size: .86rem; line-height: 1.5; }
+  .profile-form { gap: .9rem; }
+  .goal-options { grid-template-columns: 1fr; }
+  .goal-options label > span { min-height: 62px; }
+  .adjustment-field { grid-template-columns: 1fr; }
+  .adjustment-field input, .adjustment-field label, .adjustment-field small { grid-column: 1; grid-row: auto; }
+  .avatar-preview-row { grid-template-columns: 68px minmax(0,1fr); align-items: start; }
+  .avatar-actions { grid-template-columns: 1fr !important; }
+  .form-actions { padding-bottom: .25rem; }
+  .result-panel { padding: 1.5rem .95rem 1.75rem; }
+  .result-header h2 { font-size: 2.25rem; }
+  .calorie-hero { padding: 1.75rem 0 1.25rem; }
+  .calorie-hero strong { font-size: clamp(4rem, 20vw, 5.6rem); }
+}
