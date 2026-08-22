@@ -48,7 +48,7 @@ export function validateBackup(value: unknown): DefynBackup {
   if (!isRecord(value) || value.format !== DEFYN_BACKUP_FORMAT) {
     throw new BackupValidationError('Este arquivo não é um backup do DEFYN.');
   }
-  if (![1, 2, 3, DEFYN_BACKUP_VERSION].includes(Number(value.version))) {
+  if (![1, 2, 3, 4, DEFYN_BACKUP_VERSION].includes(Number(value.version))) {
     throw new BackupValidationError('A versão deste backup não é compatível com o aplicativo.');
   }
   if (typeof value.exportedAt !== 'string' || !isRecord(value.data)) {
@@ -83,6 +83,7 @@ export function validateBackup(value: unknown): DefynBackup {
         : [],
     } };
   }
+  if (candidate.version === 4) candidate = { ...candidate, version: DEFYN_BACKUP_VERSION };
   if (!isRecord(candidate.data)) throw new BackupValidationError('O backup está incompleto ou corrompido.');
   const data = candidate.data;
   for (const name of collectionNames) {

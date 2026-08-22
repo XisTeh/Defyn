@@ -1,124 +1,176 @@
 import type { NutrientValues, PortionUnit } from './food';
+import {
+  CORE_NUTRIENT_KEYS,
+  ensureCanonicalNutritionLabel,
+  validateNutritionLabelStructure,
+  type CoreNutrientKey,
+  type NutritionLabel,
+  type NutritionLabelBasisUnit,
+  type NutritionLabelColumn,
+  type NutritionLabelCellStatus,
+} from './nutrition-label';
+
+export interface NutritionLabelOcrLine {
+  text: string;
+  confidence: number;
+  bbox: { x0: number; y0: number; x1: number; y1: number };
+}
 
 export interface ParsedNutritionLabel {
   rawText: string;
+  structuredText: string;
   portion?: { quantity: number; unit: PortionUnit };
+  servingsPerContainer?: number;
   reference?: { quantity: number; unit: 'g' | 'ml' };
   productName?: string;
   nutrients: NutrientValues;
+  nutritionLabel?: NutritionLabel;
   confidence: Partial<Record<keyof NutrientValues | 'portion', 'high' | 'review'>>;
   warnings: string[];
-  columns?: { selected: 'portion' | 'per100' | 'unknown'; portion?: NutrientValues; per100?: NutrientValues };
+  columns?: { selected: 'portion' | 'per100' | 'unknown'; portion?: NutrientValues; per100?: NutrientValues; dailyValuesPercent?: Partial<Record<CoreNutrientKey, number>> };
+}
+
+export const NUTRITION_LABEL_ROWS: readonly { key: CoreNutrientKey; label: string; unit: 'g' | 'mg' | 'kcal' | 'kJ'; pattern: RegExp }[] = [
+  { key: 'caloriesKcal', label: 'Valor energético', unit: 'kcal', pattern: /valor\s*energetico|energia/i },
+  { key: 'energyKj', label: 'Valor energético (kJ)', unit: 'kJ', pattern: /valor\s*energetico|energia/i },
+  { key: 'carbsGrams', label: 'Carboidratos', unit: 'g', pattern: /carboidratos?/i },
+  { key: 'sugarsGrams', label: 'Açúcares totais', unit: 'g', pattern: /a[cç]ucares?\s*totais?/i },
+  { key: 'addedSugarsGrams', label: 'Açúcares adicionados', unit: 'g', pattern: /a[cç]ucares?\s*adicionados?/i },
+  { key: 'proteinGrams', label: 'Proteínas', unit: 'g', pattern: /proteinas?/i },
+  { key: 'fatGrams', label: 'Gorduras totais', unit: 'g', pattern: /gorduras?\s*totais?|gordura\s*total/i },
+  { key: 'saturatedFatGrams', label: 'Gorduras saturadas', unit: 'g', pattern: /gorduras?\s*saturadas?/i },
+  { key: 'transFatGrams', label: 'Gorduras trans', unit: 'g', pattern: /gorduras?\s*trans/i },
+  { key: 'fiberGrams', label: 'Fibra alimentar', unit: 'g', pattern: /fibra\s*alimenta[ril]|fibras?/i },
+  { key: 'sodiumMg', label: 'Sódio', unit: 'mg', pattern: /sodio/i },
+];
+
+function normalizeText(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[|¦]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 function decimal(value: string): number | undefined {
-  const normalized = value.replace(/\s/g, '').replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.');
+  const compact = value.replace(/\s/g, '');
+  if (/^[-—]$/.test(compact)) return undefined;
+  const safelyCorrected = /\d/.test(compact) && /^[\dOIlS.,]+$/.test(compact)
+    ? compact.replace(/[O]/g, '0').replace(/[Il]/g, '1').replace(/S/g, '5')
+    : compact;
+  const normalized = safelyCorrected.replace(/\.(?=\d{3}(?:\D|$))/g, '').replace(',', '.');
   const parsed = Number(normalized);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined;
 }
 
-function matchValue(text: string, labels: readonly string[], unit: 'g' | 'mg' | 'kcal'): number | undefined {
-  for (const label of labels) {
-    const pattern = new RegExp(`${label}[^\\n\\d]{0,24}(\\d+(?:[.,]\\d+)?)\\s*${unit}`, 'i');
-    const found = text.match(pattern);
-    if (found?.[1]) return decimal(found[1]);
+export function reconstructNutritionLabelText(rawText: string, layoutLines: readonly NutritionLabelOcrLine[] = []): string {
+  if (!layoutLines.length) return rawText.replace(/\r/g, '');
+  const medianHeight = [...layoutLines].map((line) => Math.max(1, line.bbox.y1 - line.bbox.y0)).sort((a, b) => a - b)[Math.floor(layoutLines.length / 2)] ?? 12;
+  const ordered = [...layoutLines].sort((a, b) => Math.abs(a.bbox.y0 - b.bbox.y0) <= medianHeight * .45 ? a.bbox.x0 - b.bbox.x0 : a.bbox.y0 - b.bbox.y0);
+  const rows: NutritionLabelOcrLine[][] = [];
+  for (const line of ordered) {
+    const row = rows.find((candidate) => Math.abs((candidate[0]?.bbox.y0 ?? 0) - line.bbox.y0) <= medianHeight * .45);
+    if (row) row.push(line); else rows.push([line]);
   }
+  return rows.sort((a, b) => (a[0]?.bbox.y0 ?? 0) - (b[0]?.bbox.y0 ?? 0)).map((row) => row.sort((a, b) => a.bbox.x0 - b.bbox.x0).map((line) => line.text.trim()).filter(Boolean).join('   ')).join('\n');
 }
 
-type NutrientKey = Exclude<keyof NutrientValues, 'other'>;
-const rowDefinitions: readonly { key: NutrientKey; label: RegExp; unit: 'g' | 'mg' | 'kcal' }[] = [
-  { key: 'caloriesKcal', label: /valor\s*energ[eé]tico|energia/i, unit: 'kcal' },
-  { key: 'addedSugarsGrams', label: /a[cç][uú]cares?\s*adicionados?/i, unit: 'g' },
-  { key: 'sugarsGrams', label: /a[cç][uú]cares?\s*totais?/i, unit: 'g' },
-  { key: 'carbsGrams', label: /carboidratos?/i, unit: 'g' },
-  { key: 'proteinGrams', label: /prote[ií]nas?/i, unit: 'g' },
-  { key: 'saturatedFatGrams', label: /gorduras?\s*saturadas?/i, unit: 'g' },
-  { key: 'transFatGrams', label: /gorduras?\s*trans/i, unit: 'g' },
-  { key: 'fatGrams', label: /gorduras?\s*totais?/i, unit: 'g' },
-  { key: 'fiberGrams', label: /fibra\s*alimentar|fibras?/i, unit: 'g' },
-  { key: 'sodiumMg', label: /s[oó]dio/i, unit: 'mg' },
-];
-
-function rowNumbers(lines: string[], definition: typeof rowDefinitions[number]): number[] {
-  const lineIndex = lines.findIndex((line) => definition.label.test(line));
-  if (lineIndex < 0) return [];
-  const line = lines[lineIndex] ?? '';
-  const match = line.match(definition.label);
-  const suffix = match ? line.slice((match.index ?? 0) + match[0].length) : line;
-  const withContinuation = /\d/.test(suffix) ? suffix : `${suffix} ${lines[lineIndex + 1] ?? ''}`;
-  const withoutUnitHint = withContinuation.replace(/^\s*\([^)]{0,8}\)/, ' ');
-  if (definition.unit === 'kcal') {
-    const kcalValues = [...withoutUnitHint.matchAll(/(\d+(?:[.,]\d+)?)\s*kcal/gi)].flatMap((item) => item[1] ? [decimal(item[1])] : []).filter((value): value is number => value !== undefined);
-    if (kcalValues.length) return kcalValues;
-  }
-  return [...withoutUnitHint.matchAll(/\d+(?:[.,]\d+)?/g)].flatMap((item) => item[0] ? [decimal(item[0])] : []).filter((value): value is number => value !== undefined);
+function numericTokens(value: string): Array<number | undefined> {
+  return [...value.matchAll(/(?:\d[\dOIlS]*(?:[.,][\dOIlS]+)?|[-—])/g)].map((match) => decimal(match[0]));
 }
 
-function parseColumnValues(lines: string[], hasSplitColumns: boolean) {
-  const portion: NutrientValues = {};
-  const per100: NutrientValues = {};
-  const fallback: NutrientValues = {};
-  for (const definition of rowDefinitions) {
-    const values = rowNumbers(lines, definition);
-    if (!values.length) continue;
-    if (hasSplitColumns && values.length >= 2) {
-      per100[definition.key] = values[0];
-      portion[definition.key] = values[1];
-    } else fallback[definition.key] = values[0];
-  }
-  return { portion, per100, fallback };
-}
-
-function hasValues(values: NutrientValues) { return Object.values(values).some((value) => typeof value === 'number'); }
-
-export function parseBrazilianNutritionLabel(rawText: string): ParsedNutritionLabel {
-  const text = rawText.replace(/\r/g, '').replace(/[|¦]/g, ' ');
-  const lines = text.split('\n').map((line) => line.replace(/\s+/g, ' ').trim()).filter(Boolean);
-  const portionMatch = text.match(/por[cç][aã]o[^\d]{0,30}(\d+(?:[.,]\d+)?)\s*(g|ml|un(?:idade)?)/i);
-  const referenceMatch = text.match(/(?:por\s*)?(100)\s*(g|ml)/i);
-  const portionQuantity = portionMatch?.[1] ? decimal(portionMatch[1]) : undefined;
-  const portionUnit = portionMatch?.[2]?.toLowerCase();
-  const headerHas100 = lines.some((line) => /100\s*(?:g|ml)/i.test(line) && /%\s*v\s*d/i.test(line));
-  const headerHasPortion = portionQuantity !== undefined && lines.some((line) => {
-    if (!/%\s*v\s*d/i.test(line)) return false;
-    const normalizedQuantity = String(portionQuantity).replace('.', '[.,]');
-    return new RegExp(`${normalizedQuantity}\\s*${portionUnit === 'ml' ? 'ml' : 'g'}`, 'i').test(line);
+function findRowTokens(lines: string[], row: typeof NUTRITION_LABEL_ROWS[number]): Array<number | undefined> {
+  const index = lines.findIndex((line) => {
+    const normalized = normalizeText(line);
+    if (!row.pattern.test(normalized)) return false;
+    if (row.key === 'energyKj') return /k\s*j/i.test(normalized);
+    if (row.key === 'caloriesKcal') return /kcal/i.test(normalized) || !/k\s*j/i.test(normalized);
+    return true;
   });
-  const hasSplitColumns = headerHas100 && headerHasPortion;
-  const columnValues = parseColumnValues(lines, hasSplitColumns);
-  const energy = columnValues.fallback.caloriesKcal ?? matchValue(text, ['valor\\s*energ[eé]tico', 'energia'], 'kcal') ?? (() => {
-    const found = text.match(/(\d+(?:[.,]\d+)?)\s*kcal/i);
-    return found?.[1] ? decimal(found[1]) : undefined;
-  })();
-  const legacyNutrients: NutrientValues = {
-    caloriesKcal: energy,
-    carbsGrams: matchValue(text, ['carboidratos?'], 'g'),
-    proteinGrams: matchValue(text, ['prote[ií]nas?'], 'g'),
-    fatGrams: matchValue(text, ['gorduras?\\s*totais'], 'g'),
-    saturatedFatGrams: matchValue(text, ['gorduras?\\s*saturadas?'], 'g'),
-    transFatGrams: matchValue(text, ['gorduras?\\s*trans'], 'g'),
-    fiberGrams: matchValue(text, ['fibra\\s*alimentar', 'fibras?'], 'g'),
-    sugarsGrams: matchValue(text, ['a[cç][uú]cares?\\s*totais'], 'g'),
-    addedSugarsGrams: matchValue(text, ['a[cç][uú]cares?\\s*adicionados'], 'g'),
-    sodiumMg: matchValue(text, ['s[oó]dio'], 'mg'),
-  };
-  const nutrients: NutrientValues = hasValues(columnValues.portion) ? columnValues.portion : { ...legacyNutrients, ...columnValues.fallback };
-  const foundCount = Object.values(nutrients).filter((value) => typeof value === 'number').length;
+  if (index < 0) return [];
+  const line = normalizeText(lines[index] ?? '');
+  const matched = line.match(row.pattern);
+  let suffix = matched ? line.slice((matched.index ?? 0) + matched[0].length) : line;
+  suffix = suffix.replace(/^\s*\([^)]{0,16}\)/, ' ');
+  if (!/\d|[-—]/.test(suffix)) suffix = `${suffix} ${normalizeText(lines[index + 1] ?? '')}`;
+  return numericTokens(suffix);
+}
+
+function numberFrom(text: string, pattern: RegExp): number | undefined {
+  const found = text.match(pattern);
+  return found?.[1] ? decimal(found[1]) : undefined;
+}
+
+function assign(column: NutritionLabelColumn, key: CoreNutrientKey, value: number | undefined, status: NutritionLabelCellStatus) {
+  if (value === undefined) return;
+  if (column.kind === 'daily-value') column.dailyValuesPercent = { ...column.dailyValuesPercent, [key]: value };
+  else column.values = { ...column.values, [key]: value };
+  column.cellStatus = { ...column.cellStatus, [key]: status };
+}
+
+function columnDefinitions(lines: string[], serving?: { quantity: number; unit: NutritionLabelBasisUnit }): NutritionLabelColumn[] {
+  const header = lines.find((line) => /%\s*v\s*d/i.test(normalizeText(line)) || (/100\s*(g|ml)/i.test(normalizeText(line)) && serving && new RegExp(`${serving.quantity}\\s*${serving.unit}`, 'i').test(normalizeText(line))));
+  const normalized = normalizeText(header ?? '');
+  const has100 = /100\s*(g|ml)/i.exec(normalized);
+  const hasServing = serving && new RegExp(`${String(serving.quantity).replace('.', '[.,]')}\\s*${serving.unit}`, 'i').test(normalized);
+  const hasDailyValue = /%\s*v\s*d/i.test(normalized);
+  const columns: NutritionLabelColumn[] = [];
+  if (has100?.[1]) columns.push({ id: 'per-100', label: `100 ${has100[1].toLowerCase()}`, kind: 'amount', basis: { quantity: 100, unit: has100[1].toLowerCase() as NutritionLabelBasisUnit }, values: {}, source: 'explicit' });
+  if (hasServing && serving) columns.push({ id: 'declared-serving', label: `${serving.quantity} ${serving.unit}`, kind: 'amount', basis: serving, values: {}, source: 'explicit' });
+  if (hasDailyValue) columns.push({ id: 'daily-value', label: '%VD', kind: 'daily-value', dailyValuesPercent: {}, source: 'explicit' });
+  if (!columns.some((column) => column.kind === 'amount') && serving) columns.unshift({ id: 'declared-serving', label: `${serving.quantity} ${serving.unit}`, kind: 'amount', basis: serving, values: {}, source: 'explicit' });
+  if (!columns.some((column) => column.kind === 'amount') && has100?.[1]) columns.unshift({ id: 'per-100', label: `100 ${has100[1].toLowerCase()}`, kind: 'amount', basis: { quantity: 100, unit: has100[1].toLowerCase() as NutritionLabelBasisUnit }, values: {}, source: 'explicit' });
+  return columns;
+}
+
+function hasValues(values?: NutrientValues) { return Boolean(values && Object.values(values).some((value) => typeof value === 'number')); }
+
+export function parseBrazilianNutritionLabel(rawText: string, layoutLines: readonly NutritionLabelOcrLine[] = []): ParsedNutritionLabel {
+  const structuredText = reconstructNutritionLabelText(rawText, layoutLines);
+  const lines = structuredText.split('\n').map(normalizeText).filter(Boolean);
+  const searchable = normalizeText(structuredText);
+  const servingQuantity = numberFrom(searchable, /por[cç]ao[^\d]{0,30}(\d+(?:[.,]\d+)?)\s*(?:g|ml)/i);
+  const servingUnitMatch = searchable.match(/por[cç]ao[^\d]{0,30}\d+(?:[.,]\d+)?\s*(g|ml)/i);
+  const serving = servingQuantity !== undefined && servingUnitMatch?.[1] ? { quantity: servingQuantity, unit: servingUnitMatch[1].toLowerCase() as NutritionLabelBasisUnit } : undefined;
+  const servingsPerContainer = numberFrom(searchable, /por[cç]oes?\s*por\s*embalagem[^\d]{0,20}(\d+(?:[.,]\d+)?)/i);
+  const referenceMatch = searchable.match(/(?:por\s*)?100\s*(g|ml)/i);
+  const columns = columnDefinitions(lines, serving);
+  for (const row of NUTRITION_LABEL_ROWS) {
+    const values = findRowTokens(lines, row);
+    columns.forEach((column, index) => assign(column, row.key, values[index], 'probable'));
+  }
+
+  let nutritionLabel: NutritionLabel | undefined;
+  if (columns.some((column) => column.kind === 'amount' && hasValues(column.values))) {
+    try {
+      nutritionLabel = ensureCanonicalNutritionLabel({ version: 1, servingsPerContainer, declaredServing: serving, columns, rawText });
+      const issues = validateNutritionLabelStructure(nutritionLabel);
+      for (const issue of issues) for (const column of nutritionLabel.columns) for (const key of issue.nutrientKeys) if (column.values?.[key] !== undefined) column.cellStatus = { ...column.cellStatus, [key]: 'review' };
+    } catch { nutritionLabel = undefined; }
+  }
+
+  const per100 = nutritionLabel?.columns.find((column) => column.id === 'per-100')?.values;
+  const portion = nutritionLabel?.columns.find((column) => column.id === 'declared-serving')?.values;
+  const dailyValuesPercent = nutritionLabel?.columns.find((column) => column.kind === 'daily-value')?.dailyValuesPercent;
+  const calculationColumn = nutritionLabel?.columns.find((column) => column.id === nutritionLabel?.calculationBasis.columnId);
+  const legacyFallback: NutrientValues = {};
+  if (!nutritionLabel) {
+    for (const row of NUTRITION_LABEL_ROWS) {
+      const value = findRowTokens(lines, row)[0];
+      if (value !== undefined) legacyFallback[row.key] = value;
+    }
+  }
+  const nutrients = calculationColumn?.values ?? legacyFallback;
+  const foundCount = CORE_NUTRIENT_KEYS.filter((key) => nutrients[key] !== undefined).length;
   const warnings: string[] = [];
-  if (!portionMatch) warnings.push('Porção não identificada; informe-a antes de salvar.');
-  if (hasSplitColumns) warnings.push(`Valores da coluna da porção declarada (${portionQuantity} ${portionUnit}) foram priorizados. A coluna de 100 g/ml continua disponível para revisão.`);
-  else if (portionMatch && referenceMatch) warnings.push('O rótulo contém coluna por porção e por 100 g/ml, mas o alinhamento não ficou claro. Confirme a base dos valores.');
-  if (portionMatch && (decimal(portionMatch[1] ?? '') ?? 0) <= 0) warnings.push('A porção reconhecida é inválida e precisa ser corrigida.');
-  if (foundCount < 4) warnings.push('Poucos nutrientes foram reconhecidos. Confira o rótulo e complete somente o que estiver visível.');
-  const confidence = Object.fromEntries(Object.entries(nutrients).filter(([, value]) => value !== undefined).map(([key]) => [key, foundCount >= 4 ? 'high' : 'review'])) as ParsedNutritionLabel['confidence'];
-  if (portionMatch) confidence.portion = 'high';
+  if (!serving) warnings.push('Porção não identificada; informe-a antes de salvar.');
+  if (nutritionLabel?.calculationBasis.source === 'derived') warnings.push(`A base de 100 ${nutritionLabel.calculationBasis.unit} foi derivada da porção impressa e está marcada como derivada.`);
+  if (per100 && portion) warnings.push('As colunas de 100 g/ml e da porção foram preservadas separadamente; arredondamentos do fabricante não serão sobrescritos.');
+  if (foundCount < 4) warnings.push('Poucos nutrientes foram reconhecidos. Campos ausentes continuam vazios e precisam ser conferidos.');
+  if (nutritionLabel) warnings.push(...validateNutritionLabelStructure(nutritionLabel).map((issue) => issue.message));
+  const confidence = Object.fromEntries(CORE_NUTRIENT_KEYS.filter((key) => nutrients[key] !== undefined).map((key) => [key, nutritionLabel?.columns.find((column) => column.id === nutritionLabel?.calculationBasis.columnId)?.cellStatus?.[key] === 'review' ? 'review' : 'high'])) as ParsedNutritionLabel['confidence'];
+  if (serving) confidence.portion = 'high';
+
   return {
-    rawText,
-    portion: portionMatch?.[1] && portionMatch[2] ? { quantity: decimal(portionMatch[1]) ?? 0, unit: portionMatch[2].toLowerCase().startsWith('un') ? 'unit' : portionMatch[2].toLowerCase() } : undefined,
-    reference: referenceMatch?.[2] ? { quantity: 100, unit: referenceMatch[2].toLowerCase() as 'g' | 'ml' } : undefined,
-    nutrients,
-    confidence,
-    warnings,
-    columns: hasSplitColumns ? { selected: 'portion', portion: columnValues.portion, per100: columnValues.per100 } : { selected: 'unknown' },
+    rawText, structuredText, portion: serving, servingsPerContainer,
+    reference: referenceMatch?.[1] ? { quantity: 100, unit: referenceMatch[1].toLowerCase() as 'g' | 'ml' } : undefined,
+    nutrients, nutritionLabel, confidence, warnings,
+    columns: nutritionLabel ? { selected: nutritionLabel.calculationBasis.source === 'explicit' && nutritionLabel.calculationBasis.quantity === 100 ? 'per100' : 'portion', portion, per100, dailyValuesPercent } : { selected: 'unknown' },
   };
 }

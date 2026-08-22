@@ -10,11 +10,11 @@ Dados compartilhados: catálogo DEFYN de exercícios. Dados pessoais: perfil de 
 
 ## Planos e versões
 
-`WorkoutPlan` contém versões imutáveis. Cada edição cria `WorkoutPlanVersion` nova com templates e prescrições ordenadas. A versão antiga permanece disponível para explicar sessões passadas. Divisões de 1 a 6 dias são pontos de partida determinísticos e editáveis; seis dias usa PPL A/B de segunda a sábado quando esses dias foram escolhidos.
+`WorkoutPlan` contém versões imutáveis. Cada edição cria `WorkoutPlanVersion` nova com templates e prescrições ordenadas. O nome do treino é texto livre e editável na própria ficha; a versão antiga permanece disponível para explicar sessões passadas. Divisões de 1 a 6 dias são apenas pontos de partida determinísticos e editáveis; seis dias usa PPL A/B de segunda a sábado quando esses dias foram escolhidos.
 
 ## Sessões e séries
 
-Ao iniciar, `WorkoutSession` congela nomes, músculos, equipamentos e prescrições da versão ativa. Cada `WorkoutSetLog` é salvo imediatamente. A sessão ativa é consultada por `[profileId+status]`, portanto navegação ou reload retomam o mesmo treino.
+Ao iniciar, `WorkoutSession` congela o nome livre do template, nomes, músculos, equipamentos e prescrições da versão ativa. Uma renomeação posterior só aparece nas próximas sessões; histórico, cards e sessão em andamento mantêm o snapshot. Cada `WorkoutSetLog` é salvo imediatamente. A sessão ativa é consultada por `[profileId+status]`, portanto navegação ou reload retomam o mesmo treino.
 
 Descanso usa `restEndsAt`; `setInterval` apenas atualiza a apresentação. Concluir, corrigir, remover série, pular e substituir somente hoje preservam a ficha. Carga aceita kg, lb, nível/placa ou ausência; exercícios por tempo usam segundos.
 

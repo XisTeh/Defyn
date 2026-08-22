@@ -21,7 +21,7 @@ export interface Recipe extends AuditedEntity {
 
 export function calculateRecipeNutrition(ingredients: readonly RecipeIngredient[], servings: number): { total: NutrientValues; perServing: NutrientValues } {
   if (!Number.isFinite(servings) || servings <= 0) throw new Error('O rendimento da receita precisa ser positivo.');
-  const keys = ['caloriesKcal', 'proteinGrams', 'carbsGrams', 'fatGrams', 'fiberGrams', 'sugarsGrams', 'addedSugarsGrams', 'saturatedFatGrams', 'transFatGrams', 'sodiumMg'] as const;
+  const keys = ['caloriesKcal', 'energyKj', 'proteinGrams', 'carbsGrams', 'fatGrams', 'fiberGrams', 'sugarsGrams', 'addedSugarsGrams', 'saturatedFatGrams', 'transFatGrams', 'sodiumMg'] as const;
   const total = Object.fromEntries(keys.map((key) => [key, ingredients.reduce((sum, item) => sum + (item.nutrientSnapshot?.[key] ?? 0), 0)])) as NutrientValues;
   const perServing = Object.fromEntries(keys.map((key) => [key, (total[key] ?? 0) / servings])) as NutrientValues;
   return { total, perServing };

@@ -13,6 +13,7 @@ import { requestNotificationOptIn, requestScreenWakeLock, type WakeLockSentinelL
 import { Button } from '../../shared/components/Button';
 import { useDocumentScrollLock } from '../../shared/hooks/use-document-scroll-lock';
 import { resolveTrainingHomeState } from './training-home-state';
+import { useCriticalUpdateSection } from '../pwa/pwa-update-policy';
 import './training-workspace.css';
 
 const service = new TrainingService(repositories.trainingProfiles, repositories.exercises, repositories.workoutPlans, repositories.workoutSessions);
@@ -65,6 +66,7 @@ export function TrainingWorkspace({ profile, revision, onChanged, onNotice }: { 
 }
 
 function TrainingSetup({ profileId, existing, compact = false, onSaved }: { profileId: string; existing?: TrainingProfile; compact?: boolean; onSaved: () => void }) {
+  useCriticalUpdateSection(true, 'training-profile-editor');
   const [goal, setGoal] = useState<TrainingGoal>(existing?.primaryGoal ?? 'hypertrophy');
   const [experience, setExperience] = useState<ExperienceLevel>(existing?.experienceLevel ?? 'beginner');
   const [days, setDays] = useState(existing?.availableDaysPerWeek ?? 3);
@@ -137,6 +139,7 @@ function WorkoutPicker({ templates, onClose, onStart }: { templates: WorkoutTemp
 }
 
 function PlanEditor({ profileId, trainingProfile, plan, exercises, onSaved }: { profileId: string; trainingProfile: TrainingProfile; plan?: WorkoutPlan; exercises: Exercise[]; onSaved: (message: string) => void }) {
+  useCriticalUpdateSection(true, 'workout-plan-editor');
   const [draft, setDraft] = useState<WorkoutTemplate[]>(plan ? structuredClone(currentPlanVersion(plan).templates) : []);
   const [selected, setSelected] = useState(0); const [adding, setAdding] = useState(false); const [busy, setBusy] = useState(false);
   const template = draft[selected];
@@ -156,6 +159,7 @@ function PlanEditor({ profileId, trainingProfile, plan, exercises, onSaved }: { 
 
 function ExerciseLibrary({ profileId, exercises, favorites, onChanged }: { profileId: string; exercises: Exercise[]; favorites: Set<string>; onChanged: (message: string) => void }) {
   const [query, setQuery] = useState(''); const [muscle, setMuscle] = useState<MuscleGroup | ''>(''); const [equipment, setEquipment] = useState<Equipment | ''>(''); const [onlyFavorites, setOnlyFavorites] = useState(false); const [onlyCustom, setOnlyCustom] = useState(false); const [customOpen, setCustomOpen] = useState(false); const [selected, setSelected] = useState<Exercise>();
+  useCriticalUpdateSection(customOpen, 'custom-exercise-editor');
   const results = useMemo(() => searchExercises(exercises, query, muscle || undefined, equipment || undefined).filter((item) => (!onlyFavorites || favorites.has(item.id)) && (!onlyCustom || item.isCustom)), [equipment, exercises, favorites, muscle, onlyCustom, onlyFavorites, query]);
   async function toggleFavorite(exerciseId: string) { if (favorites.has(exerciseId)) await repositories.exercises.removeFavorite(profileId, exerciseId); else { const timestamp = new Date().toISOString(); await repositories.exercises.saveFavorite({ id: crypto.randomUUID(), profileId, exerciseId, createdAt: timestamp, updatedAt: timestamp }); } onChanged('Favoritos atualizados para este perfil.'); }
   return <div className="exercise-library"><div className="exercise-toolbar"><label>Buscar<input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Nome, músculo ou equipamento" /></label><DefynSelect label="Grupo muscular" value={muscle} onChange={(value) => setMuscle(value as MuscleGroup | '')} options={[{ value: '', label: 'Todos os músculos' }, ...(Object.keys(MUSCLE_LABELS) as MuscleGroup[]).map((value) => ({ value, label: MUSCLE_LABELS[value] }))]} /><DefynSelect label="Equipamento" value={equipment} onChange={(value) => setEquipment(value as Equipment | '')} options={[{ value: '', label: 'Todos os equipamentos' }, ...(Object.keys(EQUIPMENT_LABELS) as Equipment[]).map((value) => ({ value, label: EQUIPMENT_LABELS[value] }))]} /><button className={onlyFavorites ? 'active' : ''} onClick={() => setOnlyFavorites((value) => !value)}>☆ Favoritos</button><button className={onlyCustom ? 'active' : ''} onClick={() => setOnlyCustom((value) => !value)}>Meus exercícios</button><button className="training-primary" onClick={() => setCustomOpen(true)}>+ Exercício próprio</button></div>
@@ -189,6 +193,7 @@ function TrainingHistory({ profileId, sessions, exercises }: { profileId: string
 }
 
 function WorkoutSessionPage({ profileId, session, exercises, onChanged, onFinished, onNotice }: { profileId: string; session: WorkoutSession; exercises: Exercise[]; onChanged: () => void; onFinished: (message: string) => void; onNotice: (message: string) => void }) {
+  useCriticalUpdateSection(true, 'active-workout');
   const capabilities = useMemo(() => browserCapabilities(), []); const wakeLockRef = useRef<WakeLockSentinelLike | undefined>(undefined); const previousRest = useRef(0);
   const [current, setCurrent] = useState(session.currentExerciseIndex); const [logs, setLogs] = useState<WorkoutSetLog[]>([]); const [last, setLast] = useState<WorkoutSetLog[]>([]); const [drafts, setDrafts] = useState<Record<number, { load: string; reps: string; seconds: string }>>({}); const [rest, setRest] = useState(() => remainingRestSeconds(session.restEndsAt)); const [substituting, setSubstituting] = useState(false); const [busy, setBusy] = useState(false);
   const [wakeLockEnabled, setWakeLockEnabled] = useState(false); const [notificationsEnabled, setNotificationsEnabled] = useState(false);

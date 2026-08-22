@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { registerSW } from 'virtual:pwa-register';
-import { repositories } from '../../infrastructure/repositories';
 import { browserCapabilities, resolveInstallAction } from '../../platform/device-capabilities';
+import { criticalUpdateSectionCount, decideAutoUpdate, shouldReloadAfterControllerChange, subscribeToUpdateSafety } from './pwa-update-policy';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
@@ -12,6 +12,7 @@ interface PwaRegistrationState { needRefresh: boolean; offlineReady: boolean; }
 let pwaState: PwaRegistrationState = { needRefresh: false, offlineReady: false };
 let updateServiceWorker: ((reloadPage?: boolean) => Promise<void>) | undefined;
 let registrationStarted = false;
+let applyingUpdate = false;
 const pwaListeners = new Set<(state: PwaRegistrationState) => void>();
 
 function publish(next: Partial<PwaRegistrationState>) {
@@ -19,24 +20,37 @@ function publish(next: Partial<PwaRegistrationState>) {
   pwaListeners.forEach((listener) => listener(pwaState));
 }
 
+async function applyPendingUpdateWhenSafe() {
+  if (decideAutoUpdate(pwaState.needRefresh, criticalUpdateSectionCount(), applyingUpdate) !== 'apply') return;
+  applyingUpdate = true;
+  try { await updateServiceWorker?.(false); publish({ needRefresh: false }); }
+  catch { publish({ needRefresh: true }); }
+  finally { applyingUpdate = false; }
+}
+
 function ensureRegistration() {
   if (registrationStarted) return;
   registrationStarted = true;
+  if (sessionStorage.getItem('defyn-sw-reload') === 'reloading') sessionStorage.removeItem('defyn-sw-reload');
+  navigator.serviceWorker?.addEventListener('controllerchange', () => {
+    if (!shouldReloadAfterControllerChange(sessionStorage.getItem('defyn-sw-reload'))) return;
+    sessionStorage.setItem('defyn-sw-reload', 'reloading'); window.location.reload();
+  });
+  subscribeToUpdateSafety(() => { void applyPendingUpdateWhenSafe(); });
   updateServiceWorker = registerSW({
-    immediate: false,
-    onNeedRefresh: () => publish({ needRefresh: true }),
+    immediate: true,
+    onNeedRefresh: () => { publish({ needRefresh: true }); void applyPendingUpdateWhenSafe(); },
     onOfflineReady: () => publish({ offlineReady: true }),
     onRegisterError: () => publish({ offlineReady: false }),
   });
 }
 
-export function useDeviceExperience(profileId: string) {
+export function useDeviceExperience() {
   const capabilities = useMemo(() => browserCapabilities(), []);
   const [online, setOnline] = useState(() => navigator.onLine);
   const [registration, setRegistration] = useState(pwaState);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent>();
   const [iosHelpOpen, setIosHelpOpen] = useState(false);
-  const [updateDeferred, setUpdateDeferred] = useState(false);
 
   useEffect(() => {
     ensureRegistration();
@@ -72,16 +86,6 @@ export function useDeviceExperience(profileId: string) {
     if (capabilities.installPlatform === 'ios') setIosHelpOpen(true);
   }, [capabilities.installPlatform, installPrompt]);
 
-  const applyUpdate = useCallback(async () => {
-    const activeSession = await repositories.workoutSessions.getActive(profileId);
-    if (activeSession) {
-      setUpdateDeferred(true);
-      return false;
-    }
-    await updateServiceWorker?.(true);
-    return true;
-  }, [profileId]);
-
   const installAction = resolveInstallAction(capabilities, Boolean(installPrompt));
 
   return {
@@ -89,11 +93,9 @@ export function useDeviceExperience(profileId: string) {
     online,
     offlineReady: registration.offlineReady,
     updateAvailable: registration.needRefresh,
-    updateDeferred,
     canInstall: installAction === 'prompt' || installAction === 'ios-help',
     iosHelpOpen,
     setIosHelpOpen,
     install,
-    applyUpdate,
   };
 }

@@ -51,6 +51,19 @@ function setup() { const profiles = new MemoryProfiles(); const exercises = new 
 describe('sessão de treino', () => {
   it('impede iniciar ficha de outro perfil', async () => { const { service } = setup(); await expect(service.startSession('a', 'plan-b', 'template-b')).rejects.toThrow(/não pertence/); });
   it('inicia e persiste sessão com snapshot da ficha', async () => { const { service, exercises } = setup(); const session = await service.startSession('a', 'plan-a', 'template-a'); exercises.values[0] = { ...supino, name: 'Nome alterado' }; expect(session.exercises[0]?.name).toBe('Supino reto'); expect((await service.getToday('a')).activeSession?.id).toBe(session.id); });
+  it('aceita nome livre ponta a ponta sem alterar o snapshot de sessões anteriores', async () => {
+    const { service, plans } = setup();
+    const previous = await service.startSession('a', 'plan-a', 'template-a');
+    const stored = await plans.getById('a', 'plan-a');
+    const templates = structuredClone(stored!.versions[stored!.currentVersion - 1]!.templates);
+    templates[0]!.name = 'Força de sexta — foco pessoal';
+    const updated = await service.saveEditedPlan('a', 'plan-a', templates, 'Nome livre do treino');
+    expect(updated.versions.at(-1)?.templates[0]?.name).toBe('Força de sexta — foco pessoal');
+    expect(previous.templateName).toBe('Push A');
+    await service.finish('a', previous.id);
+    const next = await service.startSession('a', 'plan-a', 'template-a');
+    expect(next.templateName).toBe('Força de sexta — foco pessoal');
+  });
   it('inicia sessão avulsa em dia de descanso sem alterar ficha ou cronograma', async () => { const { service, plans, setNow } = setup(); setNow('2026-08-22T12:00:00.000Z'); const before = await plans.getById('a', 'plan-a'); expect((await service.getToday('a')).template).toBeUndefined(); const session = await service.startSession('a', 'plan-a', 'template-a'); expect(session).toMatchObject({ localDate: '2026-08-22', templateId: 'template-a', status: 'active' }); expect(await plans.getById('a', 'plan-a')).toEqual(before); });
   it('registra série imediatamente e calcula descanso por timestamp', async () => { const { service, sessions } = setup(); const session = await service.startSession('a', 'plan-a', 'template-a'); const result = await service.logSet('a', session.id, 'supino', 0, { actualLoad: 30, actualReps: 10, completed: true }); expect((await sessions.listSetLogs('a', session.id))[0]).toMatchObject({ actualLoad: 30, actualReps: 10, completed: true }); expect(result.session.restEndsAt).toBe('2026-08-21T12:01:30.000Z'); });
   it('sobrevive à criação de uma nova instância do serviço', async () => { const data = setup(); const session = await data.service.startSession('a', 'plan-a', 'template-a'); await data.service.logSet('a', session.id, 'supino', 0, { actualLoad: 30, actualReps: 10, completed: true }); const afterRefresh = new TrainingService(data.profiles, data.exercises, data.plans, data.sessions); expect((await afterRefresh.getToday('a')).activeSession?.id).toBe(session.id); expect(await afterRefresh.lastExerciseLogs('a', 'supino')).toHaveLength(1); expect(await afterRefresh.lastExerciseLogs('a', 'supino', session.id)).toHaveLength(0); });

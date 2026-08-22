@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { BackupGateway } from './backup-service';
 import { BackupService, BackupValidationError, validateBackup } from './backup-service';
 import type { DefynBackupData } from '../../domain/export/export-format';
+import type { Food } from '../../domain/food/food';
 
 class MemoryBackupGateway implements BackupGateway {
   constructor(public data: DefynBackupData) {}
@@ -13,7 +14,7 @@ describe('backup e restauração', () => {
   it('exporta formato e versão válidos com todos os stores', async () => {
     const backup = await new BackupService(new MemoryBackupGateway(dataFixture()), fixedNow).export();
     expect(backup.format).toBe('defyn-backup');
-    expect(backup.version).toBe(4);
+    expect(backup.version).toBe(5);
     expect(backup.exportedAt).toBe('2026-08-21T12:00:00.000Z');
     expect(backup.data.profiles).toHaveLength(1);
     expect(backup.data.waterEntries).toHaveLength(1);
@@ -48,7 +49,7 @@ describe('backup e restauração', () => {
     const legacy = { format: 'defyn-backup', version: 1, exportedAt: fixedNow().toISOString(), data: { ...emptyData() } } as unknown as Record<string, unknown>;
     const data = (legacy.data as Record<string, unknown>); delete data.foodPreferences; delete data.favoriteMeals; delete data.media;
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(4); expect(migrated.data.media).toEqual([]); expect(migrated.data.workoutSessions).toEqual([]);
+    expect(migrated.version).toBe(5); expect(migrated.data.media).toEqual([]); expect(migrated.data.workoutSessions).toEqual([]);
   });
 
   it('migra backup v2 sem inventar dados de treino', () => {
@@ -56,15 +57,36 @@ describe('backup e restauração', () => {
     const data = legacy.data as Record<string, unknown>;
     delete data.trainingProfiles; delete data.exercises; delete data.exerciseFavorites; delete data.workoutPlans; delete data.workoutSessions; delete data.workoutSetLogs;
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(4);
+    expect(migrated.version).toBe(5);
     expect(migrated.data.trainingProfiles).toEqual([]);
   });
 
   it('migra backup v3 para o modelo corporal atual', () => {
     const legacy = { format: 'defyn-backup', version: 3, exportedAt: fixedNow().toISOString(), data: { ...dataFixture(), progressRecords: [{ id:'weight-a', profileId:'profile-a', date:'2026-08-20', weightKg:79, createdAt:fixedNow().toISOString(), updatedAt:fixedNow().toISOString() }] } };
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(4);
+    expect(migrated.version).toBe(5);
     expect(migrated.data.progressRecords[0]).toMatchObject({ localDate:'2026-08-20', source:'migration' });
+  });
+
+  it('aceita backup v4 e preserva alimentos simplificados', () => {
+    const legacy = { format: 'defyn-backup', version: 4, exportedAt: fixedNow().toISOString(), data: { ...dataFixture(), foods: [{ id:'food-a', name:'Antigo', nameNormalized:'antigo', searchTextNormalized:'antigo', basePortion:{ quantity:100, unit:'g' }, portions:[], nutrients:{ caloriesKcal:120, proteinGrams:4, carbsGrams:20, fatGrams:2 }, dataSource:'manual', createdAt:fixedNow().toISOString(), updatedAt:fixedNow().toISOString() }] } };
+    const migrated = validateBackup(legacy);
+    expect(migrated.version).toBe(5);
+    expect(migrated.data.foods[0]?.nutritionLabel).toBeUndefined();
+    expect(migrated.data.foods[0]?.nutrients.caloriesKcal).toBe(120);
+  });
+
+  it('preserva todas as colunas estruturadas de um rótulo no backup v5', async () => {
+    const timestamp = fixedNow().toISOString();
+    const food: Food = { id:'food-label', name:'Rótulo completo', nameNormalized:'rotulo completo', searchTextNormalized:'rotulo completo', basePortion:{ quantity:100, unit:'g' }, portions:[], nutrients:{ caloriesKcal:420, energyKj:1764, sodiumMg:500 }, dataSource:'nutrition-label-ocr', nutritionLabel:{ version:1, servingsPerContainer:4, declaredServing:{ quantity:60, unit:'g' }, columns:[
+      { id:'per-100', label:'100 g', kind:'amount', basis:{ quantity:100, unit:'g' }, values:{ caloriesKcal:420, energyKj:1764, sodiumMg:500 }, source:'explicit' },
+      { id:'serving', label:'60 g', kind:'amount', basis:{ quantity:60, unit:'g' }, values:{ caloriesKcal:252, energyKj:1058, sodiumMg:300 }, source:'explicit' },
+      { id:'daily', label:'%VD', kind:'daily-value', dailyValuesPercent:{ caloriesKcal:13, sodiumMg:15 }, source:'explicit' },
+    ], calculationBasis:{ columnId:'per-100', quantity:100, unit:'g', source:'explicit' } }, createdAt:timestamp, updatedAt:timestamp };
+    const source = new MemoryBackupGateway({ ...dataFixture(), foods:[food] });
+    const destination = new MemoryBackupGateway(emptyData());
+    await new BackupService(destination, fixedNow).restore(await new BackupService(source, fixedNow).export());
+    expect(destination.data.foods[0]?.nutritionLabel).toEqual(food.nutritionLabel);
   });
 
   it('preserva perfil, plano, sessão, séries e exercício próprio no round-trip', async () => {

@@ -24,7 +24,7 @@ export function AppShell({
   profiles, activeProfile, view, children, notice, onNavigate, onSwitchProfile,
   onAddProfile, onQuickWater,
 }: AppShellProps) {
-  const deviceExperience = useDeviceExperience(activeProfile.id);
+  const deviceExperience = useDeviceExperience();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [drawerOpen, dispatchDrawer] = useReducer(mobileDrawerReducer, false);
   const profileMenuRef = useRef<HTMLDivElement>(null);

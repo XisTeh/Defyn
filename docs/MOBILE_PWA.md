@@ -8,7 +8,9 @@ Em navegadores com `beforeinstallprompt`, “Instalar DEFYN” só aparece depoi
 
 ## Atualizações
 
-O service worker usa atualização por confirmação. Quando há versão nova, o shell oferece “Atualizar agora”. Antes de recarregar, consulta a sessão ativa do perfil; se houver treino em andamento, adia a atualização e preserva os registros persistidos.
+O service worker detecta a nova versão e a aplica automaticamente, sem botão manual. Um gate global adia a troca enquanto há formulário de perfil/alimento/receita, revisão OCR, inclusão no diário, edição de ficha ou treino ativo. Quando o último estado crítico termina, o worker pendente assume o controle e a página recarrega uma única vez, protegida por marcador em `sessionStorage` contra loop.
+
+`registerType: prompt` é mantido apenas como mecanismo técnico para que o app decida o instante seguro do `skipWaiting`; a experiência é automática. Dados já persistidos continuam no IndexedDB e o shell offline permanece precacheado.
 
 ## Layout e safe areas
 
@@ -24,4 +26,4 @@ Build de referência antes desta etapa: bundle principal **519,87 kB / 156,45 kB
 
 ## Limite de validação
 
-O comportamento foi validado no navegador local com viewport real em 320, 360, 375, 390, 430, 768, 820, 1024, 1280 e 1920 px. A matriz aprovou contenção horizontal, troca entre sidebar/bottom nav, sheets e sessão de treino. Câmera, teclado, instalação, safe area, retomada em segundo plano e notificações ainda precisam de conferência física em Android/iOS. Detalhes: `MOBILE_RESCUE.md` e `MOBILE_QA.md`.
+O comportamento é validado no navegador local nos viewports 320×800, 360×800, 375×812, 390×844, 430×932, 1280×800 e 1920×1080. Câmera, teclado, instalação, safe area, atualização efetiva entre duas releases e suspensão ainda precisam de conferência física em Android/iOS. Detalhes: `MOBILE_RESCUE.md` e `MOBILE_QA.md`.

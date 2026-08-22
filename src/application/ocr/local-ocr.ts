@@ -1,4 +1,5 @@
 import type { Worker } from 'tesseract.js';
+import type { NutritionLabelOcrLine } from '../../domain/food/nutrition-label-parser';
 
 export interface OcrProgress { status: string; progress: number; }
 export interface OcrTimings { workerLoadMs: number; recognizeMs: number; totalMs: number; reusedWorker: boolean; }
@@ -33,14 +34,15 @@ async function getWorker(): Promise<{ worker: Worker; reused: boolean; loadMs: n
   return { worker: await workerPromise, reused, loadMs: performance.now() - started };
 }
 
-export async function recognizeNutritionLabel(image: Blob, onProgress?: (progress: OcrProgress) => void): Promise<{ text: string; confidence: number; timings: OcrTimings }> {
+export async function recognizeNutritionLabel(image: Blob, onProgress?: (progress: OcrProgress) => void): Promise<{ text: string; confidence: number; lines: NutritionLabelOcrLine[]; timings: OcrTimings }> {
   const totalStarted = performance.now();
   activeProgress = onProgress;
   const { worker, reused, loadMs } = await getWorker();
   const recognizeStarted = performance.now();
   try {
-    const result = await worker.recognize(image);
-    return { text: result.data.text, confidence: result.data.confidence, timings: { workerLoadMs: loadMs, recognizeMs: performance.now() - recognizeStarted, totalMs: performance.now() - totalStarted, reusedWorker: reused } };
+    const result = await worker.recognize(image, {}, { text: true, blocks: true });
+    const lines = (result.data.blocks ?? []).flatMap((block) => block.paragraphs.flatMap((paragraph) => paragraph.lines.map((line) => ({ text: line.text, confidence: line.confidence, bbox: { ...line.bbox } }))));
+    return { text: result.data.text, confidence: result.data.confidence, lines, timings: { workerLoadMs: loadMs, recognizeMs: performance.now() - recognizeStarted, totalMs: performance.now() - totalStarted, reusedWorker: reused } };
   } finally { activeProgress = undefined; }
 }
 

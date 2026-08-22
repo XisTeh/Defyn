@@ -11,7 +11,7 @@ import type { LocalMedia } from '../media/media';
 import type { Exercise, ExerciseFavorite, TrainingProfile, WorkoutPlan, WorkoutSession, WorkoutSetLog } from '../training/training';
 
 export const DEFYN_BACKUP_FORMAT = 'defyn-backup';
-export const DEFYN_BACKUP_VERSION = 4;
+export const DEFYN_BACKUP_VERSION = 5;
 
 export interface StoredPreference {
   key: string;

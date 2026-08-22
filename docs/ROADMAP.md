@@ -65,6 +65,15 @@
 - sessão avulsa iniciável em dia de descanso sem alterar cronograma ou aderência planejada;
 - regressão em telefones de 320–430 px, tablet, desktop e smoke offline do build de produção.
 
+## Concluído — etapa 06.4 fidelidade de rótulo e atualização PWA
+
+- modelo completo e extensível de tabela nutricional, com colunas originais 100 g/ml, porção e `%VD` preservadas;
+- base matemática explícita de 100 g/ml ou derivada e identificada, com scaling único para qualquer quantidade;
+- OCR local com bounding boxes, reconstrução espacial, avaliação de qualidade e revisão editável foto/tabela;
+- compatibilidade aditiva com alimentos anteriores e backup v5 compatível com v1–v4;
+- atualização PWA automática, adiada por formulários, OCR e treino ativos, com um único reload;
+- nomes livres de treino propagados para versões e sessões futuras sem alterar snapshots históricos.
+
 ## Próxima grande etapa
 
 Recomendação: **DEFYN 07 — Rotina, agenda e lembretes inteligentes**. Calendário, rotinas e lembretes devem respeitar as limitações documentadas de execução em segundo plano. Scanner de código de barras, sincronização e integrações externas continuam posteriores.

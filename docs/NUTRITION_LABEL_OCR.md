@@ -7,8 +7,8 @@
 3. `local-ocr` faz import dinâmico de Tesseract.js 7.
 4. Worker (~111 KB), core LSTM compatível (~3,90 MB) e português `best_int` (~1,39 MB) são assets locais; não há CDN.
 5. `NutritionLabelParser` interpreta texto separadamente.
-6. A tela mostra prévia, progresso por etapas e avisos de porção/coluna ambígua.
-7. A revisão exige confirmação; OCR nunca salva sozinho. A imagem só é retida se a pessoa optar.
+6. Tesseract entrega linhas e bounding boxes; a reconstrução espacial preserva ordem de linhas e colunas antes do parser.
+7. A tela mostra prévia, progresso, qualidade da imagem, tabela editável e estado por célula. A revisão exige confirmação; OCR nunca salva sozinho.
 
 No mobile, o modal usa cabeçalho fixo, body rolável com `min-height: 0` e footer persistente com safe area. A prévia alta e os controles de rotação/recorte/contraste ficam dentro do body; o CTA **Ler tabela nutricional** ou **Confirmar e salvar** permanece alcançável sem liberar o scroll do fundo.
 
@@ -16,7 +16,9 @@ O modelo `best_int` reduz o peso em relação ao modelo português completo (~6,
 
 ## Parser
 
-Prioriza termos brasileiros: valor energético/energia, porção, 100 g/ml, carboidratos, açúcares, proteínas, gorduras, fibra e sódio. Vírgula/ponto decimal, g/mg/ml/kcal são aceitos. Campos não encontrados ficam vazios. Texto parcial gera aviso.
+Prioriza termos brasileiros: porções por embalagem, porção, valor energético em kcal/kJ, 100 g/ml, carboidratos, açúcares totais/adicionados, proteínas, gorduras totais/saturadas/trans, fibra, sódio e `%VD`. Vírgula/ponto decimal, g/mg/ml/kcal/kJ são aceitos. Campos não encontrados ficam vazios. Texto parcial ou estruturalmente incoerente gera aviso sem correção silenciosa.
+
+As colunas originais de 100 g/ml, porção e `%VD` são preservadas. Uma coluna explícita de 100 g/ml alimenta os cálculos; se ausente, uma coluna derivada e visivelmente marcada é criada a partir da porção declarada. Consulte `NUTRITION_LABEL_MODEL.md`.
 
 ## Offline e privacidade
 

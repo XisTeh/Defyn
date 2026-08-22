@@ -42,6 +42,8 @@ Mantém as stores existentes e amplia índices de `progressRecords` e `progressP
 
 O dashboard consulta diário/água/treino do perfil e dia; não carrega catálogos completos. As buscas percorrem somente os dados necessários.
 
+O DEFYN 06.4 adiciona `Food.nutritionLabel` como objeto opcional embutido. Como não há nova store nem índice, o schema Dexie permanece v5: registros anteriores são lidos sem alteração e passam a receber a estrutura completa somente quando editados ou reconhecidos novamente. O backup, por sua vez, evoluiu para v5 para declarar essa capacidade de transporte.
+
 Limpar os dados do site ainda remove o banco; por isso o backup manual deve ser usado antes de operações externas no navegador/dispositivo.
 
 ## Pressão e persistência

@@ -21,6 +21,7 @@ import { repositories } from '../../infrastructure/repositories';
 import { optimizeImage } from '../../application/media/image-processing';
 import { ProfileAvatar } from '../profiles/ProfileAvatar';
 import { DefynSelect } from '../../shared/components/DefynSelect';
+import { useCriticalUpdateSection } from '../pwa/pwa-update-policy';
 import './profile-setup.css';
 
 const profileService = new CreateProfileService(
@@ -116,6 +117,7 @@ interface ProfileSetupProps {
 }
 
 export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }: ProfileSetupProps) {
+  useCriticalUpdateSection(true, 'profile-editor');
   const [form, setForm] = useState(() => formFromProfile(profile));
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [error, setError] = useState('');

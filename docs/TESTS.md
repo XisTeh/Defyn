@@ -2,7 +2,7 @@
 
 Os testes Vitest cobrem regras puras e casos de uso.
 
-Estado atual após as correções 06.3: **185 testes em 35 arquivos**, todos aprovados. A entrega 06.2 tinha 178 testes; foram adicionados 7 testes para lock aninhado, acionador de perfil sem hamburger, lista de perfis sem duplicação, CTA/estrutura rolável do OCR, sessão manual sem mutação do plano, descanso com ação manual e footer horizontal do editor.
+Estado atual após as correções 06.4: **193 testes em 37 arquivos**, todos aprovados. A etapa adiciona cobertura do modelo multicoluna, scaling integral 100→70/80 e 60→70/30, preservação de arredondamentos, base derivada identificada, reconstrução por bounding boxes, ausência sem zero inventado, atualização PWA segura/única, backup v4→v5 e nome livre com snapshot histórico.
 
 ## Cobertura
 
@@ -42,6 +42,10 @@ Estado atual após as correções 06.3: **185 testes em 35 arquivos**, todos apr
 - sessão avulsa em descanso preservando integralmente o plano e a agenda;
 - estrutura do OCR com body rolável, footer persistente, safe area e `dvh`;
 - contratos mobile de header/drawer e ações horizontais do editor de ficha.
+- tabela nutricional completa: colunas explícitas/derivadas, `%VD`, kcal/kJ, mg, micronutriente extensível e alertas sem mutação;
+- política de atualização automática: aplica em estado ocioso, espera seção crítica, não duplica aplicação e recarrega uma vez;
+- nome livre de treino persistido em nova versão sem reescrever o nome congelado de uma sessão anterior;
+- backup v5 e leitura compatível de alimento simplificado no v4.
 
 ```bash
 npm run test
@@ -50,4 +54,6 @@ npm run typecheck
 npm run build
 ```
 
-O QA manual complementa testes puros conforme `MOBILE_QA.md`, nos viewports 320/360/375/390/430, 768/820/1024 e 1280/1366/1440/1920. Câmera, instalação, safe areas, suspensão e notificação físicas ainda precisam ser conferidas em aparelho real.
+O QA manual complementa testes puros conforme `MOBILE_QA.md`, nos viewports 320×800, 360×800, 375×812, 390×844, 430×932, 1280×800 e 1920×1080. Câmera, instalação, safe areas, suspensão, atualização entre releases e OCR de fotografia física ainda precisam ser conferidos em aparelho real.
+
+O QA 06.4 do build de produção confirmou nos sete viewports: largura do documento igual à largura útil, modal contido, rolagem horizontal somente dentro da tabela nos telefones e nenhuma ação manual “Atualizar agora”. A prévia confirmou 70 g = 294 kcal/350 mg de sódio e 80 g = 336 kcal/400 mg para a fixture de 420 kcal/500 mg por 100 g. O console permaneceu sem warnings ou erros.

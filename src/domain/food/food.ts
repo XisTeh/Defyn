@@ -1,7 +1,9 @@
 import type { AuditedEntity } from '../shared/types';
+import type { NutritionLabel } from './nutrition-label';
 
 export interface NutrientValues {
   caloriesKcal?: number;
+  energyKj?: number;
   proteinGrams?: number;
   carbsGrams?: number;
   fatGrams?: number;
@@ -47,6 +49,7 @@ export interface Food extends AuditedEntity {
   allergens?: string[];
   tags?: string[];
   nutritionLabelPhotoRef?: string;
+  nutritionLabel?: NutritionLabel;
 }
 
 export interface ConsumedPortion {
@@ -67,6 +70,7 @@ export function scaleNutrients(
     value === undefined ? undefined : value * ratio;
   return {
     caloriesKcal: scale(base.caloriesKcal),
+    energyKj: scale(base.energyKj),
     proteinGrams: scale(base.proteinGrams),
     carbsGrams: scale(base.carbsGrams),
     fatGrams: scale(base.fatGrams),
@@ -93,7 +97,7 @@ export function nutrientOrZero(value: number | undefined): number {
 }
 
 export function addNutrients(...items: readonly NutrientValues[]): NutrientValues {
-  const keys = ['caloriesKcal', 'proteinGrams', 'carbsGrams', 'fatGrams', 'fiberGrams', 'sugarsGrams', 'addedSugarsGrams', 'saturatedFatGrams', 'transFatGrams', 'sodiumMg'] as const;
+  const keys = ['caloriesKcal', 'energyKj', 'proteinGrams', 'carbsGrams', 'fatGrams', 'fiberGrams', 'sugarsGrams', 'addedSugarsGrams', 'saturatedFatGrams', 'transFatGrams', 'sodiumMg'] as const;
   return Object.fromEntries(keys.map((key) => [key, items.reduce((sum, item) => sum + nutrientOrZero(item[key]), 0)])) as NutrientValues;
 }
 

@@ -16,7 +16,7 @@ Todo dado pessoal possui `profileId`. As consultas de repositories também exige
 
 ## Alimentos e porções
 
-`Food` é global, inclui origem, `nameNormalized`, texto de busca, porção declarada, porções explícitas, nutrientes opcionais e referências de imagem/rótulo. Ausente permanece `undefined`; zero significa valor conhecido como zero. `FoodPreference` é por perfil.
+`Food` é global, inclui origem, `nameNormalized`, texto de busca, porção declarada, porções explícitas, nutrientes opcionais e referências de imagem/rótulo. `nutritionLabel` opcional preserva porções por embalagem, porção declarada, colunas originais de 100 g/ml, porção, `%VD`, origem/estado das células e base canônica. O conjunto aceita kcal/kJ, macros, açúcares, gorduras, fibra, sódio e nutrientes adicionais extensíveis. Ausente permanece `undefined`; zero significa valor conhecido como zero. `FoodPreference` é por perfil.
 
 ## Receitas e refeições favoritas
 
@@ -46,4 +46,4 @@ IndexedDB v5 indexa `[profileId+localDate]` em registros e fotos, além de categ
 
 `TrainingProfile` descreve objetivo, experiência, dias, duração, local, equipamentos e unidades. `WorkoutPlan` guarda versões de templates; prescrições referenciam exercício e configuram séries, faixa, carga, descanso e notas sem duplicar o catálogo.
 
-`WorkoutSession` congela a versão e snapshots mínimos dos exercícios. `WorkoutSetLog` preserva nome, alvo, carga/unidade, reps ou segundos, RIR opcional, conclusão e timestamps. Consultas pessoais exigem `profileId` mesmo quando também recebem `sessionId` ou `exerciseId`.
+Templates aceitam nome livre. `WorkoutSession` congela a versão, o nome do treino e snapshots mínimos dos exercícios; renomear a ficha afeta sessões futuras, nunca o histórico. `WorkoutSetLog` preserva nome, alvo, carga/unidade, reps ou segundos, RIR opcional, conclusão e timestamps. Consultas pessoais exigem `profileId` mesmo quando também recebem `sessionId` ou `exerciseId`.

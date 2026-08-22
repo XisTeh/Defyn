@@ -17,6 +17,36 @@ export interface ImageProcessingTimings {
   totalMs: number;
 }
 
+export interface ImageQualityAssessment {
+  width: number;
+  height: number;
+  edgeScore: number;
+  warnings: string[];
+}
+
+export async function assessNutritionLabelImage(file: File): Promise<ImageQualityAssessment> {
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+  const width = bitmap.width; const height = bitmap.height;
+  const sampleScale = Math.min(1, 320 / Math.max(width, height));
+  const sampleWidth = Math.max(1, Math.round(width * sampleScale)); const sampleHeight = Math.max(1, Math.round(height * sampleScale));
+  const canvas = document.createElement('canvas'); canvas.width = sampleWidth; canvas.height = sampleHeight;
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+  if (!context) { bitmap.close(); return { width, height, edgeScore: 0, warnings: ['Não foi possível avaliar a nitidez desta imagem.'] }; }
+  context.drawImage(bitmap, 0, 0, sampleWidth, sampleHeight); bitmap.close();
+  const pixels = context.getImageData(0, 0, sampleWidth, sampleHeight).data;
+  let edgeTotal = 0; let samples = 0;
+  const luminance = (index: number) => (pixels[index] ?? 0) * .299 + (pixels[index + 1] ?? 0) * .587 + (pixels[index + 2] ?? 0) * .114;
+  for (let y = 1; y < sampleHeight - 1; y += 2) for (let x = 1; x < sampleWidth - 1; x += 2) {
+    const index = (y * sampleWidth + x) * 4;
+    edgeTotal += Math.abs(luminance(index - 4) - luminance(index + 4)) + Math.abs(luminance(index - sampleWidth * 4) - luminance(index + sampleWidth * 4)); samples += 2;
+  }
+  const edgeScore = samples ? edgeTotal / samples : 0;
+  const warnings: string[] = [];
+  if (Math.min(width, height) < 700) warnings.push('Essa foto pode estar difícil de ler. Aproxime a câmera da tabela.');
+  if (edgeScore < 7) warnings.push('A imagem parece pouco nítida. Apoie o aparelho e aproxime a câmera da tabela.');
+  return { width, height, edgeScore, warnings };
+}
+
 export async function optimizeImage(
   file: File,
   kind: MediaKind,

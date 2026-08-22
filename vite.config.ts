@@ -40,6 +40,8 @@ export default defineConfig({
     react(),
     localOcrAssets(),
     VitePWA({
+      // The app activates a downloaded worker automatically through its safe-state gate.
+      // Keeping prompt mode prevents Workbox from interrupting an OCR/form/training critical section.
       registerType: 'prompt',
       includeAssets: ['icon.svg', 'pwa-192.png', 'pwa-512.png', 'pwa-maskable-512.png'],
       manifest: {
