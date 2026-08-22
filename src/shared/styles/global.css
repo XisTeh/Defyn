@@ -1,5 +1,6 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { min-width: 0; background: var(--background); scroll-behavior: smooth; scrollbar-color: var(--border-strong) var(--background); }
+html.defyn-scroll-locked, html.defyn-scroll-locked body { overflow: hidden; overscroll-behavior: none; }
 body {
   margin: 0;
   min-width: 0;

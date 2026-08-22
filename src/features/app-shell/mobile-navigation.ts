@@ -1,6 +1,8 @@
 import type { AppView } from '../../app/navigation';
 
 export const MOBILE_NAVIGATION_MODE = 'drawer' as const;
+export const MOBILE_MENU_TRIGGER = 'profile' as const;
+export const MOBILE_HEADER_HAS_HAMBURGER = false as const;
 
 export const navigationSections: readonly {
   label: string;
@@ -36,4 +38,8 @@ export function mobileDrawerReducer(_open: boolean, action: MobileDrawerAction):
 
 export function isActiveNavigation(current: AppView, candidate: AppView): boolean {
   return current === candidate;
+}
+
+export function uniqueProfileSwitchItems<T extends { id: string }>(profiles: readonly T[]): T[] {
+  return [...new Map(profiles.map((profile) => [profile.id, profile])).values()];
 }

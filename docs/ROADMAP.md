@@ -57,6 +57,14 @@
 - Home de Treinos com cinco estados operacionais, cards completos e sessão mais direta;
 - QA em 320/360/375/390/430 e 1280/1440/1920 sem regressão desktop.
 
+## Concluído — etapa 06.3 QA mobile físico
+
+- perfil/avatar como único acionador do drawer e lista de perfis organizada com scroll independente;
+- sheet OCR com body rolável e CTA persistente em galeria e câmera;
+- ações do editor de ficha horizontais e controles de reordenação com alvo de toque consistente;
+- sessão avulsa iniciável em dia de descanso sem alterar cronograma ou aderência planejada;
+- regressão em telefones de 320–430 px, tablet, desktop e smoke offline do build de produção.
+
 ## Próxima grande etapa
 
 Recomendação: **DEFYN 07 — Rotina, agenda e lembretes inteligentes**. Calendário, rotinas e lembretes devem respeitar as limitações documentadas de execução em segundo plano. Scanner de código de barras, sincronização e integrações externas continuam posteriores.

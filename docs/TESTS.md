@@ -2,7 +2,7 @@
 
 Os testes Vitest cobrem regras puras e casos de uso.
 
-Estado atual após Mobile UX Rebuild 06.2: **178 testes em 33 arquivos**, todos aprovados. A base anterior tinha 170 testes; foram adicionados 12 testes de navegação, OCR, estados de Treino e botão compartilhado, e removidos 4 testes do hook de teclado que existia apenas para a bottom nav eliminada.
+Estado atual após as correções 06.3: **185 testes em 35 arquivos**, todos aprovados. A entrega 06.2 tinha 178 testes; foram adicionados 7 testes para lock aninhado, acionador de perfil sem hamburger, lista de perfis sem duplicação, CTA/estrutura rolável do OCR, sessão manual sem mutação do plano, descanso com ação manual e footer horizontal do editor.
 
 ## Cobertura
 
@@ -38,6 +38,10 @@ Estado atual após Mobile UX Rebuild 06.2: **178 testes em 33 arquivos**, todos 
 - entrada OCR: câmera traseira, galeria sem `capture` e estágios imagem/revisão/manual;
 - cinco estados da Home de Treinos e seus CTAs operacionais;
 - contrato do botão compartilhado para variantes, densidade e classes contextuais.
+- lock de documento com múltiplos overlays sem liberação prematura;
+- sessão avulsa em descanso preservando integralmente o plano e a agenda;
+- estrutura do OCR com body rolável, footer persistente, safe area e `dvh`;
+- contratos mobile de header/drawer e ações horizontais do editor de ficha.
 
 ```bash
 npm run test

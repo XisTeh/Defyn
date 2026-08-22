@@ -74,3 +74,10 @@ As capturas do Puzoto e as imagens clássicas fornecidas orientam atmosfera, con
 - O shell mobile usa somente drawer lateral. A sidebar continua sendo o padrão desktop.
 - Cabeçalhos mobile compartilham `--page-padding-mobile`, `--section-gap-mobile`, `--mobile-page-title-size` e escalas de corpo/caption.
 - Sheets usam altura em `dvh`, rolagem interna, CTA final e safe area inferior.
+
+# Adendo 06.3 — header, drawer e ações persistentes
+
+- O header mobile tem duas zonas: perfil/avatar clicável à esquerda e DEFYN à direita. Não há hamburger ou segundo acionador.
+- O drawer separa o resumo do perfil atual da lista vertical de troca e aplica rolagem interna independente.
+- Formulários longos em sheet usam grid `header / minmax(0,1fr) / footer`; apenas o body rola e o footer considera safe area.
+- No editor de treino, ação secundária e ação primária permanecem horizontais de 320 a 430 px, com maior peso para salvar.

@@ -20,6 +20,8 @@ Descanso usa `restEndsAt`; `setInterval` apenas atualiza a apresentação. Concl
 
 O exercício atual também é persistido, então reload retoma a posição exata. Carga aceita vírgula brasileira. A interface mostra a última sessão e a miniatura do próximo exercício. Wake lock e notificação de fim de descanso são opt-in por sessão, só aparecem com suporte e não prometem execução em background.
 
+Em um dia sem template planejado, a Home mantém a mensagem de descanso e permite escolher qualquer template da versão ativa para uma sessão avulsa. A sessão usa o mesmo snapshot e histórico das sessões planejadas, mas não edita o plano, os dias preferidos ou o cronograma. A semana só marca um treino planejado como concluído quando `templateId` e dia correspondem; uma sessão extra no descanso não altera essa semântica. Qualquer sessão ativa tem prioridade visual sobre descanso ou planejamento.
+
 ## Histórico e fontes de progresso
 
 Sessões concluídas preservam duração, exercícios e séries. Volume soma apenas carga convencional × repetições. Logs fornecem frequência, performance e recordes futuros sem redesenhar Progresso nesta etapa.

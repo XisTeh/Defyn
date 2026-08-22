@@ -81,32 +81,31 @@
 @media (max-width: 900px) {
   .application-shell { padding: 0; display: block; }
   .desktop-sidebar { display: none; }
-  .mobile-header { position: sticky; top: 0; height: calc(var(--mobile-header-height) + env(safe-area-inset-top)); padding: env(safe-area-inset-top) .75rem 0; display: grid; grid-template-columns: var(--touch-target) minmax(0,1fr) auto; align-items: center; gap: .55rem; background: color-mix(in srgb, var(--surface-inverse) 92%, transparent); border-bottom: 1px solid var(--border-inverse); backdrop-filter: blur(16px); z-index: var(--z-header); }
-  .mobile-menu-button, .mobile-brand, .mobile-profile-button { min-height: var(--touch-target); display: flex; align-items: center; color: var(--foreground-inverse); background: transparent; border: 0; }
-  .mobile-menu-button { width: var(--touch-target); padding: 0 11px; flex-direction: column; justify-content: center; gap: 4px; border: 1px solid rgba(255,255,255,.12); border-radius: var(--radius-control); }
-  .mobile-menu-button > span { width: 19px; height: 2px; display: block; background: currentColor; border-radius: 99px; }
-  .mobile-brand { min-width: 0; justify-self: start; gap: 0.55rem; letter-spacing: 0.14em; }
-  .mobile-brand .brand-mark { width: 32px; height: 32px; }
-  .mobile-profile-button { gap: 0.5rem; }
+  .mobile-header { position: sticky; top: 0; height: calc(var(--mobile-header-height) + env(safe-area-inset-top)); padding: env(safe-area-inset-top) .75rem 0; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: .75rem; background: color-mix(in srgb, var(--surface-inverse) 92%, transparent); border-bottom: 1px solid var(--border-inverse); backdrop-filter: blur(16px); z-index: var(--z-header); }
+  .mobile-brand, .mobile-profile-button { min-height: var(--touch-target); display: flex; align-items: center; color: var(--foreground-inverse); background: transparent; border: 0; }
+  .mobile-brand { min-width: 0; justify-self: end; padding: 0 .15rem; letter-spacing: 0.16em; }
+  .mobile-profile-button { min-width: 0; justify-self: start; padding: 0 .35rem 0 0; gap: 0.5rem; text-align: left; }
   .mobile-profile-button > span { width: 34px; height: 34px; display: grid; place-items: center; color: var(--foreground); background: var(--primary); border-radius: 50%; font-size: 0.62rem; font-weight: 850; }
   .mobile-profile-button b { max-width: 120px; overflow: hidden; font-size: 0.69rem; text-overflow: ellipsis; white-space: nowrap; }
   .mobile-profile-button i { color: var(--foreground-muted); font-style: normal; }
   .app-content { min-height: calc(100dvh - var(--mobile-header-height) - env(safe-area-inset-top)); padding-bottom: var(--mobile-content-bottom-clearance); }
   .mobile-drawer-backdrop { position: fixed; inset: 0; display: block; background: rgba(3,5,6,.68); z-index: var(--z-overlay); animation: backdrop-in var(--motion-fast) var(--ease-standard); }
-  .mobile-drawer { width: min(86vw, 380px); height: 100dvh; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); display: grid; grid-template-rows: auto minmax(0,1fr); color: var(--foreground-inverse); background: linear-gradient(155deg,#15191d,#07090b 75%); border-right: 1px solid var(--border-inverse); box-shadow: 24px 0 70px rgba(0,0,0,.42); animation: drawer-in var(--motion-base) var(--ease-out); }
+  .mobile-drawer { width: min(86vw, 380px); height: 100dvh; max-height: 100dvh; padding: env(safe-area-inset-top) 0 0; display: grid; grid-template-rows: auto minmax(0,1fr); overflow: hidden; color: var(--foreground-inverse); background: linear-gradient(155deg,#15191d,#07090b 75%); border-right: 1px solid var(--border-inverse); box-shadow: 24px 0 70px rgba(0,0,0,.42); animation: drawer-in var(--motion-base) var(--ease-out); }
   .mobile-drawer > header { min-height: 68px; padding: .65rem .8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--border-inverse); }
   .mobile-drawer > header > div { display: flex; align-items: center; gap: .65rem; }
   .mobile-drawer > header > div > span:last-child { display: grid; gap: .1rem; letter-spacing: .12em; }
   .mobile-drawer > header small { color: var(--foreground-inverse-muted); font-size: var(--caption-size); letter-spacing: .08em; text-transform: uppercase; }
   .mobile-drawer > header > button { width: var(--touch-target); height: var(--touch-target); color: #fff; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.13); border-radius: 50%; font-size: 1.35rem; }
-  .mobile-drawer-scroll { min-height: 0; padding: .85rem; display: grid; align-content: start; gap: 1.1rem; overflow-y: auto; overscroll-behavior: contain; }
+  .mobile-drawer-scroll { min-height: 0; padding: .85rem .85rem calc(1.2rem + env(safe-area-inset-bottom)); display: grid; align-content: start; gap: 1.1rem; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
   .drawer-kicker { display: block; margin-bottom: .45rem; color: #8f99a1; font-size: var(--caption-size); font-weight: 820; letter-spacing: .12em; text-transform: uppercase; }
-  .drawer-profile { padding: .85rem; background: rgba(255,255,255,.045); border: 1px solid var(--border-inverse); border-radius: var(--radius-card); }
-  .drawer-profile > div:nth-of-type(1) { display: flex; align-items: center; gap: .7rem; }
-  .drawer-profile > div:nth-of-type(1) > span { min-width: 0; display: grid; gap: .2rem; }
-  .drawer-profile > div:nth-of-type(1) strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .drawer-profile-list { margin-top: .7rem; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .4rem; }
-  .drawer-profile-list button { min-width: 0; min-height: var(--control-height); padding: .35rem .5rem; display: grid; grid-template-columns: 28px minmax(0,1fr) auto; align-items: center; gap: .4rem; color: #c4cbd0; background: transparent; border: 1px solid transparent; border-radius: var(--radius-control); text-align: left; }
+  .drawer-profile { padding: .9rem; background: rgba(255,255,255,.045); border: 1px solid var(--border-inverse); border-radius: var(--radius-card); }
+  .drawer-current-profile { min-width: 0; display: flex; align-items: center; gap: .75rem; }
+  .drawer-current-profile > span { min-width: 0; display: grid; gap: .2rem; }
+  .drawer-current-profile strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .drawer-current-profile small { color: #9ba6ae; font-size: var(--caption-size); }
+  .drawer-switch-label { margin-top: 1rem; padding-top: .85rem; border-top: 1px solid rgba(255,255,255,.09); }
+  .drawer-profile-list { display: grid; grid-template-columns: 1fr; gap: .3rem; }
+  .drawer-profile-list button { min-width: 0; min-height: var(--touch-target); padding: .4rem .55rem; display: grid; grid-template-columns: 32px minmax(0,1fr) auto; align-items: center; gap: .55rem; color: #c4cbd0; background: transparent; border: 1px solid transparent; border-radius: var(--radius-control); text-align: left; }
   .drawer-profile-list button.active { color: #fff; background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.15); }
   .drawer-profile-list button > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .drawer-add-profile, .drawer-install { width: 100%; min-height: var(--control-height); margin-top: .55rem; color: #fff; background: transparent; border: 1px solid rgba(255,255,255,.16); border-radius: var(--radius-control); font-weight: 780; }

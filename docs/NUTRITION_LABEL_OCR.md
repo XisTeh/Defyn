@@ -10,6 +10,8 @@
 6. A tela mostra prévia, progresso por etapas e avisos de porção/coluna ambígua.
 7. A revisão exige confirmação; OCR nunca salva sozinho. A imagem só é retida se a pessoa optar.
 
+No mobile, o modal usa cabeçalho fixo, body rolável com `min-height: 0` e footer persistente com safe area. A prévia alta e os controles de rotação/recorte/contraste ficam dentro do body; o CTA **Ler tabela nutricional** ou **Confirmar e salvar** permanece alcançável sem liberar o scroll do fundo.
+
 O modelo `best_int` reduz o peso em relação ao modelo português completo (~6,76 MB). O core não-SIMD favorece compatibilidade, com custo de velocidade. O bundle inicial não contém o engine; o precache PWA soma aproximadamente 5,4 MB brutos.
 
 ## Parser

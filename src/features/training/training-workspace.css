@@ -285,3 +285,31 @@
   .prescription-copy { grid-column: 2; }
   .prescription-list article > label, .prescription-actions { grid-column: 1/-1; }
 }
+
+/* 06.3: manual session picker and physical-phone editor controls. */
+.workout-picker { width: min(620px,100%); display: grid; grid-template-rows: auto auto minmax(0,1fr) auto; overflow: hidden; }
+.workout-picker > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.workout-picker > header h2 { margin: .3rem 0 0; }
+.workout-picker > header > button { width: var(--touch-target); height: var(--touch-target); flex: none; background: var(--surface-control); border: 1px solid var(--border-strong); border-radius: 50%; font-size: 1.2rem; }
+.workout-picker > p { margin: 0; color: var(--text-secondary); line-height: 1.5; }
+.workout-picker-list { min-height: 0; display: grid; align-content: start; gap: .55rem; overflow-y: auto; overscroll-behavior: contain; }
+.workout-picker-list > button { width: 100%; min-height: 76px; padding: .8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--text-primary); background: var(--surface-control); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); text-align: left; }
+.workout-picker-list > button.selected { background: var(--info-soft); border-color: rgba(79,132,170,.42); box-shadow: inset 3px 0 var(--info); }
+.workout-picker-list span { min-width: 0; display: grid; gap: .2rem; }
+.workout-picker-list small { color: var(--text-secondary); }
+.workout-picker-list b { flex: none; color: var(--text-secondary); font-size: var(--caption-size); }
+.workout-picker > footer { display: flex; justify-content: flex-end; gap: .6rem; }
+.workout-picker > footer button { min-height: var(--control-height); }
+.prescription-actions button { width: var(--touch-target); height: var(--touch-target); flex: none; }
+
+@media (max-width:760px) {
+  .plan-workspace > footer { display: flex; align-items: stretch; gap: .45rem; }
+  .plan-workspace > footer > button { min-width: 0; min-height: var(--touch-target); padding-inline: .55rem; line-height: 1.1; white-space: normal; }
+  .plan-workspace > footer > .training-secondary { flex: .9 1 0; font-size: var(--caption-size); }
+  .plan-workspace > footer > .training-primary { flex: 1.1 1 0; font-size: var(--body-small-size); }
+  .prescription-actions { flex-direction: row; justify-content: flex-end; }
+  .workout-picker { width: 100%; height: min(88dvh,760px); max-height: calc(100dvh - env(safe-area-inset-top) - .5rem); padding: .85rem .85rem calc(.85rem + env(safe-area-inset-bottom)); grid-template-rows: auto auto minmax(0,1fr) auto; }
+  .workout-picker-list > button { min-height: 82px; align-items: flex-start; flex-direction: column; gap: .35rem; }
+  .workout-picker-list b { flex: none; }
+  .workout-picker > footer { display: grid; grid-template-columns: minmax(0,.75fr) minmax(0,1.25fr); }
+}

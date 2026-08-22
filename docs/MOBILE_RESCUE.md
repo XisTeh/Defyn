@@ -85,3 +85,14 @@ Não houve teste físico em smartphone. Câmera real, comportamento do teclado d
 - sem migration, alteração de schema, dependência nova ou mudança nas regras de negócio.
 
 QA no navegador: 320/360/375/390/430 e 1280/1440/1920 px, sem overflow horizontal do documento. Lint, typecheck, 178 testes em 33 arquivos e build PWA aprovados.
+
+## Correções finais 06.3
+
+- o acionador mobile agora é a área completa de avatar/nome; DEFYN fica à direita e não há hamburger;
+- o drawer apresenta perfil atual uma vez, seguido de troca vertical com destaque/check, adição de pessoa e scroll próprio em `100dvh`;
+- o editor OCR usa header fixo, body com `min-height: 0` e `overflow-y: auto`, e footer persistente com safe area;
+- o editor de ficha mantém Adicionar e Salvar na mesma linha entre 320 e 430 px;
+- dias de descanso permitem escolher qualquer template para uma sessão avulsa, sem modificar plano, agenda ou aderência planejada;
+- sessão ativa continua vencendo descanso no Treinos e aparece como Continuar treino no Dashboard.
+
+Não houve migration, mudança de backup, dependência nova ou alteração do domínio nutricional.

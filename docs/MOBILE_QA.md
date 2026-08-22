@@ -37,3 +37,17 @@ Resultados observados:
 - cabeçalhos, abas e CTA do Treino permanecem contidos a 320 px.
 
 Lint, typecheck, **178 testes em 33 arquivos** e build PWA estão aprovados. **Não houve teste físico em smartphone nesta entrega**; câmera real, teclado de Android/iOS, instalação, safe areas, suspensão de background, wake lock e notificações permanecem obrigatórios antes de publicar.
+
+## Correção 06.3
+
+O QA de regressão foi executado de verdade em **320×800, 360×800, 375×812, 390×844 e 430×932**, além de **768×1024**, **1280×800** e **1920×1080**. Não houve overflow horizontal do documento.
+
+- o header mobile usa perfil/avatar como único acionador do drawer; o hamburger não existe;
+- o drawer separa perfil atual da lista vertical de troca, rola internamente até Backup e bloqueia o fundo;
+- OCR por galeria e câmera equivalente foi exercitado com imagem 600×1600; o corpo rolou sem mover o documento e o CTA persistiu antes e depois do reconhecimento;
+- o fluxo de galeria concluiu rotação, leitura local, revisão e salvamento;
+- em dia de descanso foi escolhida uma ficha, iniciada uma sessão avulsa, salva uma série, validado o timer, retomado pelo Dashboard e concluído no histórico sem marcar o descanso como treino planejado;
+- o footer do editor permaneceu horizontal de 320 a 430 px e os botões de reordenação mediram 48×48 px;
+- o build de produção foi carregado, o servidor foi desligado e o shell reabriu pelo service worker.
+
+Lint, typecheck, **185 testes em 35 arquivos** e build PWA com **77 entradas / 10.206,34 KiB** estão aprovados. A validação física final das correções 06.3 continua pendente.

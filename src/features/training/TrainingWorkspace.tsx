@@ -11,6 +11,7 @@ import { ExerciseIllustration } from './ExerciseIllustration';
 import { browserCapabilities, parseLocalizedNumber } from '../../platform/device-capabilities';
 import { requestNotificationOptIn, requestScreenWakeLock, type WakeLockSentinelLike } from '../../platform/training-device';
 import { Button } from '../../shared/components/Button';
+import { useDocumentScrollLock } from '../../shared/hooks/use-document-scroll-lock';
 import { resolveTrainingHomeState } from './training-home-state';
 import './training-workspace.css';
 
@@ -28,6 +29,7 @@ export function TrainingWorkspace({ profile, revision, onChanged, onNotice }: { 
   const [tab, setTab] = useState<TrainingTab>('today');
   const [showSetup, setShowSetup] = useState(false);
   const [sessionOpen, setSessionOpen] = useState(false);
+  const [manualPickerOpen, setManualPickerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -43,6 +45,7 @@ export function TrainingWorkspace({ profile, revision, onChanged, onNotice }: { 
 
   useEffect(() => { queueMicrotask(() => void load()); }, [load, revision]);
   async function changed(message?: string) { await load(); onChanged(); if (message) onNotice(message); }
+  async function startTemplate(template: WorkoutTemplate, message: string) { if (!plan) return; await service.startSession(profile.id, plan.id, template.id); await changed(message); setManualPickerOpen(false); setSessionOpen(true); }
 
   if (loading) return <div className="training-loading" aria-label="Carregando treinos"><span /><span /><span /></div>;
   if (error) return <div className="page-state error-state" role="alert"><strong>Treinos indisponíveis.</strong><p>{error}</p><button onClick={() => void load()}>Tentar novamente</button></div>;
@@ -52,11 +55,12 @@ export function TrainingWorkspace({ profile, revision, onChanged, onNotice }: { 
   return <div className="training-page page-container">
     <header className="training-header"><div><span className="page-eyebrow">Caderno inteligente de academia</span><h1>Treinos</h1><p>Ficha, cargas e histórico de {profile.name}, disponíveis offline.</p></div><button className="training-settings-button" onClick={() => setTab('profile')}>Configurar perfil</button></header>
     <nav className="training-tabs" aria-label="Áreas de treino">{tabs.map((item) => <button key={item.id} className={tab === item.id ? 'active' : ''} aria-current={tab === item.id ? 'page' : undefined} onClick={() => setTab(item.id)}>{item.label}</button>)}</nav>
-    {tab === 'today' && <TrainingHome trainingProfile={trainingProfile} plan={plan} sessions={sessions} activeSession={activeSession} exercises={exercises} onStart={async (template) => { if (!plan) return; await service.startSession(profile.id, plan.id, template.id); await changed('Treino iniciado. Cada série será salva neste dispositivo.'); setSessionOpen(true); }} onContinue={() => setSessionOpen(true)} onOpenPlan={() => setTab('plan')} onOpenHistory={() => setTab('history')} />}
+    {tab === 'today' && <TrainingHome trainingProfile={trainingProfile} plan={plan} sessions={sessions} activeSession={activeSession} exercises={exercises} onStart={(template) => startTemplate(template, 'Treino iniciado. Cada série será salva neste dispositivo.')} onChooseManual={() => setManualPickerOpen(true)} onContinue={() => setSessionOpen(true)} onOpenPlan={() => setTab('plan')} onOpenHistory={() => setTab('history')} />}
     {tab === 'plan' && <PlanEditor key={`${plan?.id ?? 'empty'}-${plan?.currentVersion ?? 0}`} profileId={profile.id} trainingProfile={trainingProfile} plan={plan} exercises={exercises} onSaved={(message) => changed(message)} />}
     {tab === 'exercises' && <ExerciseLibrary profileId={profile.id} exercises={exercises} favorites={favorites} onChanged={(message) => changed(message)} />}
     {tab === 'history' && <TrainingHistory profileId={profile.id} sessions={sessions} exercises={exercises} />}
     {tab === 'profile' && <TrainingSetup profileId={profile.id} existing={trainingProfile} compact onSaved={() => { setTab('today'); void changed('Preferências de treino atualizadas.'); }} />}
+    {manualPickerOpen && plan && <WorkoutPicker templates={currentPlanVersion(plan).templates} onClose={() => setManualPickerOpen(false)} onStart={(template) => startTemplate(template, 'Sessão avulsa iniciada. Sua ficha e o planejamento semanal não foram alterados.')} />}
   </div>;
 }
 
@@ -101,7 +105,7 @@ function TrainingSetup({ profileId, existing, compact = false, onSaved }: { prof
   </section>;
 }
 
-function TrainingHome({ trainingProfile, plan, sessions, activeSession, exercises, onStart, onContinue, onOpenPlan, onOpenHistory }: { trainingProfile: TrainingProfile; plan?: WorkoutPlan; sessions: WorkoutSession[]; activeSession?: WorkoutSession; exercises: Exercise[]; onStart: (template: WorkoutTemplate) => Promise<void>; onContinue: () => void; onOpenPlan: () => void; onOpenHistory: () => void }) {
+function TrainingHome({ trainingProfile, plan, sessions, activeSession, exercises, onStart, onChooseManual, onContinue, onOpenPlan, onOpenHistory }: { trainingProfile: TrainingProfile; plan?: WorkoutPlan; sessions: WorkoutSession[]; activeSession?: WorkoutSession; exercises: Exercise[]; onStart: (template: WorkoutTemplate) => Promise<void>; onChooseManual: () => void; onContinue: () => void; onOpenPlan: () => void; onOpenHistory: () => void }) {
   const version = plan ? currentPlanVersion(plan) : undefined;
   const today = TRAINING_DAYS[(new Date().getDay() + 6) % 7] ?? 'monday';
   const template = version?.templates.find((item) => item.scheduledDay === today);
@@ -113,16 +117,24 @@ function TrainingHome({ trainingProfile, plan, sessions, activeSession, exercise
     if (candidate) { nextTemplate = { template: candidate, offset }; break; }
   }
   const state = resolveTrainingHomeState({ hasPlan: Boolean(plan && version), active: activeSession ? { name: activeSession.templateName, currentExercise: activeSession.currentExerciseIndex + 1, exerciseCount: activeSession.exercises.length } : undefined, today: template ? { name: template.name, exerciseCount: template.exercises.length, minutes: template.approximateMinutes } : undefined, completed: completedToday ? { name: completedToday.templateName, exerciseCount: completedToday.exercises.length, minutes: durationMinutes(completedToday) } : undefined, next: nextTemplate ? { name: nextTemplate.template.name, dayLabel: nextTemplate.offset === 1 ? 'amanhã' : DAY_LABELS[nextTemplate.template.scheduledDay] } : undefined });
-  const act = () => { if (state.kind === 'active') onContinue(); else if (state.kind === 'planned' && template) void onStart(template); else if (state.kind === 'completed') onOpenHistory(); else onOpenPlan(); };
+  const act = () => { if (state.kind === 'active') onContinue(); else if (state.kind === 'planned' && template) void onStart(template); else if (state.kind === 'completed') onOpenHistory(); else if (state.kind === 'rest') onChooseManual(); else onOpenPlan(); };
   return <div className="training-home">
     <section className={`training-state-card ${state.kind}`}><div><span>{state.eyebrow}</span><h2>{state.title}</h2>{'detail' in state && <p>{state.kind === 'planned' && template ? `${template.focus} · ${state.detail}` : state.detail}</p>}</div><Button onClick={act}>{state.action} <span aria-hidden="true">↗</span></Button></section>
     {template && <section className="today-exercise-list"><header><div><span className="page-eyebrow">Antes de começar</span><h2>Exercícios de hoje</h2></div><span>{template.exercises.length} exercícios · ~{template.approximateMinutes} min</span></header><div>{template.exercises.map((item) => { const exercise = exercises.find((candidate) => candidate.id === item.exerciseId); return <article key={item.id}><ExerciseIllustration exercise={exercise} /><div><strong>{exercise?.name ?? 'Exercício indisponível'}</strong><span>{exercise ? `${MUSCLE_LABELS[exercise.primaryMuscle]} · ${exercise.equipment.map((value) => EQUIPMENT_LABELS[value]).join(', ')}` : 'Revise sua ficha'}</span></div><dl><div><dt>Séries</dt><dd>{item.workingSets}</dd></div><div><dt>Alvo</dt><dd>{item.target.minimum}{item.target.maximum !== item.target.minimum ? `–${item.target.maximum}` : ''} {item.target.metric === 'seconds' ? 's' : 'reps'}</dd></div><div><dt>Descanso</dt><dd>{item.restSeconds}s</dd></div></dl></article>; })}</div></section>}
-    {plan && version && <section className="training-week"><header><div><span className="page-eyebrow">Minha semana</span><h2>{plan.name}</h2></div><button onClick={onOpenPlan}>Editar ficha</button></header><div>{TRAINING_DAYS.map((day) => { const item = version.templates.find((candidate) => candidate.scheduledDay === day); const done = sessions.some((session) => session.localDate && localDay(session.localDate) === day && session.status === 'completed'); return <article key={day} className={day === today ? 'today' : ''}><span>{DAY_LABELS[day]}</span><strong>{item?.name ?? 'Descanso'}</strong><small>{done ? 'Concluído' : item?.focus ?? 'Recuperação'}</small></article>; })}</div></section>}
+    {plan && version && <section className="training-week"><header><div><span className="page-eyebrow">Minha semana</span><h2>{plan.name}</h2></div><button onClick={onOpenPlan}>Editar ficha</button></header><div>{TRAINING_DAYS.map((day) => { const item = version.templates.find((candidate) => candidate.scheduledDay === day); const done = Boolean(item && sessions.some((session) => session.localDate && localDay(session.localDate) === day && session.status === 'completed' && session.templateId === item.id)); return <article key={day} className={day === today ? 'today' : ''}><span>{DAY_LABELS[day]}</span><strong>{item?.name ?? 'Descanso'}</strong><small>{done ? 'Concluído' : item?.focus ?? 'Recuperação'}</small></article>; })}</div></section>}
     <aside className="training-responsibility"><strong>Plano, não prescrição.</strong><p>Ajuste exercícios, cargas e volume à sua realidade. Dor ou restrição relevante pede revisão apropriada.</p><span>{trainingProfile.availableDaysPerWeek}x por semana · {trainingProfile.averageSessionMinutes} min</span></aside>
   </div>;
 }
 
 function localDay(localDate: string): TrainingDay { const date = new Date(`${localDate}T12:00:00`); return TRAINING_DAYS[(date.getDay() + 6) % 7] ?? 'monday'; }
+
+function WorkoutPicker({ templates, onClose, onStart }: { templates: WorkoutTemplate[]; onClose: () => void; onStart: (template: WorkoutTemplate) => Promise<void> }) {
+  const [selectedId, setSelectedId] = useState('');
+  const [busy, setBusy] = useState(false);
+  const selected = templates.find((template) => template.id === selectedId);
+  useDocumentScrollLock();
+  return <div className="training-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="training-modal workout-picker" role="dialog" aria-modal="true" aria-label="Escolher treino"><header><div><span className="page-eyebrow">Sessão avulsa</span><h2>Escolher treino</h2></div><button type="button" onClick={onClose} aria-label="Fechar">×</button></header><p>Escolha qualquer treino da ficha. Isso não altera seus dias planejados.</p><div className="workout-picker-list">{templates.map((template) => <button type="button" key={template.id} className={selectedId === template.id ? 'selected' : ''} aria-pressed={selectedId === template.id} onClick={() => setSelectedId(template.id)}><span><strong>{template.name}</strong><small>{template.focus}</small></span><b>{template.exercises.length} exercícios · ~{template.approximateMinutes} min</b></button>)}</div><footer><button type="button" className="training-secondary" onClick={onClose}>Cancelar</button><button type="button" className="training-primary" disabled={!selected || busy} onClick={() => { if (!selected) return; setBusy(true); void onStart(selected).finally(() => setBusy(false)); }}>{busy ? 'Iniciando…' : 'Iniciar treino'}</button></footer></section></div>;
+}
 
 function PlanEditor({ profileId, trainingProfile, plan, exercises, onSaved }: { profileId: string; trainingProfile: TrainingProfile; plan?: WorkoutPlan; exercises: Exercise[]; onSaved: (message: string) => void }) {
   const [draft, setDraft] = useState<WorkoutTemplate[]>(plan ? structuredClone(currentPlanVersion(plan).templates) : []);
