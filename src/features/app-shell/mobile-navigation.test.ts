@@ -17,7 +17,7 @@ describe('navegação mobile por drawer', () => {
   it('substitui a navegação inferior e expõe todas as áreas', () => {
     expect(MOBILE_NAVIGATION_MODE).toBe('drawer');
     expect(navigationSections.flatMap((section) => section.items.map((item) => item.view))).toEqual([
-      'today', 'diary', 'training', 'progress', 'profile', 'profiles', 'backup',
+      'today', 'diary', 'routine', 'training', 'progress', 'profile', 'profiles', 'backup',
     ]);
   });
 

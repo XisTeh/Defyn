@@ -7,24 +7,29 @@ import { presentationRound } from '../../domain/nutrition';
 import { formatLocalDate } from '../../domain/shared/local-date';
 import { repositories } from '../../infrastructure/repositories';
 import { Button } from '../../shared/components/Button';
+import { RoutineService, type RoutineSnapshot } from '../../application/routine/routine-service';
+import { formatDuration } from '../../domain/routine/routine';
 import './today-dashboard.css';
 
 const dashboardService = new GetTodayDashboardService(repositories.profiles, repositories.nutritionTargets, repositories.dailyNutritionSummaries, repositories.water);
 const waterService = new WaterService(repositories.water);
 const trainingService = new TrainingService(repositories.trainingProfiles, repositories.exercises, repositories.workoutPlans, repositories.workoutSessions);
+const routineService = new RoutineService(repositories.routine, repositories.workoutPlans, repositories.workoutSessions);
 
 interface TodayDashboardProps {
   profileId: string;
   revision: number;
   onNotice: (message: string) => void;
   onNavigateTraining: () => void;
+  onNavigateRoutine: () => void;
   onNavigateDiary: () => void;
   onNavigateProgress: () => void;
 }
 
-export function TodayDashboard({ profileId, revision, onNotice, onNavigateTraining, onNavigateDiary, onNavigateProgress }: TodayDashboardProps) {
+export function TodayDashboard({ profileId, revision, onNotice, onNavigateTraining, onNavigateRoutine, onNavigateDiary, onNavigateProgress }: TodayDashboardProps) {
   const [data, setData] = useState<DashboardData>();
   const [training, setTraining] = useState<TodayWorkout>();
+  const [routine, setRoutine] = useState<RoutineSnapshot>();
   const [error, setError] = useState('');
   const [customAmount, setCustomAmount] = useState('');
   const [editingId, setEditingId] = useState<string>();
@@ -32,8 +37,8 @@ export function TodayDashboard({ profileId, revision, onNotice, onNavigateTraini
 
   useEffect(() => {
     let active = true;
-    Promise.all([dashboardService.execute(profileId), trainingService.getToday(profileId)])
-      .then(([dashboard, workout]) => { if (active) { setData(dashboard); setTraining(workout); setError(''); } })
+    Promise.all([dashboardService.execute(profileId), trainingService.getToday(profileId), routineService.load(profileId)])
+      .then(([dashboard, workout, routineData]) => { if (active) { const wake = routineData.today.wakeTime ?? dashboard.profile.hydrationRoutine?.wakeTime ?? '07:00'; const sleep = routineData.today.sleepTime ?? dashboard.profile.hydrationRoutine?.sleepTime ?? '23:00'; setData({ ...dashboard, hydration: { ...dashboard.hydration, pace: calculateHydrationPace(dashboard.hydration.targetMl, dashboard.hydration.consumedMl, wake, sleep, new Date()) } }); setTraining(workout); setRoutine(routineData); setError(''); } })
       .catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : 'Não foi possível carregar o dia.'); });
     return () => { active = false; };
   }, [profileId, revision]);
@@ -96,9 +101,11 @@ export function TodayDashboard({ profileId, revision, onNotice, onNavigateTraini
     </section>
 
     <section className="lower-grid">
-      <article className="water-card"><div className="water-card-header"><div><span className="page-eyebrow">Hidratação</span><h2>{formatLiters(data.hydration.consumedMl)} <small>/ {formatLiters(data.hydration.targetMl)}</small></h2></div><div className="water-percent"><strong>{Math.min(999, presentationRound(data.hydration.percentage))}%</strong><small>da meta</small></div></div><ProgressBar value={data.hydration.consumedMl} target={data.hydration.targetMl} label="Progresso da hidratação" /><div className="water-actions" aria-label="Registrar água">{[200,300,500].map((amount)=><button key={amount} type="button" onClick={()=>void addWater(amount)}>+ {amount} ml</button>)}</div><form className="custom-water" onSubmit={(event)=>{event.preventDefault();void addWater(Number(customAmount));}}><label htmlFor="custom-water">Outro valor</label><div><input id="custom-water" type="number" min="1" max="10000" inputMode="numeric" placeholder="450" value={customAmount} onChange={(event)=>setCustomAmount(event.target.value)}/><span>ml</span><button type="submit" disabled={!customAmount}>Registrar</button></div></form></article>
+      <article className="water-card"><div className="water-card-header"><div><span className="page-eyebrow">Hidratação</span><h2>{formatLiters(data.hydration.consumedMl)} <small>/ {formatLiters(data.hydration.targetMl)}</small></h2></div><div className="water-percent"><strong>{Math.min(999, presentationRound(data.hydration.percentage))}%</strong><small>da meta</small></div></div><ProgressBar value={data.hydration.consumedMl} target={data.hydration.targetMl} label="Progresso da hidratação" /><div className={`hydration-pace ${data.hydration.pace.state}`}><strong>{paceTitle(data.hydration.pace.state)}</strong><p>{paceCopy(data.hydration.pace.state, data.hydration.pace.expectedPercentage)}</p></div><div className="hydration-checkpoints">{[.25,.5,.75,1].map((ratio)=><span key={ratio}><small>{ratio*100}%</small><strong>{Math.round(data.hydration.targetMl*ratio).toLocaleString('pt-BR')} ml</strong></span>)}</div><div className="water-actions" aria-label="Registrar água">{[200,300,500].map((amount)=><button key={amount} type="button" onClick={()=>void addWater(amount)}>+ {amount} ml</button>)}</div><form className="custom-water" onSubmit={(event)=>{event.preventDefault();void addWater(Number(customAmount));}}><label htmlFor="custom-water">Outro valor</label><div><input id="custom-water" type="number" min="1" max="10000" inputMode="numeric" placeholder="450" value={customAmount} onChange={(event)=>setCustomAmount(event.target.value)}/><span>ml</span><button type="submit" disabled={!customAmount}>Registrar</button></div></form></article>
       <article className="water-history-card"><div className="card-topline"><span>Registros de hoje</span><small>{data.hydration.entries.length} entrada(s)</small></div>{data.hydration.entries.length===0?<div className="water-empty"><strong>Nenhuma água registrada.</strong><p>Campos sem registro continuam sem dado.</p></div>:<ul className="water-history-list">{data.hydration.entries.map((entry)=><li key={entry.id}><time dateTime={entry.occurredAt}>{new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit'}).format(new Date(entry.occurredAt))}</time>{editingId===entry.id?<form onSubmit={(event)=>{event.preventDefault();void updateWater(entry);}}><input aria-label="Nova quantidade em mililitros" type="number" min="1" max="10000" value={editingAmount} onChange={(event)=>setEditingAmount(event.target.value)}/><button type="submit">Salvar</button><button type="button" onClick={()=>setEditingId(undefined)}>Cancelar</button></form>:<><strong>+ {entry.amountMl.toLocaleString('pt-BR')} ml</strong><div><button type="button" onClick={()=>{setEditingId(entry.id);setEditingAmount(String(entry.amountMl));}}>Editar</button><button type="button" onClick={()=>void removeWater(entry)}>Excluir</button></div></>}</li>)}</ul>}</article>
     </section>
+
+    <section className="today-routine-card"><div><span className="page-eyebrow">Rotina de hoje</span><h2>{routine?.today.wakeTime || routine?.today.sleepTime || routine?.today.workoutTime ? 'Seus horários habituais' : 'Sem horários definidos'}</h2><p>{routine?.sleep ? `Sono registrado: ${formatDuration(routine.sleep.durationMinutes)}.` : 'Sono: sem registro.'} {[routine?.today.wakeTime && `Acordar ${routine.today.wakeTime}`, routine?.today.workoutTime && `Treino ${routine.today.workoutTime}`, routine?.today.sleepTime && `Sono ${routine.today.sleepTime}`].filter(Boolean).join(' · ')}</p></div><Button variant="secondary" compact onClick={onNavigateRoutine}>Abrir rotina <span aria-hidden="true">→</span></Button></section>
 
     <section className="daily-grid nutrition-direction-grid">
       <article className="calorie-card"><div className="card-topline"><span>Direção nutricional</span><small>Meta ativa</small></div><div className="calorie-display"><strong>{presentationRound(target.calorieTarget).toLocaleString('pt-BR')}</strong><span>kcal / dia</span></div><div className="target-macros"><span>Proteína <b>{presentationRound(target.macros.protein.grams)} g</b></span><span>Carboidratos <b>{presentationRound(target.macros.carbs.grams)} g</b></span><span>Gorduras <b>{presentationRound(target.macros.fat.grams)} g</b></span></div><p>Metas são referências configuráveis; o registro diário é opcional.</p></article>
@@ -113,3 +120,5 @@ function Metric({label,value,unit}:{label:string;value:number|undefined;unit:str
 function ProgressBar({value,target,label}:{value:number;target:number;label:string}) { const percentage=target>0?Math.min(100,value/target*100):0; return <div className="progress-track" role="progressbar" aria-label={label} aria-valuenow={presentationRound(percentage)} aria-valuemin={0} aria-valuemax={100}><span style={{width:`${percentage}%`}}/></div>; }
 function goalLabel(goal:string){return goal==='fat-loss'?'Definição':goal==='weight-gain'?'Ganho':'Manutenção';}
 function formatLiters(ml:number){return `${(ml/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:2})} L`;}
+function paceTitle(state:string){return state==='target-reached'?'Meta registrada':state==='outside-window'?'Fora da janela habitual':state==='above-pace'?'Acima do ritmo previsto':state==='on-pace'?'No ritmo previsto':state==='slightly-below'?'Um pouco abaixo do ritmo':'Abaixo do ritmo previsto';}
+function paceCopy(state:string,expected:number){return state==='target-reached'?'Não é necessário compensar ou continuar bebendo por causa do aplicativo.':state==='outside-window'?'O DEFYN não sugere compensações fora dos seus horários habituais.':`Neste horário, a referência flexível está perto de ${Math.round(expected)}% da meta. Ajuste conforme sua sede e sua rotina.`;}

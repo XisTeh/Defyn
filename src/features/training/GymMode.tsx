@@ -143,7 +143,7 @@ export function GymMode({ profileId, session, exercises, onChanged, onFinished, 
     <header className="gym-topbar">
       <div className="gym-progress-copy"><span>{session.templateName}</span><strong>Exercício {current + 1} de {session.exercises.length}</strong></div>
       <div className="gym-progress-track" role="progressbar" aria-label="Progresso do treino" aria-valuemin={0} aria-valuemax={sessionPlannedSets} aria-valuenow={sessionCompletedSets}><i style={{ width: `${sessionPlannedSets ? sessionCompletedSets / sessionPlannedSets * 100 : 0}%` }} /></div>
-      <button className="gym-menu-button" type="button" onClick={() => setSettingsOpen(true)} aria-label="Opções da sessão">•••</button>
+      <button className="gym-menu-button" type="button" onClick={() => setSettingsOpen(true)} aria-label="Opções da sessão"><span aria-hidden="true">⋯</span></button>
     </header>
 
     {(rest > 0 || restFinished) && <aside className={`gym-rest ${restFinished ? 'finished' : ''}`} role={rest > 0 ? 'timer' : 'status'} aria-live="polite">

@@ -10,12 +10,13 @@ import type { NutritionTargetSnapshot } from '../../domain/targets/nutrition-tar
 import type { WaterEntry } from '../../domain/hydration/hydration';
 import type { Exercise, ExerciseFavorite, TrainingProfile, WorkoutPlan, WorkoutSession, WorkoutSetLog } from '../../domain/training/training';
 import type { DailyNutritionSummary } from '../../domain/nutrition-summary/daily-nutrition-summary';
+import type { ReminderSnooze, RoutineDay, RoutineProfile, SleepRecord } from '../../domain/routine/routine';
 import { migrateProfileToV2, selectMigratedActiveProfileId } from './migration-v2';
 import { migrateFoodToV3, migrateProfileToV3 } from './migration-v3';
 import { migrateProgressPhotoToV5, migrateProgressRecordToV5 } from './migration-v5';
 
 export const DATABASE_NAME = 'defyn-local';
-export const DATABASE_VERSION = 6;
+export const DATABASE_VERSION = 7;
 
 export class DefynDatabase extends Dexie {
   profiles!: EntityTable<UserProfile, 'id'>;
@@ -38,6 +39,10 @@ export class DefynDatabase extends Dexie {
   workoutSessions!: EntityTable<WorkoutSession, 'id'>;
   workoutSetLogs!: EntityTable<WorkoutSetLog, 'id'>;
   dailyNutritionSummaries!: EntityTable<DailyNutritionSummary, 'id'>;
+  routineProfiles!: EntityTable<RoutineProfile, 'id'>;
+  routineDays!: EntityTable<RoutineDay, 'id'>;
+  sleepRecords!: EntityTable<SleepRecord, 'id'>;
+  reminderSnoozes!: EntityTable<ReminderSnooze, 'id'>;
 
   constructor() {
     super(DATABASE_NAME);
@@ -125,9 +130,14 @@ export class DefynDatabase extends Dexie {
       await transaction.table<ProgressRecord,string>('progressRecords').toCollection().modify((record)=>{ Object.assign(record,migrateProgressRecordToV5(record)); });
       await transaction.table<ProgressPhotoMetadata,string>('progressPhotos').toCollection().modify((photo)=>{ Object.assign(photo,migrateProgressPhotoToV5(photo)); });
     });
+    this.version(6).stores({
+      profiles: 'id, updatedAt', nutritionTargets: 'id, profileId, startsAt, endsAt, [profileId+startsAt]', foods: 'id, nameNormalized, searchTextNormalized, barcode, updatedAt', recipes: 'id, name, nameNormalized, updatedAt', diaryEntries: 'id, profileId, date, mealCategoryId, [profileId+date], [profileId+mealCategoryId]', mealCategories: 'id, profileId, order, [profileId+order]',
+      progressRecords: 'id, profileId, localDate, occurredAt, [profileId+localDate]', progressPhotos: 'id, profileId, localDate, occurredAt, category, mediaId, checkInId, [profileId+localDate], [profileId+category]', preferences: 'key', waterEntries: 'id, profileId, localDate, [profileId+localDate], occurredAt', media: 'id, kind, ownerType, ownerId, createdAt', foodPreferences: 'id, profileId, foodId, [profileId+foodId], favorite, lastUsedAt', favoriteMeals: 'id, profileId, updatedAt', trainingProfiles: 'id, &profileId, updatedAt', exercises: 'id, ownerProfileId, normalizedName, primaryMuscle, isCustom, updatedAt', exerciseFavorites: 'id, profileId, exerciseId, &[profileId+exerciseId]', workoutPlans: 'id, profileId, status, updatedAt, [profileId+status]', workoutSessions: 'id, profileId, planId, templateId, localDate, status, [profileId+localDate], [profileId+status]', workoutSetLogs: 'id, profileId, sessionId, exerciseId, [sessionId+exerciseId], [profileId+exerciseId], completedAt', dailyNutritionSummaries: 'id, profileId, localDate, &[profileId+localDate]',
+    });
     this.version(DATABASE_VERSION).stores({
       profiles: 'id, updatedAt', nutritionTargets: 'id, profileId, startsAt, endsAt, [profileId+startsAt]', foods: 'id, nameNormalized, searchTextNormalized, barcode, updatedAt', recipes: 'id, name, nameNormalized, updatedAt', diaryEntries: 'id, profileId, date, mealCategoryId, [profileId+date], [profileId+mealCategoryId]', mealCategories: 'id, profileId, order, [profileId+order]',
       progressRecords: 'id, profileId, localDate, occurredAt, [profileId+localDate]', progressPhotos: 'id, profileId, localDate, occurredAt, category, mediaId, checkInId, [profileId+localDate], [profileId+category]', preferences: 'key', waterEntries: 'id, profileId, localDate, [profileId+localDate], occurredAt', media: 'id, kind, ownerType, ownerId, createdAt', foodPreferences: 'id, profileId, foodId, [profileId+foodId], favorite, lastUsedAt', favoriteMeals: 'id, profileId, updatedAt', trainingProfiles: 'id, &profileId, updatedAt', exercises: 'id, ownerProfileId, normalizedName, primaryMuscle, isCustom, updatedAt', exerciseFavorites: 'id, profileId, exerciseId, &[profileId+exerciseId]', workoutPlans: 'id, profileId, status, updatedAt, [profileId+status]', workoutSessions: 'id, profileId, planId, templateId, localDate, status, [profileId+localDate], [profileId+status]', workoutSetLogs: 'id, profileId, sessionId, exerciseId, [sessionId+exerciseId], [profileId+exerciseId], completedAt', dailyNutritionSummaries: 'id, profileId, localDate, &[profileId+localDate]',
+      routineProfiles: 'id, &profileId, updatedAt', routineDays: 'id, profileId, dayOfWeek, &[profileId+dayOfWeek], updatedAt', sleepRecords: 'id, profileId, localDate, &[profileId+localDate], sleepStartedAt', reminderSnoozes: 'id, profileId, reminderKind, &[profileId+reminderKind], snoozedUntil',
     });
   }
 }

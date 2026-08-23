@@ -1,5 +1,7 @@
 # Arquitetura
 
+Rotina segue as mesmas fronteiras: regras em `domain/routine`, orquestração em `application/routine`, Dexie em `infrastructure/indexed-db` e React em `features/routine`. A UI não importa nem consulta a base diretamente.
+
 O projeto separa composição (`app`), casos de uso (`application`), regras/contratos (`domain`), experiências React (`features`) e persistência (`infrastructure`).
 
 ## Fluxos ativos

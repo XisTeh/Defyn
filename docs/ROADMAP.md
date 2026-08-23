@@ -1,5 +1,7 @@
 # Roadmap
 
+- [x] Etapa 09: rotina semanal, sono factual, hidratação contextual e lembretes locais opt-in.
+
 ## Concluído — Etapas 01–06.5
 
 Perfis, metas, hidratação, PWA, backup, treino completo, progresso corporal, fotos, responsividade, drawer mobile e atualização automática foram entregues. O histórico também inclui o antigo catálogo/diário alimentar e OCR local.

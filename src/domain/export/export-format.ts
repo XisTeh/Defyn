@@ -10,9 +10,10 @@ import type { FavoriteMeal } from '../diary/diary';
 import type { LocalMedia } from '../media/media';
 import type { Exercise, ExerciseFavorite, TrainingProfile, WorkoutPlan, WorkoutSession, WorkoutSetLog } from '../training/training';
 import type { DailyNutritionSummary } from '../nutrition-summary/daily-nutrition-summary';
+import type { ReminderSnooze, RoutineDay, RoutineProfile, SleepRecord } from '../routine/routine';
 
 export const DEFYN_BACKUP_FORMAT = 'defyn-backup';
-export const DEFYN_BACKUP_VERSION = 6;
+export const DEFYN_BACKUP_VERSION = 7;
 
 export interface StoredPreference {
   key: string;
@@ -40,6 +41,10 @@ export interface DefynBackupData {
   workoutSessions: WorkoutSession[];
   workoutSetLogs: WorkoutSetLog[];
   dailyNutritionSummaries: DailyNutritionSummary[];
+  routineProfiles: RoutineProfile[];
+  routineDays: RoutineDay[];
+  sleepRecords: SleepRecord[];
+  reminderSnoozes: ReminderSnooze[];
 }
 
 export interface StoredMediaBackup extends Omit<LocalMedia, 'blob'> { dataUrl: string; }

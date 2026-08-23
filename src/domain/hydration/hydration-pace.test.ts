@@ -8,5 +8,5 @@ describe('ritmo de hidratação', () => {
   it('classifica bem abaixo', () => expect(calculateHydrationPace(3000, 500, '07:00', '23:00', at(15)).state).toBe('well-below'));
   it('classifica acima', () => expect(calculateHydrationPace(3000, 2000, '07:00', '23:00', at(15)).state).toBe('above-pace'));
   it('prioriza meta atingida', () => expect(calculateHydrationPace(3000, 3000, '07:00', '23:00', at(12)).state).toBe('target-reached'));
-  it('cria checkpoints cumulativos', () => expect(hydrationCheckpoints(3000).map((point) => Math.round(point.targetMl))).toEqual([990,2010,3000]));
+  it('cria marcos flexíveis cumulativos', () => expect(hydrationCheckpoints(3000).map((point) => Math.round(point.targetMl))).toEqual([750,1500,2250,3000]));
 });

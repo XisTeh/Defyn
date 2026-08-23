@@ -1,5 +1,7 @@
 # QA mobile
 
+Na Etapa 09, Rotina deve ser verificada em 320×800, 360×800, 375×812, 390×844 e 430×932. Pontos críticos: semana horizontal sem cortar conteúdo, bottom sheet rolável, inputs de horário, ações lado a lado e menu de três pontos do Modo Academia com 34 px, alinhado ao cabeçalho e progresso preservado em 320/360 px.
+
 ## Matriz visual
 
 - telefones: 320, 360, 375, 390 e 430 px;

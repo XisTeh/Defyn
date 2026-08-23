@@ -10,6 +10,8 @@ import { Button } from '../../shared/components/Button';
 import { DefynSelect } from '../../shared/components/DefynSelect';
 import { browserCapabilities } from '../../platform/device-capabilities';
 import './progress-workspace.css';
+import type { SleepRecord } from '../../domain/routine/routine';
+import { averageSleepMinutes, formatDuration } from '../../domain/routine/routine';
 
 const service = new ProgressService(repositories.progress, repositories.dailyNutritionSummaries, repositories.nutritionTargets, repositories.water, repositories.workoutPlans, repositories.workoutSessions, repositories.media);
 type ProgressTab = 'overview' | 'body' | 'photos' | 'nutrition' | 'training';
@@ -20,9 +22,10 @@ const categoryLabels: Record<ProgressPhotoCategory,string> = {front:'Frente',sid
 export function ProgressWorkspace({ profile, revision, onChanged, onNotice, onEditProfile }: { profile: UserProfile; revision: number; onChanged:()=>void; onNotice:(message:string)=>void; onEditProfile:()=>void }) {
   const [tab,setTab]=useState<ProgressTab>('overview'); const [preset,setPreset]=useState<ProgressPeriodPreset>('30d');
   const [data,setData]=useState<ProgressOverview>(); const [loading,setLoading]=useState(true); const [error,setError]=useState(''); const [localRevision,setLocalRevision]=useState(0);
+  const [sleep,setSleep]=useState<SleepRecord[]>([]);
   const [recordDialog,setRecordDialog]=useState<{mode:'weight'|'check-in';record?:ProgressRecord}>(); const [photoDialog,setPhotoDialog]=useState(false);
   const period=useMemo(()=>createProgressPeriod(preset),[preset]);
-  const load=useCallback(async()=>{setLoading(true);try{setData(await service.overview(profile,period));setError('');}catch(caught){setError(caught instanceof Error?caught.message:'Não foi possível abrir o progresso.');}finally{setLoading(false);}},[profile,period]);
+  const load=useCallback(async()=>{setLoading(true);try{const [overview,sleepRecords]=await Promise.all([service.overview(profile,period),repositories.routine.listSleep(profile.id,period.startLocalDate,period.endLocalDate)]);setData(overview);setSleep(sleepRecords);setError('');}catch(caught){setError(caught instanceof Error?caught.message:'Não foi possível abrir o progresso.');}finally{setLoading(false);}},[profile,period]);
   useEffect(()=>{queueMicrotask(()=>void load());},[load,revision,localRevision]);
   async function changed(message:string){setLocalRevision((value)=>value+1);onChanged();onNotice(message);}
   async function removeRecord(record:ProgressRecord){if(!window.confirm(record.source==='check-in'?'Excluir este check-in e as fotos vinculadas?':'Excluir este registro corporal?'))return;if(record.source==='check-in')await service.removeCheckIn(profile.id,record.id);else await service.removeRecord(profile.id,record.id);await changed(record.source==='check-in'?'Check-in e mídias vinculadas excluídos.':'Registro corporal excluído.');}
@@ -32,7 +35,7 @@ export function ProgressWorkspace({ profile, revision, onChanged, onNotice, onEd
     <header className="progress-header"><div><span className="page-eyebrow">Histórico local e explicável</span><h1>Progresso</h1><p>Tendências de {profile.name} sem notas morais, diagnósticos ou metas alteradas automaticamente.</p></div><div className="progress-header-actions"><button className="progress-primary" onClick={()=>setRecordDialog({mode:'check-in'})}>+ Fazer check-in</button><DefynSelect value={preset} options={periodOptions} onChange={setPreset} label="Período do progresso" /></div></header>
     <nav className="progress-tabs" aria-label="Áreas do progresso">{tabs.map((item)=><button key={item.id} className={tab===item.id?'active':''} aria-current={tab===item.id?'page':undefined} onClick={()=>setTab(item.id)}>{item.label}</button>)}</nav>
     {loading&&!data?<ProgressSkeleton/>:data&&<>
-      {tab==='overview'&&<Overview data={data} profile={profile} onAddWeight={()=>setRecordDialog({mode:'weight'})} onCheckIn={()=>setRecordDialog({mode:'check-in'})} onAddPhoto={()=>setPhotoDialog(true)} onTab={setTab}/>} 
+      {tab==='overview'&&<Overview data={data} sleep={sleep} profile={profile} onAddWeight={()=>setRecordDialog({mode:'weight'})} onCheckIn={()=>setRecordDialog({mode:'check-in'})} onAddPhoto={()=>setPhotoDialog(true)} onTab={setTab}/>}
       {tab==='body'&&<BodyPanel data={data} profile={profile} onAdd={()=>setRecordDialog({mode:'weight'})} onEdit={(record)=>setRecordDialog({mode:record.source==='check-in'?'check-in':'weight',record})} onRemove={(record)=>void removeRecord(record)} onEditProfile={onEditProfile}/>} 
       {tab==='photos'&&<PhotosPanel photos={data.photos} onAdd={()=>setPhotoDialog(true)} onRemove={(photo)=>void removePhoto(photo)}/>} 
       {tab==='nutrition'&&<NutritionPanel data={data}/>} 
@@ -44,13 +47,14 @@ export function ProgressWorkspace({ profile, revision, onChanged, onNotice, onEd
   </div>;
 }
 
-function Overview({data,profile,onAddWeight,onCheckIn,onAddPhoto,onTab}:{data:ProgressOverview;profile:UserProfile;onAddWeight:()=>void;onCheckIn:()=>void;onAddPhoto:()=>void;onTab:(tab:ProgressTab)=>void}){
+function Overview({data,sleep,profile,onAddWeight,onCheckIn,onAddPhoto,onTab}:{data:ProgressOverview;sleep:SleepRecord[];profile:UserProfile;onAddWeight:()=>void;onCheckIn:()=>void;onAddPhoto:()=>void;onTab:(tab:ProgressTab)=>void}){
   const latest=[...data.records].filter((r)=>r.weightKg!==undefined).sort((a,b)=>b.localDate.localeCompare(a.localDate))[0];
   return <section className="progress-overview"><div className="progress-kpis">
     <SummaryCard tone="dark" eyebrow="Peso mais recente" value={latest?`${formatNumber(latest.weightKg!)} kg`:'Sem registro'} detail={latest?formatDate(latest.localDate):'Registre quando fizer sentido'} onClick={onAddWeight}/>
     <SummaryCard tone="body" eyebrow="Tendência de 7 dias" value={data.trend.changeKg===undefined?'Coletando dados':`${data.trend.changeKg>0?'+':''}${formatNumber(data.trend.changeKg)} kg`} detail={data.trend.message} onClick={()=>onTab('body')}/>
     <SummaryCard tone="nutrition" eyebrow="Resumo nutricional" value={`${data.nutrition.registeredDays} dia(s)`} detail={data.nutrition.averageCalories===undefined?'Calorias sem dado não contam como zero':`${Math.round(data.nutrition.averageCalories).toLocaleString('pt-BR')} kcal em ${data.nutrition.calorieRegisteredDays} dia(s)`} onClick={()=>onTab('nutrition')}/>
     <SummaryCard tone="training" eyebrow="Treinos concluídos" value={`${data.training.completedSessions}`} detail={data.training.adherence===undefined?'Sem agenda comparável':`${data.training.adherence}% do planejado`} onClick={()=>onTab('training')}/>
+    <SummaryCard tone="body" eyebrow="Sono registrado" value={`${sleep.length} dia(s)`} detail={sleep.length?`Média ${formatDuration(averageSleepMinutes(sleep))}`:'Sem registro; ausência não conta como zero'}/>
   </div>
   <div className="progress-overview-grid"><article className="progress-panel weight-feature"><PanelHead eyebrow="Evolução corporal" title="Peso no período" action={<Button variant="secondary" compact onClick={onAddWeight}>Registrar peso</Button>}/><WeightChart records={data.records} target={profile.targetWeightKg}/></article>
   <article className="progress-panel insights-panel"><PanelHead eyebrow="Leitura determinística" title="Pontos do período"/><ul>{data.insights.length?data.insights.map((item)=><li key={item}>{item}</li>):<li>Registre alguns dias para o DEFYN resumir o período sem inventar conclusões.</li>}</ul></article></div>

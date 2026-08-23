@@ -14,7 +14,7 @@ describe('backup e restauração', () => {
   it('exporta formato e versão válidos com todos os stores', async () => {
     const backup = await new BackupService(new MemoryBackupGateway(dataFixture()), fixedNow).export();
     expect(backup.format).toBe('defyn-backup');
-    expect(backup.version).toBe(6);
+    expect(backup.version).toBe(7);
     expect(backup.exportedAt).toBe('2026-08-21T12:00:00.000Z');
     expect(backup.data.profiles).toHaveLength(1);
     expect(backup.data.waterEntries).toHaveLength(1);
@@ -49,7 +49,7 @@ describe('backup e restauração', () => {
     const legacy = { format: 'defyn-backup', version: 1, exportedAt: fixedNow().toISOString(), data: { ...emptyData() } } as unknown as Record<string, unknown>;
     const data = (legacy.data as Record<string, unknown>); delete data.foodPreferences; delete data.favoriteMeals; delete data.media; delete data.dailyNutritionSummaries;
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(6); expect(migrated.data.media).toEqual([]); expect(migrated.data.workoutSessions).toEqual([]); expect(migrated.data.dailyNutritionSummaries).toEqual([]);
+    expect(migrated.version).toBe(7); expect(migrated.data.media).toEqual([]); expect(migrated.data.workoutSessions).toEqual([]); expect(migrated.data.dailyNutritionSummaries).toEqual([]); expect(migrated.data.sleepRecords).toEqual([]);
   });
 
   it('migra backup v2 sem inventar dados de treino', () => {
@@ -57,21 +57,21 @@ describe('backup e restauração', () => {
     const data = legacy.data as Record<string, unknown>;
     delete data.trainingProfiles; delete data.exercises; delete data.exerciseFavorites; delete data.workoutPlans; delete data.workoutSessions; delete data.workoutSetLogs;
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(6);
+    expect(migrated.version).toBe(7);
     expect(migrated.data.trainingProfiles).toEqual([]);
   });
 
   it('migra backup v3 para o modelo corporal atual', () => {
     const legacy = { format: 'defyn-backup', version: 3, exportedAt: fixedNow().toISOString(), data: { ...dataFixture(), progressRecords: [{ id:'weight-a', profileId:'profile-a', date:'2026-08-20', weightKg:79, createdAt:fixedNow().toISOString(), updatedAt:fixedNow().toISOString() }] } };
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(6);
+    expect(migrated.version).toBe(7);
     expect(migrated.data.progressRecords[0]).toMatchObject({ localDate:'2026-08-20', source:'migration' });
   });
 
   it('aceita backup v4 e preserva alimentos simplificados', () => {
     const legacy = { format: 'defyn-backup', version: 4, exportedAt: fixedNow().toISOString(), data: { ...dataFixture(), foods: [{ id:'food-a', name:'Antigo', nameNormalized:'antigo', searchTextNormalized:'antigo', basePortion:{ quantity:100, unit:'g' }, portions:[], nutrients:{ caloriesKcal:120, proteinGrams:4, carbsGrams:20, fatGrams:2 }, dataSource:'manual', createdAt:fixedNow().toISOString(), updatedAt:fixedNow().toISOString() }] } };
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(6);
+    expect(migrated.version).toBe(7);
     expect(migrated.data.foods[0]?.nutritionLabel).toBeUndefined();
     expect(migrated.data.foods[0]?.nutrients.caloriesKcal).toBe(120);
   });
@@ -80,9 +80,19 @@ describe('backup e restauração', () => {
     const legacy = { format:'defyn-backup', version:5, exportedAt:fixedNow().toISOString(), data:{...dataFixture()} } as unknown as Record<string,unknown>;
     delete (legacy.data as Record<string,unknown>).dailyNutritionSummaries;
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(6);
+    expect(migrated.version).toBe(7);
     expect(migrated.data.dailyNutritionSummaries).toEqual([]);
     expect(migrated.data.waterEntries).toHaveLength(1);
+  });
+
+  it('restaura backup v6 com os domínios da rotina vazios', () => {
+    const legacy = { format:'defyn-backup', version:6, exportedAt:fixedNow().toISOString(), data:{...dataFixture()} } as unknown as Record<string,unknown>;
+    const data = legacy.data as Record<string,unknown>;
+    delete data.routineProfiles; delete data.routineDays; delete data.sleepRecords; delete data.reminderSnoozes;
+    const migrated = validateBackup(legacy);
+    expect(migrated.version).toBe(7);
+    expect(migrated.data.routineDays).toEqual([]);
+    expect(migrated.data.sleepRecords).toEqual([]);
   });
 
   it('preserva todas as colunas estruturadas de um rótulo no backup v5', async () => {
@@ -113,7 +123,7 @@ describe('backup e restauração', () => {
 function fixedNow() { return new Date('2026-08-21T12:00:00.000Z'); }
 
 function emptyData(): DefynBackupData {
-  return { profiles: [], nutritionTargets: [], foods: [], recipes: [], diaryEntries: [], mealCategories: [], waterEntries: [], progressRecords: [], progressPhotos: [], preferences: [], foodPreferences: [], favoriteMeals: [], media: [], trainingProfiles: [], exercises: [], exerciseFavorites: [], workoutPlans: [], workoutSessions: [], workoutSetLogs: [], dailyNutritionSummaries: [] };
+  return { profiles: [], nutritionTargets: [], foods: [], recipes: [], diaryEntries: [], mealCategories: [], waterEntries: [], progressRecords: [], progressPhotos: [], preferences: [], foodPreferences: [], favoriteMeals: [], media: [], trainingProfiles: [], exercises: [], exerciseFavorites: [], workoutPlans: [], workoutSessions: [], workoutSetLogs: [], dailyNutritionSummaries: [], routineProfiles: [], routineDays: [], sleepRecords: [], reminderSnoozes: [] };
 }
 
 function dataFixture(): DefynBackupData {

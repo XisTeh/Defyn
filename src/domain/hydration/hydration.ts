@@ -92,8 +92,9 @@ export function calculateHydrationPace(targetMl: number, consumedMl: number, wak
 export function hydrationCheckpoints(targetMl: number): { label: string; ratio: number; targetMl: number }[] {
   positiveFinite(targetMl, 'Meta de água', 20_000);
   return [
-    { label: 'Manhã', ratio: 0.33, targetMl: targetMl * 0.33 },
-    { label: 'Tarde', ratio: 0.67, targetMl: targetMl * 0.67 },
-    { label: 'Noite', ratio: 1, targetMl },
+    { label: '25%', ratio: 0.25, targetMl: targetMl * 0.25 },
+    { label: '50%', ratio: 0.5, targetMl: targetMl * 0.5 },
+    { label: '75%', ratio: 0.75, targetMl: targetMl * 0.75 },
+    { label: '100%', ratio: 1, targetMl },
   ];
 }

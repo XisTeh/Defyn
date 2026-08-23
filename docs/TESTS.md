@@ -1,5 +1,7 @@
 # Testes
 
+Etapa 09 adiciona cobertura de sono simples e cruzando meia-noite, média sem ausência como zero, janela silenciosa cruzando meia-noite, cooldown/snooze, meta de água, treino concluído/ativo, marcos 25/50/75/100 e importação de backup v6 para v7.
+
 Vitest cobre domínio e casos de uso. A Etapa 07 mantém regressões de hidratação, perfis, treino, timer, progresso, fotos, backup e PWA, e adiciona:
 
 - criação/edição de resumo por perfil e data;

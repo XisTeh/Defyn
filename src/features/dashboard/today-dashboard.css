@@ -53,7 +53,7 @@
 .hydration-pace { margin-top: 1rem; padding: .85rem; display: grid; gap: .2rem; color: #355777; background: var(--water-soft); border: 1px solid #cbdbe9; border-radius: var(--radius-control); font-size: .64rem; }
 .hydration-pace span, .hydration-pace p { margin: 0; color: #55718d; }
 .hydration-pace.well-below { color: #76511d; background: #f2e8d3; border-color: #e3cfaa; }
-.hydration-checkpoints { margin-top: .65rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
+.hydration-checkpoints { margin-top: .65rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: .4rem; }
 .hydration-checkpoints span { padding: .55rem; display: grid; background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: .5rem; }
 .hydration-checkpoints small { color: var(--text-muted); font-size: .53rem; }
 .hydration-checkpoints strong { font-size: .66rem; }
@@ -200,6 +200,7 @@
 .summary-note { margin: 0 0 1rem; color: var(--text-secondary); font-size: .68rem; line-height: 1.5; }
 .summary-open-action { margin-top: auto; align-self: flex-start; }
 .progress-cta button { margin-top: 1rem; }
+.today-routine-card{margin-top:1rem;padding:clamp(1.2rem,2.5vw,2rem);display:flex;align-items:center;justify-content:space-between;gap:1rem;background:rgba(255,255,255,.62);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--elevation-card)}.today-routine-card h2{margin:.4rem 0;font-family:var(--font-display);font-size:clamp(1.8rem,3.5vw,3.2rem);line-height:.95;text-transform:uppercase}.today-routine-card p{margin:0;color:var(--text-secondary);font-size:.68rem;line-height:1.5}
 .today-workout-card h2 { margin: .4rem 0 0; font-family: var(--font-display); font-size: clamp(2.5rem,5vw,4.5rem); line-height: .9; text-transform: uppercase; }
 .today-workout-card p { margin: .55rem 0 0; color: var(--foreground-inverse-muted); }
 .today-workout-action { flex: none; color: #111519; background: #e2e8ec; border-color: #e2e8ec; }
@@ -209,4 +210,5 @@
   .today-workout-card { min-height: 230px; padding: var(--mobile-card-padding); align-items: stretch; flex-direction: column; }
   .today-workout-card h2 { font-size: clamp(2.25rem,11vw,3.3rem); }
   .today-workout-action { width: 100%; justify-content: space-between; }
+  .today-routine-card{align-items:stretch;flex-direction:column}.today-routine-card button{width:100%}
 }

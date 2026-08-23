@@ -24,6 +24,8 @@ import type { Exercise, ExerciseFavorite, TrainingProfile, WorkoutPlan, WorkoutS
 import type { ExerciseRepository, TrainingProfileRepository, WorkoutPlanRepository, WorkoutSessionRepository } from '../../domain/training/repository';
 import type { DailyNutritionSummary } from '../../domain/nutrition-summary/daily-nutrition-summary';
 import type { DailyNutritionSummaryRepository } from '../../domain/nutrition-summary/repository';
+import type { RoutineRepository } from '../../domain/routine/repository';
+import type { ReminderSnooze, RoutineDay, RoutineProfile, SleepRecord } from '../../domain/routine/routine';
 
 export class IndexedDbProfileRepository implements ProfileRepository {
   constructor(private readonly database: DefynDatabase) {}
@@ -195,6 +197,10 @@ export class IndexedDbProfileDataGateway implements ProfileDataGateway {
         this.database.workoutSessions,
         this.database.workoutSetLogs,
         this.database.dailyNutritionSummaries,
+        this.database.routineProfiles,
+        this.database.routineDays,
+        this.database.sleepRecords,
+        this.database.reminderSnoozes,
       ],
       async () => {
         const customExerciseIds = await this.database.exercises.where('ownerProfileId').equals(profileId).primaryKeys();
@@ -218,6 +224,10 @@ export class IndexedDbProfileDataGateway implements ProfileDataGateway {
           this.database.workoutSessions.where('profileId').equals(profileId).delete(),
           this.database.workoutSetLogs.where('profileId').equals(profileId).delete(),
           this.database.dailyNutritionSummaries.where('profileId').equals(profileId).delete(),
+          this.database.routineProfiles.where('profileId').equals(profileId).delete(),
+          this.database.routineDays.where('profileId').equals(profileId).delete(),
+          this.database.sleepRecords.where('profileId').equals(profileId).delete(),
+          this.database.reminderSnoozes.where('profileId').equals(profileId).delete(),
         ]);
       },
     );
@@ -276,4 +286,30 @@ export class IndexedDbWorkoutSessionRepository implements WorkoutSessionReposito
   async saveSetLog(log: WorkoutSetLog) { await this.database.workoutSetLogs.put(log); }
   async removeSetLog(profileId: string, logId: string) { const log = await this.database.workoutSetLogs.get(logId); if (log?.profileId === profileId) await this.database.workoutSetLogs.delete(logId); }
   async removeByProfile(profileId: string) { await this.database.workoutSessions.where('profileId').equals(profileId).delete(); await this.database.workoutSetLogs.where('profileId').equals(profileId).delete(); }
+}
+
+export class IndexedDbRoutineRepository implements RoutineRepository {
+  constructor(private readonly database: DefynDatabase) {}
+  getProfile(profileId: string) { return this.database.routineProfiles.where('profileId').equals(profileId).first(); }
+  async saveProfile(profile: RoutineProfile) { await this.database.routineProfiles.put(profile); }
+  listDays(profileId: string) { return this.database.routineDays.where('profileId').equals(profileId).toArray(); }
+  async saveDay(day: RoutineDay) { await this.database.routineDays.put(day); }
+  async saveDays(days: RoutineDay[]) { await this.database.routineDays.bulkPut(days); }
+  getSleep(profileId: string, localDate: string) { return this.database.sleepRecords.where('[profileId+localDate]').equals([profileId, localDate]).first(); }
+  listSleep(profileId: string, startLocalDate?: string, endLocalDate?: string) {
+    if (!startLocalDate && !endLocalDate) return this.database.sleepRecords.where('profileId').equals(profileId).toArray();
+    return this.database.sleepRecords.where('[profileId+localDate]').between([profileId, startLocalDate ?? '0000-00-00'], [profileId, endLocalDate ?? '9999-12-31'], true, true).toArray();
+  }
+  async saveSleep(record: SleepRecord) { await this.database.sleepRecords.put(record); }
+  async removeSleep(profileId: string, id: string) { const record = await this.database.sleepRecords.get(id); if (record?.profileId === profileId) await this.database.sleepRecords.delete(id); }
+  getSnooze(profileId: string, reminderKind: string) { return this.database.reminderSnoozes.where('[profileId+reminderKind]').equals([profileId, reminderKind]).first(); }
+  async saveSnooze(snooze: ReminderSnooze) { await this.database.reminderSnoozes.put(snooze); }
+  async removeByProfile(profileId: string) {
+    await Promise.all([
+      this.database.routineProfiles.where('profileId').equals(profileId).delete(),
+      this.database.routineDays.where('profileId').equals(profileId).delete(),
+      this.database.sleepRecords.where('profileId').equals(profileId).delete(),
+      this.database.reminderSnoozes.where('profileId').equals(profileId).delete(),
+    ]);
+  }
 }

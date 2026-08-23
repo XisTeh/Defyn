@@ -7,6 +7,7 @@ import { useDeviceExperience } from '../pwa/use-device-experience';
 import { useDocumentScrollLock } from '../../shared/hooks/use-document-scroll-lock';
 import { isActiveNavigation, mobileDrawerReducer, navigationSections, uniqueProfileSwitchItems } from './mobile-navigation';
 import './app-shell.css';
+import { ReminderCoordinator } from '../routine/ReminderCoordinator';
 
 interface AppShellProps {
   profiles: UserProfile[];
@@ -96,6 +97,7 @@ export function AppShell({
 
       {drawerOpen && <MobileDrawer profiles={profiles} activeProfile={activeProfile} view={view} deviceExperience={deviceExperience} onClose={() => dispatchDrawer('close')} onNavigate={navigate} onSwitchProfile={(profileId) => { onSwitchProfile(profileId); dispatchDrawer('close'); }} onAddProfile={() => { onAddProfile(); dispatchDrawer('close'); }} onQuickWater={async (amount) => { await onQuickWater(amount); dispatchDrawer('close'); }} />}
       <PwaCoordinator experience={deviceExperience} />
+      <ReminderCoordinator profileId={activeProfile.id} />
     </div>
   );
 }

@@ -1,5 +1,14 @@
 # Modelo de dados
 
+## Etapa 09 / IndexedDB v7
+
+- `RoutineProfile`: preferências de lembretes e estado de permissão por perfil.
+- `RoutineDay`: `profileId + dayOfWeek`, horários opcionais e referência ao template de treino.
+- `SleepRecord`: `profileId + localDate` com a data do despertar e duração factual.
+- `ReminderSnooze`: `profileId + reminderKind` e validade do silêncio.
+
+A migração é estritamente aditiva sobre v6.
+
 ## DailyNutritionSummary
 
 Um registro no máximo por `profileId` + `localDate`:

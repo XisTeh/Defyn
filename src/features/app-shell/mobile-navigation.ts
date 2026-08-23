@@ -13,6 +13,7 @@ export const navigationSections: readonly {
     items: [
       { view: 'today', label: 'Hoje', symbol: '◒' },
       { view: 'diary', label: 'Diário', symbol: '≡' },
+      { view: 'routine', label: 'Rotina', symbol: '◷' },
       { view: 'training', label: 'Treinos', symbol: '◫' },
       { view: 'progress', label: 'Progresso', symbol: '↗' },
     ],

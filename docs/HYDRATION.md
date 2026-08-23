@@ -1,5 +1,7 @@
 # Hidratação
 
+O ritmo contextual distribui a meta já configurada entre acordar e dormir. A meta não é recalculada por sono ou treino. Marcos flexíveis são 25%, 50%, 75% e 100%; fora da janela habitual não há sugestão de compensação agressiva.
+
 ## Meta e ritmo
 
 A meta continua configurável: manual ou estimativa por peso (30/35/40 ml/kg). O ritmo é independente da alimentação e calcula a fração transcorrida entre horários habituais de acordar/dormir.

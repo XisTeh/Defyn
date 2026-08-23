@@ -43,13 +43,17 @@ const collectionNames: readonly (keyof DefynBackupData)[] = [
   'workoutSessions',
   'workoutSetLogs',
   'dailyNutritionSummaries',
+  'routineProfiles',
+  'routineDays',
+  'sleepRecords',
+  'reminderSnoozes',
 ];
 
 export function validateBackup(value: unknown): DefynBackup {
   if (!isRecord(value) || value.format !== DEFYN_BACKUP_FORMAT) {
     throw new BackupValidationError('Este arquivo não é um backup do DEFYN.');
   }
-  if (![1, 2, 3, 4, 5, DEFYN_BACKUP_VERSION].includes(Number(value.version))) {
+  if (![1, 2, 3, 4, 5, 6, DEFYN_BACKUP_VERSION].includes(Number(value.version))) {
     throw new BackupValidationError('A versão deste backup não é compatível com o aplicativo.');
   }
   if (typeof value.exportedAt !== 'string' || !isRecord(value.data)) {
@@ -94,6 +98,13 @@ export function validateBackup(value: unknown): DefynBackup {
   if (isRecord(candidate.data) && !Array.isArray(candidate.data.dailyNutritionSummaries)) {
     candidate = { ...candidate, data: { ...candidate.data, dailyNutritionSummaries: [] } };
   }
+  const candidateData = isRecord(candidate.data) ? candidate.data : undefined;
+  if (candidateData && ['routineProfiles', 'routineDays', 'sleepRecords', 'reminderSnoozes'].some((name) => !Array.isArray(candidateData[name]))) {
+    candidate = { ...candidate, version: DEFYN_BACKUP_VERSION, data: {
+      ...candidateData,
+      routineProfiles: [], routineDays: [], sleepRecords: [], reminderSnoozes: [],
+    } };
+  }
   if (!isRecord(candidate.data)) throw new BackupValidationError('O backup está incompleto ou corrompido.');
   const data = candidate.data;
   for (const name of collectionNames) {
@@ -110,6 +121,18 @@ export function validateBackup(value: unknown): DefynBackup {
     throw new BackupValidationError('A coleção de perfis contém dados inválidos.');
   }
   const profileIds = new Set(profiles.map((profile) => profile.id));
+  for (const name of ['routineProfiles', 'routineDays', 'sleepRecords', 'reminderSnoozes'] as const) {
+    const collection = data[name] as unknown[];
+    if (!collection.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.profileId === 'string' && profileIds.has(item.profileId))) {
+      throw new BackupValidationError(`A coleção ${name} contém dados sem perfil válido.`);
+    }
+  }
+  if (!(data.routineDays as unknown[]).every((item) => isRecord(item) && typeof item.dayOfWeek === 'string' && ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'].includes(item.dayOfWeek))) {
+    throw new BackupValidationError('A coleção routineDays contém dia inválido.');
+  }
+  if (!(data.sleepRecords as unknown[]).every((item) => isRecord(item) && typeof item.localDate === 'string' && typeof item.sleepStartedAt === 'string' && typeof item.wokeAt === 'string' && typeof item.durationMinutes === 'number' && item.durationMinutes > 0)) {
+    throw new BackupValidationError('A coleção sleepRecords contém registro inválido.');
+  }
   const dailyNutritionSummaries = data.dailyNutritionSummaries as unknown[];
   if (!dailyNutritionSummaries.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.profileId === 'string' && profileIds.has(item.profileId) && typeof item.localDate === 'string' && ['caloriesKcal','proteinG','carbohydratesG','fatG'].every((key) => item[key] === undefined || (typeof item[key] === 'number' && Number.isFinite(item[key]) && item[key] >= 0)))) {
     throw new BackupValidationError('A coleção dailyNutritionSummaries contém resumo inválido.');

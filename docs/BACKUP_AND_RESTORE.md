@@ -1,5 +1,7 @@
 # Backup e restauração
 
+O formato atual é v7. Rotina, dias semanais, sono e silenciamentos entram no mesmo JSON transacional. Backups v1–v6 continuam aceitos; domínios inexistentes são restaurados como coleções vazias, sem dados presumidos.
+
 O formato atual é `defyn-backup` v6. A exportação inclui todas as coleções atuais e legadas, inclusive `dailyNutritionSummaries` e mídia serializada em data URL.
 
 Backups v1–v5 são aceitos. Ao importar uma versão anterior, `dailyNutritionSummaries` começa vazio; alimentos, receitas e diário legado são preservados como recebidos, sem conversão automática. A restauração valida perfis, referências, mídia, treinos e valores nutricionais não negativos antes da transação.

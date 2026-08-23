@@ -12,6 +12,7 @@ import {
   IndexedDbWorkoutPlanRepository,
   IndexedDbWorkoutSessionRepository,
   IndexedDbDailyNutritionSummaryRepository,
+  IndexedDbRoutineRepository,
 } from './indexed-db/repositories';
 import { IndexedDbBackupGateway } from './indexed-db/backup-gateway';
 
@@ -29,4 +30,5 @@ export const repositories = {
   workoutPlans: new IndexedDbWorkoutPlanRepository(defynDatabase),
   workoutSessions: new IndexedDbWorkoutSessionRepository(defynDatabase),
   dailyNutritionSummaries: new IndexedDbDailyNutritionSummaryRepository(defynDatabase),
+  routine: new IndexedDbRoutineRepository(defynDatabase),
 };

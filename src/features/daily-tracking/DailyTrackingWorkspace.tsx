@@ -7,6 +7,8 @@ import type { WorkoutSession } from '../../domain/training/training';
 import type { WaterEntry } from '../../domain/hydration/hydration';
 import { repositories } from '../../infrastructure/repositories';
 import { Button } from '../../shared/components/Button';
+import type { SleepRecord } from '../../domain/routine/routine';
+import { formatDuration } from '../../domain/routine/routine';
 import './daily-tracking-workspace.css';
 
 const summaryService = new DailyNutritionSummaryService(repositories.dailyNutritionSummaries);
@@ -20,6 +22,7 @@ export function DailyTrackingWorkspace({ profile, revision, onChanged, onNotice 
   const [water, setWater] = useState<WaterEntry[]>([]);
   const [workouts, setWorkouts] = useState<WorkoutSession[]>([]);
   const [body, setBody] = useState<ProgressRecord[]>([]);
+  const [sleep, setSleep] = useState<SleepRecord>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -31,7 +34,8 @@ export function DailyTrackingWorkspace({ profile, revision, onChanged, onNotice 
       repositories.water.listByProfileAndDate(profile.id, localDate),
       repositories.workoutSessions.listByDate(profile.id, localDate),
       repositories.progress.listRecords(profile.id),
-    ]).then(([summary, waterEntries, sessions, records]) => {
+      repositories.routine.getSleep(profile.id, localDate),
+    ]).then(([summary, waterEntries, sessions, records, sleepRecord]) => {
       if (!active) return;
       setForm(summary ? {
         caloriesKcal: present(summary.caloriesKcal), proteinG: present(summary.proteinG), carbohydratesG: present(summary.carbohydratesG), fatG: present(summary.fatG), note: summary.note ?? '',
@@ -39,6 +43,7 @@ export function DailyTrackingWorkspace({ profile, revision, onChanged, onNotice 
       setWater(waterEntries.sort((a,b)=>b.occurredAt.localeCompare(a.occurredAt)));
       setWorkouts(sessions);
       setBody(records.filter((record)=>record.localDate===localDate));
+      setSleep(sleepRecord);
       setError('');
     }).catch((caught: unknown) => { if (active) setError(caught instanceof Error ? caught.message : 'Não foi possível abrir este dia.'); })
       .finally(()=>{if(active)setLoading(false);});
@@ -71,11 +76,12 @@ export function DailyTrackingWorkspace({ profile, revision, onChanged, onNotice 
         <FactCard eyebrow="Hidratação" value={water.length?formatLiters(waterTotal):'Sem dado'} detail={water.length?`${water.length} registro(s)`:'Nenhum registro neste dia'}/>
         <FactCard eyebrow="Treino" value={workouts.length?`${workouts.filter((item)=>item.status==='completed').length} concluído(s)`:'Sem dado'} detail={workouts.length?workouts.map((item)=>item.templateName).join(' · '):'Nenhuma sessão neste dia'}/>
         <FactCard eyebrow="Corpo" value={body.some((item)=>item.weightKg!==undefined)?`${body.find((item)=>item.weightKg!==undefined)?.weightKg?.toLocaleString('pt-BR')} kg`:'Sem dado'} detail={body.length?'Há check-in ou observação':'Nenhum registro corporal neste dia'}/>
+        <FactCard eyebrow="Sono" value={formatDuration(sleep?.durationMinutes)} detail={sleep?'Data referente ao despertar':'Nenhum registro neste dia'}/>
       </section>
 
       <section className="nutrition-summary-editor"><header><div><span className="page-eyebrow">Nutrição</span><h2>Resumo manual</h2></div><small>Não exige alimentos, receitas ou refeições.</small></header><div className="summary-field-grid"><DecimalField label="Calorias" unit="kcal" value={form.caloriesKcal} onChange={(value)=>setForm({...form,caloriesKcal:value})}/><DecimalField label="Proteína" unit="g" value={form.proteinG} onChange={(value)=>setForm({...form,proteinG:value})}/><DecimalField label="Carboidratos" unit="g" value={form.carbohydratesG} onChange={(value)=>setForm({...form,carbohydratesG:value})}/><DecimalField label="Gorduras" unit="g" value={form.fatG} onChange={(value)=>setForm({...form,fatG:value})}/></div><label className="daily-note"><span>Nota do dia <small>(opcional)</small></span><textarea rows={4} maxLength={800} value={form.note} onChange={(event)=>setForm({...form,note:event.target.value})} placeholder="Contexto que você queira lembrar, sem julgamento automático."/></label>{error&&<p className="tracking-error" role="alert">{error}</p>}<footer><p>Os dados ficam neste dispositivo e entram no backup do DEFYN.</p><Button type="button" disabled={saving} onClick={()=>void save()}>{saving?'Salvando…':'Salvar resumo'}</Button></footer></section>
 
-      <section className="daily-facts-grid"><DailyList title="Água registrada" empty="Nenhuma água registrada." items={water.map((item)=>({id:item.id,title:`${item.amountMl.toLocaleString('pt-BR')} ml`,detail:new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit'}).format(new Date(item.occurredAt))}))}/><DailyList title="Treinos do dia" empty="Nenhuma sessão registrada." items={workouts.map((item)=>({id:item.id,title:item.templateName,detail:item.status==='completed'?'Concluído':item.status==='active'?'Em andamento':'Cancelado'}))}/><DailyList title="Corpo e check-in" empty="Nenhum dado corporal registrado." items={body.map((item)=>({id:item.id,title:item.weightKg!==undefined?`${item.weightKg.toLocaleString('pt-BR')} kg`:'Registro sem peso',detail:item.note??(item.measurements?'Medidas registradas':'Check-in')}))}/></section>
+      <section className="daily-facts-grid"><DailyList title="Água registrada" empty="Nenhuma água registrada." items={water.map((item)=>({id:item.id,title:`${item.amountMl.toLocaleString('pt-BR')} ml`,detail:new Intl.DateTimeFormat('pt-BR',{hour:'2-digit',minute:'2-digit'}).format(new Date(item.occurredAt))}))}/><DailyList title="Sono" empty="Nenhum sono registrado." items={sleep?[{id:sleep.id,title:formatDuration(sleep.durationMinutes),detail:sleep.note??'Data do despertar'}]:[]}/><DailyList title="Treinos do dia" empty="Nenhuma sessão registrada." items={workouts.map((item)=>({id:item.id,title:item.templateName,detail:item.status==='completed'?'Concluído':item.status==='active'?'Em andamento':'Cancelado'}))}/><DailyList title="Corpo e check-in" empty="Nenhum dado corporal registrado." items={body.map((item)=>({id:item.id,title:item.weightKg!==undefined?`${item.weightKg.toLocaleString('pt-BR')} kg`:'Registro sem peso',detail:item.note??(item.measurements?'Medidas registradas':'Check-in')}))}/></section>
     </>}
   </div>;
 }

@@ -4,16 +4,17 @@ DEFYN é um aplicativo pessoal, local-first e responsivo para treinos e acompanh
 
 ## Funcionalidades
 
-- dashboard Hoje priorizando treino, hidratação, metas nutricionais, resumo manual e progresso;
-- Diário por data com síntese nutricional opcional, água, treinos e registros corporais;
+- dashboard Hoje priorizando treino, hidratação contextual, rotina, sono, metas nutricionais e progresso;
+- Diário por data com síntese nutricional opcional, água, sono, treinos e registros corporais;
+- Rotina semanal por perfil com horários opcionais, referência à ficha ativa, registro factual de sono e lembretes locais opt-in;
 - metas de TMB, GET, calorias, proteína, carboidratos, gorduras e água;
 - perfil de treino, 52 exercícios-base, exercícios próprios, fichas versionadas e agenda;
 - Modo Academia dedicado com retomada exata, série rápida, edição/undo, descanso por timestamp, resumo, recordes reais e progressão determinística;
 - progresso de peso, medidas, fotos, treino, hidratação e médias por campo informado;
-- IndexedDB v6, backup JSON v6 compatível com backups v1–v5 e PWA offline;
-- atualização PWA automática após deploy, sem confirmação e com reload adiado somente durante sessão ativa.
+- IndexedDB v7, backup JSON v7 compatível com backups v1–v6 e PWA offline;
+- atualização PWA automática após deploy, sem confirmação e com reload adiado durante sessão ativa ou formulário de rotina não salvo.
 
-Detalhes operacionais: [Modo Academia](docs/GYM_MODE.md), [sistema de treinos](docs/TRAINING_SYSTEM.md) e [progressão](docs/WORKOUT_PROGRESSION.md).
+Detalhes operacionais: [Rotina](docs/ROUTINE_SYSTEM.md), [sono](docs/SLEEP_TRACKING.md), [lembretes](docs/REMINDERS.md), [Modo Academia](docs/GYM_MODE.md), [sistema de treinos](docs/TRAINING_SYSTEM.md) e [progressão](docs/WORKOUT_PROGRESSION.md).
 
 Catálogo de alimentos, receitas, planejamento alimentar, OCR e diário por refeições foram descontinuados na Etapa 07. Os stores legados continuam fisicamente preservados e seguem no backup, mas não são carregados pela interface principal.
 
