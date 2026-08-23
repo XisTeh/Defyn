@@ -96,3 +96,6 @@ QA no navegador: 320/360/375/390/430 e 1280/1440/1920 px, sem overflow horizonta
 - sessão ativa continua vencendo descanso no Treinos e aparece como Continuar treino no Dashboard.
 
 Não houve migration, mudança de backup, dependência nova ou alteração do domínio nutricional.
+# Etapa 08
+
+Durante sessão ativa, sidebar, drawer e cabeçalho móvel são ocultos pela classe `gym-mode-active`. A barra de sessão respeita `env(safe-area-inset-bottom)`, os campos usam `inputMode`/`enterKeyHint` e o conteúdo recebe espaço inferior suficiente para teclado e navegação fixa.

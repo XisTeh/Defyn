@@ -27,3 +27,6 @@ Em um dia sem template planejado, a Home mantém a mensagem de descanso e permit
 Sessões concluídas preservam duração, exercícios e séries. Volume soma apenas carga convencional × repetições. Logs fornecem frequência, performance e recordes futuros sem redesenhar Progresso nesta etapa.
 
 Treino não altera automaticamente calorias. O GET nutricional já considera o fator de atividade; somar “calorias queimadas” novamente causaria dupla contagem. Esta etapa não estima gasto do treino.
+# Etapa 08
+
+A sessão ativa usa a interface dedicada descrita em [GYM_MODE.md](GYM_MODE.md). Rascunhos são `WorkoutSetLog.completed = false`; confirmação, edição e undo reutilizam/removem o mesmo log. Ordem, pulo e substituição são mutações da sessão, não da versão da ficha. Finalização e cancelamento são estados distintos.

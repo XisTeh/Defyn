@@ -13,12 +13,18 @@ describe('atualização PWA imediata', () => {
     expect(config).not.toContain("registerType: 'prompt'");
   });
 
-  it('ativa somente updates de um worker existente e renavega todas as janelas', () => {
+  it('ativa somente updates de um worker existente e avisa todas as janelas', () => {
     expect(worker).toContain('registration.active');
     expect(worker).toContain("addEventListener('activate'");
     expect(worker).toContain('clients.claim()');
     expect(worker).toContain("clients.matchAll({ type: 'window', includeUncontrolled: true })");
-    expect(worker).toContain('client.navigate(client.url)');
+    expect(worker).toContain("postMessage({ type: 'DEFYN_UPDATE_READY' })");
+  });
+
+  it('adianta a ativação, mas não recarrega durante uma sessão de academia', () => {
+    expect(registration).toContain("classList.contains('gym-mode-active')");
+    expect(registration).toContain('MutationObserver');
+    expect(registration).toContain('window.location.reload()');
   });
 
   it('não mantém estado, callback ou botão de confirmação de versão', () => {

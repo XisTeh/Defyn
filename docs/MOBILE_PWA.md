@@ -4,7 +4,7 @@ O mobile usa cabeçalho compacto e drawer lateral acionado pelo perfil. As área
 
 ## Atualização
 
-`registerType: autoUpdate` verifica novas versões. `public/sw-auto-update.js` ativa o worker novo e renavega as janelas controladas quando a versão muda. Não existe banner ou botão “Atualizar agora”. Uma sessão de treino persiste no IndexedDB e pode ser retomada após a navegação.
+`registerType: autoUpdate` verifica novas versões. `public/sw-auto-update.js` ativa o worker novo e avisa as janelas controladas. Não existe banner ou botão “Atualizar agora”. A janela recarrega imediatamente quando segura; durante o Modo Academia, aguarda a saída da sessão para não interromper série, rascunho ou descanso.
 
 ## Offline
 

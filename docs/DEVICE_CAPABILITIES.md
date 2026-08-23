@@ -16,3 +16,6 @@ Permissões negadas não quebram a tarefa principal. O DEFYN explica o bloqueio 
 APIs de câmera exigem contexto seguro. `localhost` é confiável no próprio aparelho; um IP HTTP na rede local pode não ser. QA físico deve usar HTTPS confiável ou PWA instalada.
 
 No HTML, avatar usa `capture="user"`; check-in, foto de progresso e tabela nutricional usam `capture="environment"`. Os inputs de galeria não recebem `capture`, evitando abrir a câmera à força.
+# Modo Academia
+
+Wake Lock e notificação são recursos opcionais com detecção de suporte. O Wake Lock é readquirido após `visibilitychange`; o descanso continua correto sem ele. Vibração é usada apenas como feedback breve quando disponível. A ausência ou recusa de qualquer API mantém o fluxo funcional.

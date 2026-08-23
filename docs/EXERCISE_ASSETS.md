@@ -68,3 +68,6 @@ As ilustrações de exercícios são **ativos originais DEFYN**. Não foram copi
 | defyn-exercise-52 | Rosca de punho | `rosca-punho` | Sim |
 
 O teste `src/assets/exercises/exercise-media.test.ts` falha se um exercício-base não estiver no manifesto, se um asset for repetido ou se a cobertura deixar de ser 52/52.
+# Uso no Modo Academia
+
+A sessão reutiliza o mesmo pipeline de imagem da biblioteca. Assets originais são preferidos; a ilustração técnica e, por fim, iniciais por grupo muscular formam os fallbacks offline sem bloquear o registro.

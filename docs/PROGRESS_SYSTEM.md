@@ -9,3 +9,6 @@ O Progresso reúne fatos registrados por período:
 - nutrição manual nos dias/campos informados.
 
 Cada média nutricional tem denominador próprio. Calorias, proteína, carboidratos e gorduras ignoram independentemente os dias em que aquele campo está ausente. Zero explícito participa da média. O sistema descreve quantidade, média e relação com a meta histórica, sem julgamento clínico.
+# Treinos na Etapa 08
+
+Somente sessões `completed` entram em frequência, aderência e duração. Volume é convencional (`carga × repetições`) e separado por kg/lb. Sessões canceladas e séries incompletas não inflam métricas.

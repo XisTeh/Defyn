@@ -14,4 +14,4 @@ O módulo principal não instancia repositórios de alimentos, receitas ou diár
 
 ## PWA
 
-Vite gera chunks lazy para Diário, Treinos, Progresso e Backup. O Workbox precacheia shell, chunks, CSS, fontes, ícones e miniaturas de exercícios. Binários OCR não existem mais. `registerType: autoUpdate` e `sw-auto-update.js` preservam atualização imediata.
+Vite gera chunks lazy para Diário, Treinos, Progresso e Backup. O Workbox precacheia shell, chunks, CSS, fontes, ícones e miniaturas de exercícios. Binários OCR não existem mais. `registerType: autoUpdate` ativa a versão nova sem prompt; o cliente adia somente o reload visual enquanto o Modo Academia estiver ativo.

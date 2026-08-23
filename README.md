@@ -8,10 +8,12 @@ DEFYN é um aplicativo pessoal, local-first e responsivo para treinos e acompanh
 - Diário por data com síntese nutricional opcional, água, treinos e registros corporais;
 - metas de TMB, GET, calorias, proteína, carboidratos, gorduras e água;
 - perfil de treino, 52 exercícios-base, exercícios próprios, fichas versionadas e agenda;
-- sessão persistente com séries, cargas, timer, histórico e progressão determinística;
+- Modo Academia dedicado com retomada exata, série rápida, edição/undo, descanso por timestamp, resumo, recordes reais e progressão determinística;
 - progresso de peso, medidas, fotos, treino, hidratação e médias por campo informado;
 - IndexedDB v6, backup JSON v6 compatível com backups v1–v5 e PWA offline;
-- atualização PWA automática e imediata após deploy, sem confirmação do usuário.
+- atualização PWA automática após deploy, sem confirmação e com reload adiado somente durante sessão ativa.
+
+Detalhes operacionais: [Modo Academia](docs/GYM_MODE.md), [sistema de treinos](docs/TRAINING_SYSTEM.md) e [progressão](docs/WORKOUT_PROGRESSION.md).
 
 Catálogo de alimentos, receitas, planejamento alimentar, OCR e diário por refeições foram descontinuados na Etapa 07. Os stores legados continuam fisicamente preservados e seguem no backup, mas não são carregados pela interface principal.
 

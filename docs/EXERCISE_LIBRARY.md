@@ -13,3 +13,6 @@ Os 52 exercícios-base têm miniaturas PNG originais do DEFYN, mapeadas por `exe
 Exercícios próprios são persistidos em `exercises` com `isCustom` e `ownerProfileId`; outro perfil não os consulta. Favoritos ficam em `exerciseFavorites` com índice único `[profileId+exerciseId]`. Busca considera nome, rótulo do músculo e rótulo do equipamento; filtros incluem músculo, equipamento, favoritos e próprios.
 
 O catálogo DEFYN e suas ilustrações estáticas são código do produto e não entram no backup. Somente exercícios próprios e suas referências pessoais são exportados. Nenhuma mídia externa foi incorporada, portanto não há licença de terceiros a declarar. Consulte `EXERCISE_ASSETS.md` para a matriz completa.
+# Integração com a sessão
+
+O detalhe do exercício pode ser aberto pela imagem no Modo Academia. Substituições filtram padrões musculares compatíveis e alteram somente o snapshot daquela sessão. Exercícios próprios continuam isolados pelo perfil.

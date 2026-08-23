@@ -81,3 +81,6 @@ As capturas do Puzoto e as imagens clássicas fornecidas orientam atmosfera, con
 - O drawer separa o resumo do perfil atual da lista vertical de troca e aplica rolagem interna independente.
 - Formulários longos em sheet usam grid `header / minmax(0,1fr) / footer`; apenas o body rola e o footer considera safe area.
 - No editor de treino, ação secundária e ação primária permanecem horizontais de 320 a 430 px, com maior peso para salvar.
+# Modo Academia
+
+O Modo Academia usa uma superfície imersiva, cartões de alto contraste, ação primária única por etapa e barra inferior fixa. Ações secundárias permanecem lado a lado, sem quebra de texto; inputs numéricos têm 60–64 px e os alvos interativos respeitam mínimo de 44 px.

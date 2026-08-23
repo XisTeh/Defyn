@@ -91,8 +91,8 @@ export function TodayDashboard({ profileId, revision, onNotice, onNavigateTraini
     <header className="today-header"><div><span className="page-eyebrow">Hoje · {formatLocalDate(new Date())}</span><h1>Olá, {data.profile.name}.</h1><p>Treino, hidratação, direção nutricional e progresso em um só lugar.</p></div><div className="today-profile-chip"><span>{data.profile.currentWeightKg.toLocaleString('pt-BR')} kg</span><small>{goalLabel(data.profile.goal)}</small></div></header>
 
     <section className="today-workout-card today-priority-card">
-      <div><span className="page-eyebrow">Treino de hoje</span><h2>{training?.activeSession?.templateName ?? training?.template?.name ?? 'Nenhum treino planejado'}</h2><p>{training?.activeSession ? 'Sessão em andamento e salva neste dispositivo.' : training?.template ? `${training.template.focus} · ${training.template.exercises.length} exercícios · ~${training.template.approximateMinutes} min` : 'Abra Treinos para montar ou escolher sua ficha.'}</p></div>
-      <Button className="today-workout-action" type="button" onClick={onNavigateTraining}>{training?.activeSession ? 'Continuar treino' : training?.template ? 'Iniciar treino' : 'Abrir treinos'} <span aria-hidden="true">↗</span></Button>
+      <div><span className="page-eyebrow">Treino de hoje</span><h2>{training?.activeSession?.templateName ?? training?.completedSession?.templateName ?? training?.template?.name ?? 'Dia de descanso'}</h2><p>{training?.activeSession ? 'Sessão em andamento e salva neste dispositivo.' : training?.completedSession ? 'Treino concluído e disponível no histórico.' : training?.template ? `${training.template.focus} · ${training.template.exercises.length} exercícios · ~${training.template.approximateMinutes} min` : 'Descanse ou escolha qualquer treino para uma sessão avulsa.'}</p></div>
+      <Button className="today-workout-action" type="button" onClick={onNavigateTraining}>{training?.activeSession ? 'Continuar treino' : training?.completedSession ? 'Ver resumo' : training?.template ? 'Iniciar treino' : 'Escolher treino'} <span aria-hidden="true">↗</span></Button>
     </section>
 
     <section className="lower-grid">

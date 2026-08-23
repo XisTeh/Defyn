@@ -1,6 +1,6 @@
 import { BASE_EXERCISES } from '../../domain/training/exercise-library';
 import type { ExerciseRepository, TrainingProfileRepository, WorkoutPlanRepository, WorkoutSessionRepository } from '../../domain/training/repository';
-import { currentPlanVersion, localDayFor, type TrainingProfile, type WorkoutExercisePrescription, type WorkoutPlan, type WorkoutSession, type WorkoutSetLog, type WorkoutTemplate } from '../../domain/training/training';
+import { currentPlanVersion, localDayFor, type TrainingProfile, type WorkoutExercisePrescription, type WorkoutExerciseSnapshot, type WorkoutPlan, type WorkoutSession, type WorkoutSetLog, type WorkoutTemplate } from '../../domain/training/training';
 import { generateStarterPlan, withNewPlanVersion } from '../../domain/training/workout-planner';
 import { toLocalDateKey } from '../../domain/shared/local-date';
 
@@ -8,6 +8,7 @@ export interface TodayWorkout {
   plan?: WorkoutPlan;
   template?: WorkoutTemplate;
   activeSession?: WorkoutSession;
+  completedSession?: WorkoutSession;
 }
 
 export class TrainingService {
@@ -32,10 +33,11 @@ export class TrainingService {
   }
 
   async getToday(profileId: string, date = this.now()): Promise<TodayWorkout> {
-    const [plan, activeSession] = await Promise.all([this.plans.getActive(profileId), this.sessions.getActive(profileId)]);
-    if (!plan) return { activeSession };
+    const [plan, activeSession, todaySessions] = await Promise.all([this.plans.getActive(profileId), this.sessions.getActive(profileId), this.sessions.listByDate(profileId, toLocalDateKey(date))]);
+    const completedSession = todaySessions.filter((item) => item.status === 'completed').sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+    if (!plan) return { activeSession, completedSession };
     const version = currentPlanVersion(plan);
-    return { plan, template: version.templates.find((item) => item.scheduledDay === localDayFor(date)), activeSession };
+    return { plan, template: version.templates.find((item) => item.scheduledDay === localDayFor(date)), activeSession, completedSession };
   }
 
   async startSession(profileId: string, planId: string, templateId: string): Promise<WorkoutSession> {
@@ -86,6 +88,17 @@ export class TrainingService {
     const session = await this.sessions.getById(profileId, sessionId);
     if (!session || session.status !== 'active') throw new Error('Sessão ativa não encontrada.');
     await this.sessions.removeSetLog(profileId, logId);
+  }
+
+  async reorderSessionExercises(profileId: string, sessionId: string, from: number, to: number): Promise<WorkoutSession> {
+    const session = await this.sessions.getById(profileId, sessionId);
+    if (!session || session.status !== 'active') throw new Error('Sessão ativa não encontrada.');
+    const exercises = TrainingService.reorderSnapshots(session.exercises, from, to);
+    const currentExercise = session.exercises[session.currentExerciseIndex];
+    const currentExerciseIndex = currentExercise ? exercises.findIndex((item) => item.prescriptionId === currentExercise.prescriptionId) : 0;
+    const next = { ...session, exercises, currentExerciseIndex: Math.max(0, currentExerciseIndex), updatedAt: this.now().toISOString() };
+    await this.sessions.save(next);
+    return next;
   }
 
   async updateSession(session: WorkoutSession): Promise<void> {
@@ -156,5 +169,13 @@ export class TrainingService {
     if (!moved) return exercises;
     result.splice(to, 0, moved);
     return result.map((item, order) => ({ ...item, order }));
+  }
+
+  static reorderSnapshots(exercises: WorkoutExerciseSnapshot[], from: number, to: number): WorkoutExerciseSnapshot[] {
+    const result = [...exercises];
+    const [moved] = result.splice(from, 1);
+    if (!moved) return exercises;
+    result.splice(Math.max(0, Math.min(result.length, to)), 0, moved);
+    return result;
   }
 }

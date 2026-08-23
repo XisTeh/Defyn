@@ -45,16 +45,33 @@ export function useDeviceExperience() {
       setInstallPrompt(event as BeforeInstallPromptEvent);
     };
     const installed = () => setInstallPrompt(undefined);
+    let updatePending = false;
+    const safeToReload = () => !document.documentElement.classList.contains('gym-mode-active') && !document.querySelector('[data-pwa-update-blocking="true"]');
+    const applyUpdateWhenSafe = () => {
+      if (!updatePending || !safeToReload()) return;
+      updatePending = false;
+      window.location.reload();
+    };
+    const workerMessage = (event: MessageEvent<{ type?: string }>) => {
+      if (event.data?.type !== 'DEFYN_UPDATE_READY') return;
+      updatePending = true;
+      if (safeToReload()) window.location.reload();
+    };
+    const updateObserver = new MutationObserver(applyUpdateWhenSafe);
+    updateObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
     window.addEventListener('online', becameOnline);
     window.addEventListener('offline', becameOffline);
     window.addEventListener('beforeinstallprompt', beforeInstall);
     window.addEventListener('appinstalled', installed);
+    navigator.serviceWorker?.addEventListener('message', workerMessage);
     return () => {
       pwaListeners.delete(listener);
       window.removeEventListener('online', becameOnline);
       window.removeEventListener('offline', becameOffline);
       window.removeEventListener('beforeinstallprompt', beforeInstall);
       window.removeEventListener('appinstalled', installed);
+      navigator.serviceWorker?.removeEventListener('message', workerMessage);
+      updateObserver.disconnect();
     };
   }, []);
 

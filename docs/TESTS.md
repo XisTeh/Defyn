@@ -22,3 +22,6 @@ npm audit --omit=dev
 ```
 
 O QA visual complementa a suíte nos viewports descritos em `MOBILE_PWA.md` e confirma ausência de overflow horizontal, drawer utilizável, sessão de treino retomável e nenhuma confirmação manual de atualização.
+# Cobertura da Etapa 08
+
+Os testes cobrem sessão manual em descanso, prevenção de duplicata, retomada após nova instância, rascunho e conclusão no mesmo log, edição/remoção, timestamp de descanso, pulo, substituição, ordem temporária, finalização, cancelamento, snapshots de nome, progressão, recordes sem mistura de unidade e isolamento por perfil. O PWA testa ativação automática com reload protegido durante a sessão.

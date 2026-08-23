@@ -51,3 +51,6 @@ O QA de regressão foi executado de verdade em **320×800, 360×800, 375×812, 3
 - o build de produção foi carregado, o servidor foi desligado e o shell reabriu pelo service worker.
 
 Lint, typecheck, **185 testes em 35 arquivos** e build PWA com **77 entradas / 10.206,34 KiB** estão aprovados. A validação física final das correções 06.3 continua pendente.
+# Matriz da Etapa 08
+
+Modo Academia verificado em 320×800, 360×800, 375×812, 390×844 e 430×932; desktop em 1280×800, 1366×768, 1440×900 e 1920×1080. Critérios: sem overflow horizontal, controles ≥44 px, nomes sem corte, barra inferior dentro da safe area, sidebar/header ocultos, modal rolável e retomada após reload.

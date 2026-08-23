@@ -17,3 +17,9 @@ Perfis, metas, hidratação, PWA, backup, treino completo, progresso corporal, f
 ## Próximas possibilidades
 
 Agenda e lembretes locais podem evoluir respeitando limitações de segundo plano. Sincronização, integrações externas, scanner e recomendações médicas continuam fora do escopo.
+# Entregue na Etapa 08
+
+- Modo Academia dedicado e responsivo;
+- retomada exata e prevenção de sessão duplicada;
+- edição/undo, descanso por timestamp, resumo e recordes reais;
+- reload de PWA protegido durante sessão ativa.

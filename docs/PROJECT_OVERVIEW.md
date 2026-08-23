@@ -11,3 +11,6 @@ O DEFYN responde “como está meu acompanhamento hoje?” com foco em treino, h
 - Conta local: ficha/metas, perfis e backup.
 
 Alimentos, receitas, refeições, favoritos alimentares, planejamento e OCR não fazem parte do produto atual. Seus dados antigos são legado preservado para restauração compatível.
+# Etapa 08
+
+Treinos agora têm um Modo Academia operacional, dedicado ao uso durante a sessão, com persistência por ação, descanso resiliente a segundo plano, resumo, recordes reais e integração dos estados planejado/ativo/concluído/descanso no Hoje.

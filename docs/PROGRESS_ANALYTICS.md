@@ -15,4 +15,7 @@ Sessões concluídas fornecem frequência, duração, séries e aderência à ag
 ## Insights
 
 `buildInsights` usa somente resultados das funções puras e retorna no máximo quatro mensagens: tendência de peso, dias nutricionais, hidratação média e treinos concluídos. Ausência de dados gera orientação neutra, nunca punição, prescrição ou conclusão clínica.
+# Recordes de exercício
+
+Recordes são derivados dos logs concluídos do perfil: maior carga e repetições reais. Kg e lb são agregados separadamente e não existe estimativa de 1RM.
 

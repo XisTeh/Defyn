@@ -6,6 +6,6 @@ defynWorkerScope.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     await defynWorkerScope.clients.claim();
     const windows = await defynWorkerScope.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    await Promise.allSettled(windows.map((client) => client.navigate(client.url)));
+    windows.forEach((client) => client.postMessage({ type: 'DEFYN_UPDATE_READY' }));
   })());
 });
