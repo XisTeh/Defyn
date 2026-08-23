@@ -7,14 +7,13 @@ import type { UserProfile } from '../domain/profile/profile';
 import { repositories } from '../infrastructure/repositories';
 import { AppShell } from '../features/app-shell/AppShell';
 import { TodayDashboard } from '../features/dashboard/TodayDashboard';
-import { FeatureEmptyState } from '../features/empty-state/FeatureEmptyState';
 import { ProfileSetup } from '../features/profile-setup/ProfileSetup';
 import { ProfileManager } from '../features/profiles/ProfileManager';
 import type { AppView } from './navigation';
 import { ModuleFallback } from '../shared/components/ModuleFallback';
 
 const BackupPanel = lazy(() => import('../features/backup/BackupPanel').then((module) => ({ default: module.BackupPanel })));
-const NutritionWorkspace = lazy(() => import('../features/nutrition/NutritionWorkspace').then((module) => ({ default: module.NutritionWorkspace })));
+const DailyTrackingWorkspace = lazy(() => import('../features/daily-tracking/DailyTrackingWorkspace').then((module) => ({ default: module.DailyTrackingWorkspace })));
 const TrainingWorkspace = lazy(() => import('../features/training/TrainingWorkspace').then((module) => ({ default: module.TrainingWorkspace })));
 const ProgressWorkspace = lazy(() => import('../features/progress/ProgressWorkspace').then((module) => ({ default: module.ProgressWorkspace })));
 
@@ -147,12 +146,12 @@ interface CurrentViewProps {
 }
 
 function CurrentView(props: CurrentViewProps) {
-  if (props.view === 'today') return <TodayDashboard profileId={props.activeProfile.id} revision={props.revision} onNotice={props.onNotice} onNavigateTraining={() => props.onNavigate('training')} />;
+  if (props.view === 'today') return <TodayDashboard profileId={props.activeProfile.id} revision={props.revision} onNotice={props.onNotice} onNavigateTraining={() => props.onNavigate('training')} onNavigateDiary={() => props.onNavigate('diary')} onNavigateProgress={() => props.onNavigate('progress')} />;
   if (props.view === 'profiles') return <ProfileManager profiles={props.profiles} activeProfileId={props.activeProfile.id} onSwitch={props.onSwitch} onEdit={props.onEdit} onAdd={props.onAdd} onDelete={props.onDelete} />;
   if (props.view === 'backup') return <Suspense fallback={<ModuleFallback label="Abrindo backup" />}><BackupPanel onRestored={props.onRestored} /></Suspense>;
-  if (props.view === 'foods' || props.view === 'diary' || props.view === 'recipes' || props.view === 'planner') return <Suspense fallback={<ModuleFallback label={`Abrindo ${props.view === 'foods' ? 'alimentos' : props.view === 'recipes' ? 'receitas' : props.view === 'diary' ? 'diário' : 'planejamento'}`} />}><NutritionWorkspace view={props.view} profile={props.activeProfile} revision={props.revision} onChanged={props.onChanged} onNotice={props.onNotice} /></Suspense>;
+  if (props.view === 'diary') return <Suspense fallback={<ModuleFallback label="Abrindo diário" />}><DailyTrackingWorkspace profile={props.activeProfile} revision={props.revision} onChanged={props.onChanged} onNotice={props.onNotice} /></Suspense>;
   if (props.view === 'training') return <Suspense fallback={<ModuleFallback label="Abrindo treinos" />}><TrainingWorkspace profile={props.activeProfile} revision={props.revision} onChanged={props.onChanged} onNotice={props.onNotice} /></Suspense>;
   if (props.view === 'progress') return <Suspense fallback={<ModuleFallback label="Abrindo progresso" />}><ProgressWorkspace profile={props.activeProfile} revision={props.revision} onChanged={props.onChanged} onNotice={props.onNotice} onEditProfile={() => props.onEdit(props.activeProfile)} /></Suspense>;
   if (props.view === 'profile') return null;
-  return <FeatureEmptyState kind={props.view} />;
+  return null;
 }

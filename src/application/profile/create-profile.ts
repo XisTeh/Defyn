@@ -72,7 +72,7 @@ export class CreateProfileService {
       macroConfiguration,
       hydrationConfiguration: command.hydrationConfiguration,
       avatarMediaId: existingProfile?.avatarMediaId,
-      nutritionPlanning: existingProfile?.nutritionPlanning ?? { mealsPerDay: 4, mealTimes: ['07:30', '12:30', '16:30', '20:00'], preferredFoods: [], dislikedFoods: [], avoidedFoods: [], dietaryRestrictions: [], intolerances: [], allergies: [], supplements: [], mealSizePreference: 'balanced', flexiblePlanning: true },
+      nutritionPlanning: existingProfile?.nutritionPlanning,
       hydrationRoutine: existingProfile?.hydrationRoutine ?? { wakeTime: '07:00', sleepTime: '23:00', remindersEnabled: false, pacingMode: 'continuous' },
       units: { weight: 'kg', height: 'cm', energy: 'kcal' },
       createdAt: existingProfile?.createdAt ?? timestamp,

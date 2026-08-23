@@ -22,6 +22,8 @@ import type { FavoriteMeal } from '../../domain/diary/diary';
 import { BASE_EXERCISES } from '../../domain/training/exercise-library';
 import type { Exercise, ExerciseFavorite, TrainingProfile, WorkoutPlan, WorkoutSession, WorkoutSetLog } from '../../domain/training/training';
 import type { ExerciseRepository, TrainingProfileRepository, WorkoutPlanRepository, WorkoutSessionRepository } from '../../domain/training/repository';
+import type { DailyNutritionSummary } from '../../domain/nutrition-summary/daily-nutrition-summary';
+import type { DailyNutritionSummaryRepository } from '../../domain/nutrition-summary/repository';
 
 export class IndexedDbProfileRepository implements ProfileRepository {
   constructor(private readonly database: DefynDatabase) {}
@@ -59,6 +61,15 @@ export class IndexedDbNutritionTargetRepository implements NutritionTargetReposi
   async removeByProfile(profileId: string) {
     await this.database.nutritionTargets.where('profileId').equals(profileId).delete();
   }
+}
+
+export class IndexedDbDailyNutritionSummaryRepository implements DailyNutritionSummaryRepository {
+  constructor(private readonly database: DefynDatabase) {}
+  get(profileId: string, localDate: string) { return this.database.dailyNutritionSummaries.where('[profileId+localDate]').equals([profileId, localDate]).first(); }
+  listByPeriod(profileId: string, startLocalDate: string | undefined, endLocalDate: string) { return this.database.dailyNutritionSummaries.where('[profileId+localDate]').between([profileId, startLocalDate ?? '0000-00-00'], [profileId, endLocalDate], true, true).sortBy('localDate'); }
+  async save(summary: DailyNutritionSummary) { await this.database.dailyNutritionSummaries.put(summary); }
+  async remove(profileId: string, localDate: string) { await this.database.dailyNutritionSummaries.where('[profileId+localDate]').equals([profileId, localDate]).delete(); }
+  async removeByProfile(profileId: string) { await this.database.dailyNutritionSummaries.where('profileId').equals(profileId).delete(); }
 }
 
 export class IndexedDbFoodRepository implements FoodRepository {
@@ -183,6 +194,7 @@ export class IndexedDbProfileDataGateway implements ProfileDataGateway {
         this.database.workoutPlans,
         this.database.workoutSessions,
         this.database.workoutSetLogs,
+        this.database.dailyNutritionSummaries,
       ],
       async () => {
         const customExerciseIds = await this.database.exercises.where('ownerProfileId').equals(profileId).primaryKeys();
@@ -205,6 +217,7 @@ export class IndexedDbProfileDataGateway implements ProfileDataGateway {
           this.database.workoutPlans.where('profileId').equals(profileId).delete(),
           this.database.workoutSessions.where('profileId').equals(profileId).delete(),
           this.database.workoutSetLogs.where('profileId').equals(profileId).delete(),
+          this.database.dailyNutritionSummaries.where('profileId').equals(profileId).delete(),
         ]);
       },
     );

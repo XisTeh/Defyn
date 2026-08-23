@@ -1,5 +1,4 @@
-import type { DiaryEntry } from '../diary/diary';
-import { totalDiaryNutrients } from '../diary/diary';
+import type { DailyNutritionSummary } from '../nutrition-summary/daily-nutrition-summary';
 import { calculateHydrationTarget, type WaterEntry } from '../hydration/hydration';
 import type { UserProfile } from '../profile/profile';
 import type { NutritionTargetSnapshot } from '../targets/nutrition-target';
@@ -8,7 +7,7 @@ import { currentPlanVersion, sessionVolume } from '../training/training';
 import type { ProgressPeriod, ProgressRecord } from './progress';
 
 export interface WeightTrend { kind: 'up' | 'down' | 'stable' | 'insufficient'; changeKg?: number; currentAverageKg?: number; previousAverageKg?: number; message: string; }
-export interface NutritionProgress { registeredDays: number; averageCalories?: number; averageCalorieTarget?: number; averageDifference?: number; proteinAverage?: number; proteinTargetAverage?: number; proteinDaysAtTarget: number; carbsAverage?: number; fatAverage?: number; }
+export interface NutritionProgress { registeredDays: number; calorieRegisteredDays: number; proteinRegisteredDays: number; carbohydratesRegisteredDays: number; fatRegisteredDays: number; averageCalories?: number; averageCalorieTarget?: number; averageDifference?: number; proteinAverage?: number; proteinTargetAverage?: number; proteinDaysAtTarget: number; carbsAverage?: number; fatAverage?: number; }
 export interface HydrationProgress { registeredDays: number; averageMl?: number; averageTargetMl?: number; daysAtTarget: number; }
 export interface ExerciseProgress { exerciseId: string; name: string; bestLoad?: number; loadUnit?: 'kg' | 'lb'; bestReps?: number; bestVolume?: number; points: { localDate: string; load?: number; reps?: number; volume?: number }[]; }
 export interface TrainingProgress { completedSessions: number; plannedSessions: number; adherence?: number; totalMinutes: number; averageMinutes?: number; completedSets: number; volumeKg: number; volumeLb: number; exerciseRecords: ExerciseProgress[]; weekly: { label: string; count: number }[]; }
@@ -28,10 +27,29 @@ export function calculateWeightTrend(records: readonly ProgressRecord[], endLoca
 
 function targetForDate(targets: readonly NutritionTargetSnapshot[], date: string) { const instant = `${date}T12:00:00.000Z`; return [...targets].reverse().find((target) => target.startsAt <= instant && (!target.endsAt || target.endsAt >= instant)); }
 
-export function aggregateNutrition(entries: readonly DiaryEntry[], targets: readonly NutritionTargetSnapshot[], period: ProgressPeriod): NutritionProgress {
-  const grouped = new Map<string, DiaryEntry[]>(); entries.filter((item) => inPeriod(item.date, period)).forEach((item) => grouped.set(item.date, [...(grouped.get(item.date) ?? []), item]));
-  const days = [...grouped.entries()].map(([date, values]) => ({ nutrients: totalDiaryNutrients(values), target: targetForDate(targets, date)?.result })); const withTarget = days.filter((item) => item.target);
-  return { registeredDays: days.length, averageCalories: average(days.map((d) => d.nutrients.caloriesKcal ?? 0)), averageCalorieTarget: average(withTarget.map((d) => d.target!.calorieTarget)), averageDifference: average(withTarget.map((d) => (d.nutrients.caloriesKcal ?? 0) - d.target!.calorieTarget)), proteinAverage: average(days.map((d) => d.nutrients.proteinGrams ?? 0)), proteinTargetAverage: average(withTarget.map((d) => d.target!.macros.protein.grams)), proteinDaysAtTarget: withTarget.filter((d) => (d.nutrients.proteinGrams ?? 0) >= d.target!.macros.protein.grams).length, carbsAverage: average(days.map((d) => d.nutrients.carbsGrams ?? 0)), fatAverage: average(days.map((d) => d.nutrients.fatGrams ?? 0)) };
+export function aggregateNutrition(summaries: readonly DailyNutritionSummary[], targets: readonly NutritionTargetSnapshot[], period: ProgressPeriod): NutritionProgress {
+  const days = summaries.filter((item) => inPeriod(item.localDate, period)).map((summary) => ({ summary, target: targetForDate(targets, summary.localDate)?.result }));
+  const calories = days.filter((item) => item.summary.caloriesKcal !== undefined);
+  const caloriesWithTarget = calories.filter((item) => item.target);
+  const protein = days.filter((item) => item.summary.proteinG !== undefined);
+  const proteinWithTarget = protein.filter((item) => item.target);
+  const carbohydrates = days.filter((item) => item.summary.carbohydratesG !== undefined);
+  const fat = days.filter((item) => item.summary.fatG !== undefined);
+  return {
+    registeredDays: days.length,
+    calorieRegisteredDays: calories.length,
+    proteinRegisteredDays: protein.length,
+    carbohydratesRegisteredDays: carbohydrates.length,
+    fatRegisteredDays: fat.length,
+    averageCalories: average(calories.map((item) => item.summary.caloriesKcal as number)),
+    averageCalorieTarget: average(caloriesWithTarget.map((item) => item.target!.calorieTarget)),
+    averageDifference: average(caloriesWithTarget.map((item) => (item.summary.caloriesKcal as number) - item.target!.calorieTarget)),
+    proteinAverage: average(protein.map((item) => item.summary.proteinG as number)),
+    proteinTargetAverage: average(proteinWithTarget.map((item) => item.target!.macros.protein.grams)),
+    proteinDaysAtTarget: proteinWithTarget.filter((item) => (item.summary.proteinG as number) >= item.target!.macros.protein.grams).length,
+    carbsAverage: average(carbohydrates.map((item) => item.summary.carbohydratesG as number)),
+    fatAverage: average(fat.map((item) => item.summary.fatG as number)),
+  };
 }
 
 export function aggregateHydration(entries: readonly WaterEntry[], profile: UserProfile, records: readonly ProgressRecord[], period: ProgressPeriod): HydrationProgress {

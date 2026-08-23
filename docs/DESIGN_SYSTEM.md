@@ -19,7 +19,7 @@ Os tokens vivem em `src/shared/styles/tokens.css`:
 
 Cor nunca é o único identificador: pontos, barras e mensagens permanecem acompanhados por rótulos, valores ou ícones.
 
-`MacroLegend` é o componente compartilhado para resumos compactos de P/C/G. Diário, Planejamento, Alimentos e Receitas o reutilizam; páginas futuras devem preferi-lo para manter cores, ordem, rótulos e acessibilidade consistentes.
+`MacroLegend` permanece disponível para resumos compactos de P/C/G. No produto atual, o Diário usa campos manuais independentes e o dashboard apresenta metas e valores informados sem depender de alimentos.
 
 O fundo combina grid de 74 px, pontos raros, luz difusa e ruído de baixa opacidade. Escudos concêntricos e anéis gravados reinterpretam as referências greco-espartanas e vikings como marca d’água. Nenhum desses elementos interfere em hit testing ou leitura.
 
@@ -28,7 +28,7 @@ O fundo combina grid de 74 px, pontos raros, luz difusa e ruído de baixa opacid
 A maior parte da interface usa vidro claro com `backdrop-filter`, borda grafite entre 10% e 22% e sombra fria curta. Superfícies escuras aparecem somente onde o contraste ajuda a leitura:
 
 - energia diária no Dashboard;
-- resumo do Diário e metas do Planejamento;
+- resumo manual do Diário e metas nutricionais;
 - painel de estimativas da Ficha;
 - exportação no Backup;
 - botões primários e estados selecionados de alta importância.

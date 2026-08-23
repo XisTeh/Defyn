@@ -24,7 +24,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
     const [
       profiles, nutritionTargets, foods, recipes, diaryEntries, mealCategories,
       waterEntries, progressRecords, progressPhotos, preferences, foodPreferences, favoriteMeals, media,
-      trainingProfiles, exercises, exerciseFavorites, workoutPlans, workoutSessions, workoutSetLogs,
+      trainingProfiles, exercises, exerciseFavorites, workoutPlans, workoutSessions, workoutSetLogs, dailyNutritionSummaries,
     ] = await Promise.all([
       this.database.profiles.toArray(),
       this.database.nutritionTargets.toArray(),
@@ -45,12 +45,13 @@ export class IndexedDbBackupGateway implements BackupGateway {
       this.database.workoutPlans.toArray(),
       this.database.workoutSessions.toArray(),
       this.database.workoutSetLogs.toArray(),
+      this.database.dailyNutritionSummaries.toArray(),
     ]);
     const serializedMedia = await Promise.all(media.map(async ({ blob, ...item }) => ({ ...item, dataUrl: await blobToDataUrl(blob) })));
     return {
       profiles, nutritionTargets, foods, recipes, diaryEntries, mealCategories,
       waterEntries, progressRecords, progressPhotos, preferences, foodPreferences, favoriteMeals, media: serializedMedia,
-      trainingProfiles, exercises, exerciseFavorites, workoutPlans, workoutSessions, workoutSetLogs,
+      trainingProfiles, exercises, exerciseFavorites, workoutPlans, workoutSessions, workoutSetLogs, dailyNutritionSummaries,
     };
   }
 
@@ -63,6 +64,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
       this.database.foodPreferences, this.database.favoriteMeals, this.database.media,
       this.database.trainingProfiles, this.database.exercises, this.database.exerciseFavorites,
       this.database.workoutPlans, this.database.workoutSessions, this.database.workoutSetLogs,
+      this.database.dailyNutritionSummaries,
     ];
     await this.database.transaction('rw', tables, async () => {
       await Promise.all(tables.map((table) => table.clear()));
@@ -85,6 +87,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
       await this.database.workoutPlans.bulkPut(data.workoutPlans);
       await this.database.workoutSessions.bulkPut(data.workoutSessions);
       await this.database.workoutSetLogs.bulkPut(data.workoutSetLogs);
+      await this.database.dailyNutritionSummaries.bulkPut(data.dailyNutritionSummaries);
     });
   }
 }

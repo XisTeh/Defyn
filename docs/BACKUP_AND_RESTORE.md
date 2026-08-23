@@ -1,21 +1,7 @@
 # Backup e restauração
 
-## Formato
+O formato atual é `defyn-backup` v6. A exportação inclui todas as coleções atuais e legadas, inclusive `dailyNutritionSummaries` e mídia serializada em data URL.
 
-JSON com `format: "defyn-backup"`, `version: 5`, `exportedAt` e `data`. Inclui perfis, targets, alimentos — inclusive tabelas nutricionais estruturadas —, receitas, diário, categorias, água, favoritos, progresso corporal, fotos, preferências, perfil de treino, exercícios próprios, fichas/versionamento, sessões, séries e mídia necessária em data URL base64.
+Backups v1–v5 são aceitos. Ao importar uma versão anterior, `dailyNutritionSummaries` começa vazio; alimentos, receitas e diário legado são preservados como recebidos, sem conversão automática. A restauração valida perfis, referências, mídia, treinos e valores nutricionais não negativos antes da transação.
 
-Arquivos usam o nome `defyn-backup-AAAA-MM-DD.json`, baseado no dia local.
-
-## Validação
-
-Antes de gravar, o parser confirma JSON válido, formato, versão, todas as coleções, estrutura mínima de perfis, referências de perfil, check-in e mídia, números corporais finitos e referência válida de `activeProfileId`. JSON arbitrário ou versões futuras são rejeitados com mensagem clara.
-
-## Estratégia
-
-A restauração v5 é completa e transacional. Não há merge inteligente. A interface apresenta conteúdo validado e exige segunda ação. Backups v1–v4 são reconhecidos; v4 preserva os alimentos simplificados e apenas passa a admitir `nutritionLabel` opcional. Progresso legado recebe data local, instante, origem e categoria antes da validação. Versões futuras são rejeitadas.
-
-O JSON portátil foi mantido; toda mídia persistida é comprimida no dispositivo. Base64 aumenta o trecho de mídia em aproximadamente 33%; se a galeria crescer muito, a evolução indicada é ZIP com manifest, dados e pasta de mídia. Caches de OCR, thumbnails regeneráveis e workers não entram no backup.
-
-O arquivo é criado e lido no próprio dispositivo; não é enviado a servidor.
-
-Antes do download/compartilhamento, o JSON recém-gerado passa novamente pelo parser de integridade. Web Share com arquivos é oferecido somente quando `navigator.canShare({files})` confirma suporte; download permanece fallback. A tela também apresenta estimativa de armazenamento e pedido opcional de persistência.
+O restore substitui o estado local somente após validação integral. O usuário deve guardar o JSON em local seguro: o DEFYN não mantém cópia remota.

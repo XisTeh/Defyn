@@ -21,6 +21,4 @@ O padrão migrado é 35 ml/kg, tratado explicitamente como estimativa configurá
 
 O ritmo diário é uma heurística do DEFYN: progresso esperado entre acordar/dormir com tolerância de `max(200 ml, 8% da meta)`. Estados: no ritmo, pouco/bem abaixo, acima, atingida e fora da janela. Não é prescrição nem regra clínica universal.
 
-## Planejamento alimentar
-
-Presets `balanced` e `main-meals-larger` distribuem energia/macros na mesma razão. O filtro de compatibilidade usa apenas texto informado no perfil e metadados do alimento. Sugestão de quantidade é proporcional, arredondada por apresentação e descartada fora de limites configurados. O motor não cria alimentos, não otimiza uma “dieta perfeita” e não chama IA.
+O motor calcula somente direção e metas. Não cria alimentos, refeições, cardápios ou recomendações.

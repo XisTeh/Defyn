@@ -40,8 +40,7 @@ type FormState = {
   adjustmentKcal: string;
   hydrationMode: 'weight-based' | 'custom';
   hydrationValue: string;
-  mealsPerDay: string; mealTimes: string; trainingTime: string; preferredFoods: string; dislikedFoods: string; avoidedFoods: string; restrictions: string; intolerances: string; allergies: string; supplements: string;
-  mealSizePreference: 'balanced' | 'main-meals-larger'; flexiblePlanning: boolean; wakeTime: string; sleepTime: string; remindersEnabled: boolean; pacingMode: 'continuous' | 'checkpoints';
+  wakeTime: string; sleepTime: string; remindersEnabled: boolean; pacingMode: 'continuous' | 'checkpoints';
 };
 
 const emptyForm: FormState = {
@@ -56,7 +55,7 @@ const emptyForm: FormState = {
   adjustmentKcal: String(EXAMPLE_CALORIE_DEFICIT_KCAL),
   hydrationMode: 'weight-based',
   hydrationValue: '35',
-  mealsPerDay: '4', mealTimes: '07:30, 12:30, 16:30, 20:00', trainingTime: '', preferredFoods: '', dislikedFoods: '', avoidedFoods: '', restrictions: '', intolerances: '', allergies: '', supplements: '', mealSizePreference: 'balanced', flexiblePlanning: true, wakeTime: '07:00', sleepTime: '23:00', remindersEnabled: false, pacingMode: 'continuous',
+  wakeTime: '07:00', sleepTime: '23:00', remindersEnabled: false, pacingMode: 'continuous',
 };
 
 function formFromProfile(profile?: UserProfile): FormState {
@@ -80,7 +79,7 @@ function formFromProfile(profile?: UserProfile): FormState {
         ? profile.hydrationConfiguration.customTargetMl
         : profile.hydrationConfiguration.mlPerKg,
     ),
-    mealsPerDay: String(profile.nutritionPlanning?.mealsPerDay ?? 4), mealTimes: (profile.nutritionPlanning?.mealTimes ?? ['07:30', '12:30', '16:30', '20:00']).join(', '), trainingTime: profile.nutritionPlanning?.trainingTime ?? '', preferredFoods: (profile.nutritionPlanning?.preferredFoods ?? []).join(', '), dislikedFoods: (profile.nutritionPlanning?.dislikedFoods ?? []).join(', '), avoidedFoods: (profile.nutritionPlanning?.avoidedFoods ?? []).join(', '), restrictions: (profile.nutritionPlanning?.dietaryRestrictions ?? []).join(', '), intolerances: (profile.nutritionPlanning?.intolerances ?? []).join(', '), allergies: (profile.nutritionPlanning?.allergies ?? []).join(', '), supplements: (profile.nutritionPlanning?.supplements ?? []).join(', '), mealSizePreference: profile.nutritionPlanning?.mealSizePreference === 'main-meals-larger' ? 'main-meals-larger' : 'balanced', flexiblePlanning: profile.nutritionPlanning?.flexiblePlanning ?? true, wakeTime: profile.hydrationRoutine?.wakeTime ?? '07:00', sleepTime: profile.hydrationRoutine?.sleepTime ?? '23:00', remindersEnabled: profile.hydrationRoutine?.remindersEnabled ?? false, pacingMode: profile.hydrationRoutine?.pacingMode ?? 'continuous',
+    wakeTime: profile.hydrationRoutine?.wakeTime ?? '07:00', sleepTime: profile.hydrationRoutine?.sleepTime ?? '23:00', remindersEnabled: profile.hydrationRoutine?.remindersEnabled ?? false, pacingMode: profile.hydrationRoutine?.pacingMode ?? 'continuous',
   };
 }
 
@@ -190,14 +189,13 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
           ? { mode: 'custom', customTargetMl: Number(form.hydrationValue) }
           : { mode: 'weight-based', mlPerKg: Number(form.hydrationValue) },
       });
-      const list = (value: string) => value.split(',').map((item) => item.trim()).filter(Boolean);
       let avatarMediaId = removeAvatar ? undefined : result.profile.avatarMediaId;
       if (removeAvatar && result.profile.avatarMediaId) await repositories.media.remove(result.profile.avatarMediaId);
       if (avatarFile) {
         if (result.profile.avatarMediaId) await repositories.media.remove(result.profile.avatarMediaId);
         const media = await optimizeImage(avatarFile, 'profile-avatar', 'profile', result.profile.id); await repositories.media.save(media); avatarMediaId = media.id;
       }
-      const enriched = { ...result.profile, avatarMediaId, nutritionPlanning: { mealsPerDay: Number(form.mealsPerDay), mealTimes: list(form.mealTimes), trainingTime: form.trainingTime || undefined, preferredFoods: list(form.preferredFoods), dislikedFoods: list(form.dislikedFoods), avoidedFoods: list(form.avoidedFoods), dietaryRestrictions: list(form.restrictions), intolerances: list(form.intolerances), allergies: list(form.allergies), supplements: list(form.supplements), mealSizePreference: form.mealSizePreference, flexiblePlanning: form.flexiblePlanning }, hydrationRoutine: { wakeTime: form.wakeTime, sleepTime: form.sleepTime, remindersEnabled: form.remindersEnabled, pacingMode: form.pacingMode } };
+      const enriched = { ...result.profile, avatarMediaId, nutritionPlanning: profile?.nutritionPlanning, hydrationRoutine: { wakeTime: form.wakeTime, sleepTime: form.sleepTime, remindersEnabled: form.remindersEnabled, pacingMode: form.pacingMode } };
       await repositories.profiles.save(enriched);
       setStatus('saved');
       await onSaved({ ...result, profile: enriched });
@@ -297,7 +295,6 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
               </div>
               <small>Uma estimativa configurável, não uma prescrição universal.</small>
             </fieldset>
-            <details className="planning-fields field-wide"><summary>Rotina alimentar, restrições e horários</summary><div className="profile-form planning-grid"><div className="field"><label htmlFor="meals-count">Refeições por dia</label><input id="meals-count" type="number" min="1" max="8" value={form.mealsPerDay} onChange={(event) => update('mealsPerDay', event.target.value)} /></div><div className="field"><label htmlFor="meal-times">Horários, separados por vírgula</label><input id="meal-times" value={form.mealTimes} onChange={(event) => update('mealTimes', event.target.value)} /></div><div className="field"><label htmlFor="training-time">Horário de treino (opcional)</label><input id="training-time" type="time" value={form.trainingTime} onChange={(event) => update('trainingTime', event.target.value)} /></div><div className="field"><label>Distribuição</label><DefynSelect label="Distribuição das refeições" value={form.mealSizePreference} onChange={(value) => update('mealSizePreference', value)} options={[{ value: 'balanced', label: 'Equilibrada' }, { value: 'main-meals-larger', label: 'Almoço/jantar maiores' }]} /></div>{([['preferredFoods','Alimentos preferidos'],['dislikedFoods','Não gosto'],['avoidedFoods','Evito'],['restrictions','Restrições alimentares'],['intolerances','Intolerâncias informadas'],['allergies','Alergias informadas'],['supplements','Suplementos']] as const).map(([key,label]) => <div className="field" key={key}><label>{label}</label><input value={form[key]} onChange={(event) => update(key,event.target.value)} placeholder="Separe por vírgulas" /></div>)}<label className="check-field"><input type="checkbox" checked={form.flexiblePlanning} onChange={(event) => update('flexiblePlanning',event.target.checked)} /> Planejamento flexível</label></div></details>
             <details className="planning-fields field-wide"><summary>Rotina de hidratação</summary><div className="profile-form planning-grid"><div className="field"><label>Acordar</label><input type="time" value={form.wakeTime} onChange={(event) => update('wakeTime',event.target.value)} /></div><div className="field"><label>Dormir</label><input type="time" value={form.sleepTime} onChange={(event) => update('sleepTime',event.target.value)} /></div><div className="field"><label>Visualização</label><DefynSelect label="Visualização da hidratação" value={form.pacingMode} onChange={(value) => update('pacingMode', value)} options={[{ value: 'continuous', label: 'Progresso contínuo' }, { value: 'checkpoints', label: 'Checkpoints' }]} /></div><label className="check-field"><input type="checkbox" checked={form.remindersEnabled} onChange={(event) => update('remindersEnabled',event.target.checked)} /> Planejar lembretes locais</label><p className="field-wide routine-note">O DEFYN calcula o estado de lembrete, mas não promete execução confiável em segundo plano sem infraestrutura de push.</p></div></details>
             {weightChanged && preview && previousPreview && waterImpact && (
               <div className="change-impact field-wide" role="status">

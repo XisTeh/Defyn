@@ -12,4 +12,4 @@ A comparação exige a mesma categoria e datas escolhidas pela pessoa. Ela apena
 
 ## Remoção e backup
 
-Excluir foto exige confirmação e remove metadata e blob numa transação. Excluir perfil também inclui mídias de progresso no cascade. O backup v4 serializa a mídia necessária como data URL e valida a referência antes de restaurar.
+Excluir foto exige confirmação e remove metadata e blob numa transação. Excluir perfil também inclui mídias de progresso no cascade. O backup v6 serializa a mídia necessária como data URL e valida a referência antes de restaurar.

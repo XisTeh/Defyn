@@ -14,7 +14,7 @@ describe('backup e restauração', () => {
   it('exporta formato e versão válidos com todos os stores', async () => {
     const backup = await new BackupService(new MemoryBackupGateway(dataFixture()), fixedNow).export();
     expect(backup.format).toBe('defyn-backup');
-    expect(backup.version).toBe(5);
+    expect(backup.version).toBe(6);
     expect(backup.exportedAt).toBe('2026-08-21T12:00:00.000Z');
     expect(backup.data.profiles).toHaveLength(1);
     expect(backup.data.waterEntries).toHaveLength(1);
@@ -47,9 +47,9 @@ describe('backup e restauração', () => {
 
   it('migra backup v1 preenchendo novas coleções', () => {
     const legacy = { format: 'defyn-backup', version: 1, exportedAt: fixedNow().toISOString(), data: { ...emptyData() } } as unknown as Record<string, unknown>;
-    const data = (legacy.data as Record<string, unknown>); delete data.foodPreferences; delete data.favoriteMeals; delete data.media;
+    const data = (legacy.data as Record<string, unknown>); delete data.foodPreferences; delete data.favoriteMeals; delete data.media; delete data.dailyNutritionSummaries;
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(5); expect(migrated.data.media).toEqual([]); expect(migrated.data.workoutSessions).toEqual([]);
+    expect(migrated.version).toBe(6); expect(migrated.data.media).toEqual([]); expect(migrated.data.workoutSessions).toEqual([]); expect(migrated.data.dailyNutritionSummaries).toEqual([]);
   });
 
   it('migra backup v2 sem inventar dados de treino', () => {
@@ -57,23 +57,32 @@ describe('backup e restauração', () => {
     const data = legacy.data as Record<string, unknown>;
     delete data.trainingProfiles; delete data.exercises; delete data.exerciseFavorites; delete data.workoutPlans; delete data.workoutSessions; delete data.workoutSetLogs;
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(5);
+    expect(migrated.version).toBe(6);
     expect(migrated.data.trainingProfiles).toEqual([]);
   });
 
   it('migra backup v3 para o modelo corporal atual', () => {
     const legacy = { format: 'defyn-backup', version: 3, exportedAt: fixedNow().toISOString(), data: { ...dataFixture(), progressRecords: [{ id:'weight-a', profileId:'profile-a', date:'2026-08-20', weightKg:79, createdAt:fixedNow().toISOString(), updatedAt:fixedNow().toISOString() }] } };
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(5);
+    expect(migrated.version).toBe(6);
     expect(migrated.data.progressRecords[0]).toMatchObject({ localDate:'2026-08-20', source:'migration' });
   });
 
   it('aceita backup v4 e preserva alimentos simplificados', () => {
     const legacy = { format: 'defyn-backup', version: 4, exportedAt: fixedNow().toISOString(), data: { ...dataFixture(), foods: [{ id:'food-a', name:'Antigo', nameNormalized:'antigo', searchTextNormalized:'antigo', basePortion:{ quantity:100, unit:'g' }, portions:[], nutrients:{ caloriesKcal:120, proteinGrams:4, carbsGrams:20, fatGrams:2 }, dataSource:'manual', createdAt:fixedNow().toISOString(), updatedAt:fixedNow().toISOString() }] } };
     const migrated = validateBackup(legacy);
-    expect(migrated.version).toBe(5);
+    expect(migrated.version).toBe(6);
     expect(migrated.data.foods[0]?.nutritionLabel).toBeUndefined();
     expect(migrated.data.foods[0]?.nutrients.caloriesKcal).toBe(120);
+  });
+
+  it('aceita backup v5 sem resumo novo e preserva o legado', () => {
+    const legacy = { format:'defyn-backup', version:5, exportedAt:fixedNow().toISOString(), data:{...dataFixture()} } as unknown as Record<string,unknown>;
+    delete (legacy.data as Record<string,unknown>).dailyNutritionSummaries;
+    const migrated = validateBackup(legacy);
+    expect(migrated.version).toBe(6);
+    expect(migrated.data.dailyNutritionSummaries).toEqual([]);
+    expect(migrated.data.waterEntries).toHaveLength(1);
   });
 
   it('preserva todas as colunas estruturadas de um rótulo no backup v5', async () => {
@@ -104,7 +113,7 @@ describe('backup e restauração', () => {
 function fixedNow() { return new Date('2026-08-21T12:00:00.000Z'); }
 
 function emptyData(): DefynBackupData {
-  return { profiles: [], nutritionTargets: [], foods: [], recipes: [], diaryEntries: [], mealCategories: [], waterEntries: [], progressRecords: [], progressPhotos: [], preferences: [], foodPreferences: [], favoriteMeals: [], media: [], trainingProfiles: [], exercises: [], exerciseFavorites: [], workoutPlans: [], workoutSessions: [], workoutSetLogs: [] };
+  return { profiles: [], nutritionTargets: [], foods: [], recipes: [], diaryEntries: [], mealCategories: [], waterEntries: [], progressRecords: [], progressPhotos: [], preferences: [], foodPreferences: [], favoriteMeals: [], media: [], trainingProfiles: [], exercises: [], exerciseFavorites: [], workoutPlans: [], workoutSessions: [], workoutSetLogs: [], dailyNutritionSummaries: [] };
 }
 
 function dataFixture(): DefynBackupData {
@@ -114,6 +123,7 @@ function dataFixture(): DefynBackupData {
     profiles: [{ id: 'profile-a', name: 'Perfil A', dateOfBirth: '1990-01-01', metabolicSex: 'male', heightCm: 175, currentWeightKg: 80, goal: 'fat-loss', activity: { factor: 1.5 }, metabolicMethod: 'mifflin-st-jeor', calorieGoal: { mode: 'deficit', adjustmentKcal: 400 }, macroConfiguration: { mode: 'derived-carbs', protein: { mode: 'per-kg', gramsPerKg: 2 }, fat: { mode: 'per-kg', gramsPerKg: 1 } }, hydrationConfiguration: { mode: 'weight-based', mlPerKg: 35 }, units: { weight: 'kg', height: 'cm', energy: 'kcal' }, createdAt: timestamp, updatedAt: timestamp }],
     waterEntries: [{ id: 'water-a', profileId: 'profile-a', amountMl: 300, localDate: '2026-08-21', occurredAt: timestamp, createdAt: timestamp, updatedAt: timestamp }],
     preferences: [{ key: 'activeProfileId', value: 'profile-a' }],
+    dailyNutritionSummaries: [{ id:'summary-a', profileId:'profile-a', localDate:'2026-08-21', caloriesKcal:0, proteinG:150, createdAt:timestamp, updatedAt:timestamp }],
   };
 }
 

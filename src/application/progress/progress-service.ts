@@ -1,4 +1,4 @@
-import type { DiaryRepository } from '../../domain/diary/repository';
+import type { DailyNutritionSummaryRepository } from '../../domain/nutrition-summary/repository';
 import type { WaterRepository } from '../../domain/hydration/repository';
 import type { LocalMedia, MediaRepository } from '../../domain/media/media';
 import type { UserProfile } from '../../domain/profile/profile';
@@ -11,11 +11,11 @@ import type { WorkoutPlanRepository, WorkoutSessionRepository } from '../../doma
 export interface ProgressOverview { period: ProgressPeriod; records: ProgressRecord[]; photos: ProgressPhotoMetadata[]; trend: WeightTrend; nutrition: NutritionProgress; hydration: HydrationProgress; training: TrainingProgress; insights: string[]; }
 
 export class ProgressService {
-  constructor(private readonly progress: ProgressRepository, private readonly diary: DiaryRepository, private readonly targets: NutritionTargetRepository, private readonly water: WaterRepository, private readonly plans: WorkoutPlanRepository, private readonly sessions: WorkoutSessionRepository, private readonly media: MediaRepository, private readonly now:()=>Date=()=>new Date(), private readonly id:()=>string=()=>crypto.randomUUID()) {}
+  constructor(private readonly progress: ProgressRepository, private readonly nutritionSummaries: DailyNutritionSummaryRepository, private readonly targets: NutritionTargetRepository, private readonly water: WaterRepository, private readonly plans: WorkoutPlanRepository, private readonly sessions: WorkoutSessionRepository, private readonly media: MediaRepository, private readonly now:()=>Date=()=>new Date(), private readonly id:()=>string=()=>crypto.randomUUID()) {}
 
   async overview(profile: UserProfile, period: ProgressPeriod): Promise<ProgressOverview> {
-    const [records,photos,diaryEntries,targets,waterEntries,plans,sessions] = await Promise.all([this.progress.listRecords(profile.id,period),this.progress.listPhotoMetadata(profile.id,period),this.diary.listEntriesByPeriod!(profile.id,period.startLocalDate,period.endLocalDate),this.targets.listForProfile(profile.id),this.water.listByPeriod!(profile.id,period.startLocalDate,period.endLocalDate),this.plans.list(profile.id),this.sessions.listByPeriod!(profile.id,period.startLocalDate,period.endLocalDate)]);
-    const logs=await this.sessions.listSetLogsForSessions!(profile.id,sessions.map((s)=>s.id)); const trend=calculateWeightTrend(records,period.endLocalDate); const nutrition=aggregateNutrition(diaryEntries,targets,period); const hydration=aggregateHydration(waterEntries,profile,records,period); const training=aggregateTraining(sessions,logs,plans,period);
+    const [records,photos,nutritionSummaries,targets,waterEntries,plans,sessions] = await Promise.all([this.progress.listRecords(profile.id,period),this.progress.listPhotoMetadata(profile.id,period),this.nutritionSummaries.listByPeriod(profile.id,period.startLocalDate,period.endLocalDate),this.targets.listForProfile(profile.id),this.water.listByPeriod!(profile.id,period.startLocalDate,period.endLocalDate),this.plans.list(profile.id),this.sessions.listByPeriod!(profile.id,period.startLocalDate,period.endLocalDate)]);
+    const logs=await this.sessions.listSetLogsForSessions!(profile.id,sessions.map((s)=>s.id)); const trend=calculateWeightTrend(records,period.endLocalDate); const nutrition=aggregateNutrition(nutritionSummaries,targets,period); const hydration=aggregateHydration(waterEntries,profile,records,period); const training=aggregateTraining(sessions,logs,plans,period);
     return {period,records,photos,trend,nutrition,hydration,training,insights:buildInsights(trend,nutrition,hydration,training)};
   }
 
@@ -26,4 +26,4 @@ export class ProgressService {
   removeCheckIn(profileId:string,id:string){return this.progress.removeCheckIn!(profileId,id);}
 }
 
-export function buildInsights(trend:WeightTrend,nutrition:NutritionProgress,hydration:HydrationProgress,training:TrainingProgress):string[]{ const values:string[]=[]; if(trend.kind!=='insufficient') values.push(trend.message); if(nutrition.registeredDays) values.push(`Há diário em ${nutrition.registeredDays} dia(s); proteína atingiu a meta em ${nutrition.proteinDaysAtTarget} deles.`); if(hydration.registeredDays) values.push(`A média registrada de água foi ${Math.round((hydration.averageMl??0)/100)/10} L em ${hydration.registeredDays} dia(s).`); if(training.completedSessions) values.push(`${training.completedSessions} treino(s) foram concluídos no período.`); return values.slice(0,4); }
+export function buildInsights(trend:WeightTrend,nutrition:NutritionProgress,hydration:HydrationProgress,training:TrainingProgress):string[]{ const values:string[]=[]; if(trend.kind!=='insufficient') values.push(trend.message); if(nutrition.registeredDays) values.push(`Há resumo em ${nutrition.registeredDays} dia(s); proteína foi informada em ${nutrition.proteinRegisteredDays} e alcançou a meta em ${nutrition.proteinDaysAtTarget}.`); if(hydration.registeredDays) values.push(`A média registrada de água foi ${Math.round((hydration.averageMl??0)/100)/10} L em ${hydration.registeredDays} dia(s).`); if(training.completedSessions) values.push(`${training.completedSessions} treino(s) foram concluídos no período.`); return values.slice(0,4); }

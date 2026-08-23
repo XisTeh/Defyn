@@ -187,6 +187,19 @@
 }
 
 .today-workout-card { margin-top: 1rem; min-height: 170px; padding: 1.4rem; display: flex; align-items: end; justify-content: space-between; gap: 1rem; color: #fff; background: radial-gradient(circle at 78% 15%,rgba(79,132,170,.2),transparent 15rem),linear-gradient(135deg,#1b2125,#090b0d); border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius-xl); box-shadow: 0 22px 55px rgba(23,29,34,.18); }
+.today-workout-card.today-priority-card { margin: 0 0 1rem; }
+.nutrition-direction-grid { margin-top: 1rem; }
+.target-macros { margin-top: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; }
+.target-macros span { padding: .7rem; display: grid; gap: .15rem; color: var(--foreground-inverse-muted); background: rgba(255,255,255,.055); border-radius: var(--radius-control); font-size: .58rem; }
+.target-macros b { color: var(--foreground-inverse); font-size: .72rem; }
+.manual-summary-card { display: flex; flex-direction: column; }
+.manual-summary-values { margin: 1.35rem 0; display: grid; grid-template-columns: 1fr 1fr; gap: .65rem; }
+.manual-summary-values > span { min-width: 0; padding: .8rem; display: grid; gap: .2rem; background: var(--surface-3); border-radius: var(--radius-control); }
+.manual-summary-values small { color: var(--text-muted); font-size: .56rem; text-transform: uppercase; }
+.manual-summary-values strong { font-size: .74rem; overflow-wrap: anywhere; }
+.summary-note { margin: 0 0 1rem; color: var(--text-secondary); font-size: .68rem; line-height: 1.5; }
+.summary-open-action { margin-top: auto; align-self: flex-start; }
+.progress-cta button { margin-top: 1rem; }
 .today-workout-card h2 { margin: .4rem 0 0; font-family: var(--font-display); font-size: clamp(2.5rem,5vw,4.5rem); line-height: .9; text-transform: uppercase; }
 .today-workout-card p { margin: .55rem 0 0; color: var(--foreground-inverse-muted); }
 .today-workout-action { flex: none; color: #111519; background: #e2e8ec; border-color: #e2e8ec; }

@@ -1,74 +1,35 @@
 # DEFYN
 
-DEFYN é um aplicativo pessoal, local-first e responsivo para alimentação, hidratação e acompanhamento de treinos. Uma instalação mantém várias pessoas com metas, diário, fichas, cargas, fotos e históricos isolados, sem conta, servidor, IA remota ou sincronização.
+DEFYN é um aplicativo pessoal, local-first e responsivo para treinos e acompanhamento diário. Uma instalação suporta várias pessoas com metas, hidratação, fichas, sessões, peso, medidas e fotos isolados, sem conta, servidor ou sincronização.
 
-A interface adota uma base neutra inspirada no Puzoto Design: conteúdo cinza-claro, navegação em preto técnico, painéis translúcidos, linhas arquitetônicas e cartões escuros de alto contraste. Cores semânticas identificam macros, hidratação, estados e alertas. A influência greco-espartana e vikinga aparece de forma discreta em escudos, anéis, proporção e geometria, com componentes próprios acessíveis.
+## Funcionalidades
 
-## Funcionalidades atuais
+- dashboard Hoje priorizando treino, hidratação, metas nutricionais, resumo manual e progresso;
+- Diário por data com síntese nutricional opcional, água, treinos e registros corporais;
+- metas de TMB, GET, calorias, proteína, carboidratos, gorduras e água;
+- perfil de treino, 52 exercícios-base, exercícios próprios, fichas versionadas e agenda;
+- sessão persistente com séries, cargas, timer, histórico e progressão determinística;
+- progresso de peso, medidas, fotos, treino, hidratação e médias por campo informado;
+- IndexedDB v6, backup JSON v6 compatível com backups v1–v5 e PWA offline;
+- atualização PWA automática e imediata após deploy, sem confirmação do usuário.
 
-- múltiplos perfis locais e seletor de perfil ativo persistido;
-- dashboard Hoje com metas, consumo real do diário e hidratação;
-- catálogo compartilhado de alimentos, busca normalizada, porções e favoritos por perfil;
-- captura de rótulo e OCR português totalmente local, sempre com revisão humana;
-- diário por data/refeição, snapshots, edição, movimento, remoção com undo e cópia de ontem;
-- receitas, refeições favoritas e planejamento determinístico de metas;
-- foto de perfil e mídia otimizada no IndexedDB;
-- ritmo de hidratação pela janela acordado, com tolerância e checkpoints;
-- registro, edição e exclusão de água por dia local;
-- ficha nutricional reutilizada para criar e editar perfis;
-- snapshots históricos de metas;
-- gestão e exclusão transacional de dados por perfil;
-- backup JSON v4 com mídia necessária e importação compatível com v1/v2/v3;
-- PWA com funcionamento offline;
-- instalação contextual Android/iOS, atualização segura durante treino e indicador real de conexão;
-- câmera/galeria separadas, OCR local revisado e retenção opcional da foto do rótulo;
-- wake lock e alertas de descanso opt-in quando suportados;
-- módulos pesados carregados por demanda e diagnóstico de armazenamento no backup;
-- progresso corporal completo com peso, medidas, check-ins, fotos locais, tendências e comparações;
-- agregações reais de nutrição, hidratação e treino, com dias não registrados preservados como ausência de dado;
-- perfil de treino, biblioteca com 52 exercícios, favoritos e exercícios próprios por pessoa;
-- fichas versionadas, agenda semanal e gerador determinístico de 1 a 6 dias;
-- treino do dia, sessão mobile, séries/cargas, descanso por timestamp, histórico e progressão sugerida;
-- IndexedDB v5 com migration aditiva e fotos de progresso isoladas por perfil.
+Catálogo de alimentos, receitas, planejamento alimentar, OCR e diário por refeições foram descontinuados na Etapa 07. Os stores legados continuam fisicamente preservados e seguem no backup, mas não são carregados pela interface principal.
 
 ## Tecnologias
 
-React 19, TypeScript, Vite, Dexie/IndexedDB, `vite-plugin-pwa`, Tesseract.js 7, Vitest e ESLint. Não há backend ou biblioteca de UI.
+React 19, TypeScript, Vite, Dexie/IndexedDB, `vite-plugin-pwa`, Vitest e ESLint. Não há backend, OCR ou biblioteca de UI.
 
-## Requisitos e execução
+## Execução e qualidade
 
-- Node.js 20.19+ ou 22.12+
-- npm 10+
+Requer Node.js 20.19+ ou 22.12+ e npm 10+.
 
 ```bash
 npm install
 npm run dev
-```
-
-## Qualidade e produção
-
-```bash
 npm run lint
 npm run typecheck
 npm run test
 npm run build
-npm run preview
 ```
 
-## Estrutura
-
-```text
-src/
-  app/              composição, sessão e navegação
-  application/      perfis, dashboard, hidratação e backup
-  domain/           regras, entidades e contratos puros
-  features/         shell e experiências funcionais
-  infrastructure/   IndexedDB v5, migrations e gateways
-  shared/           tokens, datas locais e utilitários
-docs/                decisões técnicas reais
-templates/           referências visuais sem uso em runtime
-```
-
-Os detalhes de mobile, capacidades, OCR, cache e QA ficam em `docs/MOBILE_PWA.md`, `docs/DEVICE_CAPABILITIES.md`, `docs/OCR_PIPELINE.md`, `docs/OFFLINE_STRATEGY.md` e `docs/MOBILE_QA.md`.
-
-Código de barras por câmera, notificações confiáveis em segundo plano, recomendações médicas e sincronização continuam fora do escopo. Estimativas e sugestões não constituem prescrição.
+Estimativas são pontos de partida configuráveis, não diagnóstico ou prescrição médica.
