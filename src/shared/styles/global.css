@@ -111,6 +111,20 @@ body:has([aria-modal="true"]) { overflow: hidden; }
 }
 
 button:disabled { cursor: not-allowed; }
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-width: 1px !important;
+  min-height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
 .module-fallback { min-height: 70dvh; padding: 2rem; display: grid; place-content: center; grid-template-columns: repeat(3, 3.5rem); gap: .7rem; color: var(--text-secondary); text-align: center; }
 .module-fallback span { height: 8rem; background: linear-gradient(100deg, rgba(255,255,255,.4), rgba(255,255,255,.82), rgba(255,255,255,.4)); background-size: 220% 100%; border: 1px solid var(--border-subtle); border-radius: 1rem; animation: module-loading 1.5s var(--ease-standard) infinite; }
 .module-fallback p { grid-column: 1 / -1; margin: .4rem 0 0; font-size: .72rem; font-weight: 750; }
