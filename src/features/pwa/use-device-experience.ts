@@ -58,7 +58,12 @@ export function useDeviceExperience() {
       if (safeToReload()) window.location.reload();
     };
     const updateObserver = new MutationObserver(applyUpdateWhenSafe);
-    updateObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'], subtree: true });
+    updateObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class', 'data-pwa-update-blocking'],
+      childList: true,
+      subtree: true,
+    });
     window.addEventListener('online', becameOnline);
     window.addEventListener('offline', becameOffline);
     window.addEventListener('beforeinstallprompt', beforeInstall);

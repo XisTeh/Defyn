@@ -74,6 +74,14 @@ export function App() {
   }
 
   async function switchProfile(profileId: string) {
+    if (activeProfile && activeProfile.id !== profileId) {
+      const activeWorkout = await repositories.workoutSessions.getActive(activeProfile.id);
+      if (activeWorkout) {
+        setView('training');
+        setNotice(`Há um treino ativo de ${activeProfile.name}. Finalize ou cancele essa sessão antes de trocar de perfil.`);
+        return;
+      }
+    }
     const profile = await sessionService.switchTo(profileId);
     setActiveProfile(profile);
     setView('today');

@@ -45,6 +45,12 @@ describe('backup e restauração', () => {
     expect(() => validateBackup(backup)).toThrow(/perfil ativo/);
   });
 
+  it('rejeita mídia fora dos formatos locais suportados antes da restauração', async () => {
+    const backup = await new BackupService(new MemoryBackupGateway(dataFixture()), fixedNow).export();
+    backup.data.media = [{ id: 'unsafe', dataUrl: 'data:image/svg+xml;base64,PHN2Zz4=', sizeBytes: 10 }] as never;
+    expect(() => validateBackup(backup)).toThrow(/arquivo inválido/);
+  });
+
   it('migra backup v1 preenchendo novas coleções', () => {
     const legacy = { format: 'defyn-backup', version: 1, exportedAt: fixedNow().toISOString(), data: { ...emptyData() } } as unknown as Record<string, unknown>;
     const data = (legacy.data as Record<string, unknown>); delete data.foodPreferences; delete data.favoriteMeals; delete data.media; delete data.dailyNutritionSummaries;

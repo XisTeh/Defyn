@@ -1,13 +1,13 @@
 # Mobile e PWA
 
-O mobile usa cabeçalho compacto e drawer lateral acionado pelo perfil. As áreas são Hoje, Diário, Treinos, Progresso, Ficha e metas, Perfis e Backup.
+O mobile usa cabeçalho compacto e drawer lateral acionado pelo perfil. As áreas ativas são Hoje, Diário, Treinos, Progresso, Rotina, Ficha e metas, Perfis e Backup.
 
-## Atualização
+## Atualização automática segura
 
-`registerType: autoUpdate` verifica novas versões. `public/sw-auto-update.js` ativa o worker novo e avisa as janelas controladas. Não existe banner ou botão “Atualizar agora”. A janela recarrega imediatamente quando segura; durante o Modo Academia, aguarda a saída da sessão para não interromper série, rascunho ou descanso.
+`registerType: autoUpdate` ativa o worker novo e informa as janelas controladas. Não existe banner nem botão para confirmar versão. A página recarrega assim que é seguro.
 
-## Offline
+O reload é adiado durante uma sessão de academia e enquanto houver um diálogo ou fluxo crítico marcado — edição de rotina, instalação iOS, arquivo de backup pendente/restauração. Um `MutationObserver` acompanha tanto atributos quanto inclusão/remoção de elementos; ao fechar o último bloqueador, a atualização pendente é aplicada sem ação extra do usuário.
 
-O precache inclui HTML, JavaScript, CSS, fontes, ícones e 52 miniaturas de exercícios. Não inclui mídia pessoal nem assets OCR. Fotos continuam acessíveis via IndexedDB.
+## Offline e QA
 
-Viewports obrigatórios de QA: 320×800, 360×800, 375×812, 390×844, 430×932, 1280×800, 1440×900 e 1920×1080.
+O precache inclui aplicação, fontes, ícones e miniaturas de exercício; mídia pessoal continua no IndexedDB e não entra no cache do service worker. QA de layout cobre 320×800, 360×800, 375×812, 390×844, 430×932, 1280×800, 1440×900 e 1920×1080.

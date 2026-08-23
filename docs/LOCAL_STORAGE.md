@@ -1,16 +1,9 @@
 # Armazenamento local
 
-O banco `defyn-local` usa IndexedDB por Dexie. A versão 6 adiciona, sem remover stores anteriores:
+O banco `defyn-local` usa IndexedDB por Dexie, atualmente no schema v7. Todas as entidades pessoais carregam `profileId` e as consultas de interface filtram esse proprietário.
 
-```text
-dailyNutritionSummaries: id, profileId, localDate, &[profileId+localDate]
-```
+Além dos stores de treino, hidratação, progresso e mídia, v7 adiciona `routineProfiles`, `routineDays`, `sleepRecords` e `reminderSnoozes`. A migração é aditiva: nenhum store existente é removido.
 
-O índice composto único assegura um resumo por pessoa/data. Consultas de Diário e Progresso sempre incluem `profileId`; consultas históricas usam intervalo de `localDate`.
+`dailyNutritionSummaries` tem índice único `[profileId+localDate]`, garantindo no máximo um resumo por pessoa e dia. Ausência de campo não equivale a zero.
 
-Stores de alimentos, receitas e diário antigo continuam existentes. O app não os enumera durante navegação normal. Eles só participam de migration, backup/restauração e exclusão explicitamente confirmada de um perfil.
-
-Mídia genérica de perfil e progresso permanece em `media` como Blob otimizado. Nenhuma mídia é enviada para servidor.
-# Modo Academia
-
-O estado operacional não depende de memória React: sessão, índice atual, ordem temporária, nota, rascunhos de série, logs e fim do descanso são persistidos nas tabelas existentes do IndexedDB. `localStorage` não é usado para o domínio de treino.
+Fotos e avatares ficam como Blob otimizado em `media`; não são enviados para servidor. Dados alimentares antigos existem somente para compatibilidade de backup/migração e exclusão de perfil, fora da navegação ativa.

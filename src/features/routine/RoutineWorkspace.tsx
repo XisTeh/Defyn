@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RoutineService, type RoutineSnapshot } from '../../application/routine/routine-service';
 import { averageSleepMinutes, formatDuration, type RoutineDay, type RoutineProfile } from '../../domain/routine/routine';
 import { DAY_LABELS, TRAINING_DAYS, type TrainingDay } from '../../domain/training/training';
 import { repositories } from '../../infrastructure/repositories';
 import { Button } from '../../shared/components/Button';
+import { useAccessibleDialog } from '../../shared/hooks/use-accessible-dialog';
 import './routine-workspace.css';
 
 const service = new RoutineService(repositories.routine, repositories.workoutPlans, repositories.workoutSessions);
@@ -45,7 +46,12 @@ export function RoutineWorkspace({ profileId, revision, onChanged, onNotice }: {
   </div>;
 }
 
-function Sheet({ title, eyebrow, onClose, children }: { title: string; eyebrow: string; onClose: () => void; children: React.ReactNode }) { return <div className="routine-sheet-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section className="routine-sheet" role="dialog" aria-modal="true" aria-label={title} data-pwa-update-blocking="true"><header><div><span className="page-eyebrow">{eyebrow}</span><h2>{title}</h2></div><button type="button" onClick={onClose} aria-label="Fechar">×</button></header>{children}</section></div>; }
+function Sheet({ title, eyebrow, onClose, children }: { title: string; eyebrow: string; onClose: () => void; children: React.ReactNode }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useAccessibleDialog(dialogRef, onClose, closeRef);
+  return <div className="routine-sheet-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}><section ref={dialogRef} className="routine-sheet" role="dialog" aria-modal="true" aria-label={title} data-pwa-update-blocking="true"><header><div><span className="page-eyebrow">{eyebrow}</span><h2>{title}</h2></div><button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar">×</button></header>{children}</section></div>;
+}
 
 function DayEditor({ day, templates, onClose, onSave }: { day: RoutineDay; templates: RoutineSnapshot['templates']; onClose: () => void; onSave: (day: RoutineDay, copyTo: TrainingDay[]) => Promise<void> }) {
   const [draft, setDraft] = useState(day); const [copyTo, setCopyTo] = useState<TrainingDay[]>([]); const [busy, setBusy] = useState(false);

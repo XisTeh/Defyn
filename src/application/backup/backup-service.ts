@@ -22,6 +22,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
+function isSupportedBackupMediaDataUrl(value: string): boolean {
+  // Mirrors the formats accepted by image processing. SVG and arbitrary data URLs
+  // are intentionally excluded before any database replacement can begin.
+  return /^data:image\/(?:jpeg|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(value);
+}
+
 const collectionNames: readonly (keyof DefynBackupData)[] = [
   'profiles',
   'nutritionTargets',
@@ -143,7 +149,7 @@ export function validateBackup(value: unknown): DefynBackup {
   }
   const recordIds = new Set(progressRecords.filter(isRecord).map((item) => item.id));
   const media = data.media as unknown[];
-  if (!media.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.dataUrl === 'string' && item.dataUrl.startsWith('data:') && typeof item.sizeBytes === 'number' && Number.isFinite(item.sizeBytes) && item.sizeBytes >= 0)) {
+  if (!media.every((item) => isRecord(item) && typeof item.id === 'string' && typeof item.dataUrl === 'string' && isSupportedBackupMediaDataUrl(item.dataUrl) && typeof item.sizeBytes === 'number' && Number.isFinite(item.sizeBytes) && item.sizeBytes >= 0)) {
     throw new BackupValidationError('A coleção media contém arquivo inválido.');
   }
   const mediaIds = new Set(media.filter(isRecord).map((item) => item.id));

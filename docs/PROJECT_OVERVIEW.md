@@ -1,16 +1,14 @@
 # Visão do projeto
 
-O DEFYN responde “como está meu acompanhamento hoje?” com foco em treino, hidratação, direção nutricional e evolução. O mesmo dispositivo suporta múltiplos perfis sem login e mantém todos os dados localmente.
+O DEFYN responde “como está meu acompanhamento hoje?” com treino, hidratação, direção nutricional manual, rotina e evolução — sempre local ao dispositivo e sem login.
 
 ## Escopo atual
 
-- Hoje: treino, água, metas, resumo manual e acesso ao progresso;
-- Diário: navegação por data e agregação de nutrição opcional, hidratação, sessão e corpo;
+- Hoje: treino, água, metas, resumo manual, rotina e atalhos de progresso;
+- Diário: resumo nutricional parcial por data, hidratação, sessão e corpo;
 - Treinos: perfil, biblioteca, fichas, execução, timer, histórico e progressão;
-- Progresso: peso, medidas, fotos, gráficos, hidratação, nutrição e treino;
-- Conta local: ficha/metas, perfis e backup.
+- Progresso: peso, medidas, fotos, gráficos e tendências factuais;
+- Rotina: horários habituais, sono e lembretes locais opt-in;
+- Conta local: ficha/metas, perfis e backup transacional.
 
-Alimentos, receitas, refeições, favoritos alimentares, planejamento e OCR não fazem parte do produto atual. Seus dados antigos são legado preservado para restauração compatível.
-# Etapa 08
-
-Treinos agora têm um Modo Academia operacional, dedicado ao uso durante a sessão, com persistência por ação, descanso resiliente a segundo plano, resumo, recordes reais e integração dos estados planejado/ativo/concluído/descanso no Hoje.
+Alimentos, receitas, refeições, favoritos, planejamento alimentar e OCR não pertencem à interface atual. Registros antigos são apenas legado preservado para restauração compatível.

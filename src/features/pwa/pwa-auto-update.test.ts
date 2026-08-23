@@ -24,6 +24,8 @@ describe('atualização PWA imediata', () => {
   it('adianta a ativação, mas não recarrega durante uma sessão de academia', () => {
     expect(registration).toContain("classList.contains('gym-mode-active')");
     expect(registration).toContain('MutationObserver');
+    expect(registration).toContain("'data-pwa-update-blocking'");
+    expect(registration).toContain('childList: true');
     expect(registration).toContain('window.location.reload()');
   });
 

@@ -1,27 +1,19 @@
 # Roadmap
 
-- [x] Etapa 09: rotina semanal, sono factual, hidratação contextual e lembretes locais opt-in.
+## Implementado
 
-## Concluído — Etapas 01–06.5
+- Perfis locais isolados, metas, hidratação e PWA offline;
+- resumo nutricional manual diário, sem catálogo alimentar na interface;
+- treino completo e Modo Academia com retomada, descanso e histórico;
+- progresso corporal, medidas, fotos locais e tendências explicáveis;
+- rotina semanal, sono factual e lembretes locais opt-in;
+- backup v7 transacional e atualização PWA automática segura;
+- hardening, validação de mídia, acessibilidade de diálogos e QA automatizado (Etapa 10).
 
-Perfis, metas, hidratação, PWA, backup, treino completo, progresso corporal, fotos, responsividade, drawer mobile e atualização automática foram entregues. O histórico também inclui o antigo catálogo/diário alimentar e OCR local.
+## Futuro possível
 
-## Concluído — Etapa 07: Pivot & Cleanup
+Melhorias incrementais de agenda e lembretes locais podem evoluir dentro dos limites de execução em segundo plano do navegador.
 
-- produto simplificado para treino e acompanhamento;
-- remoção de alimentos, receitas, planejamento e OCR da interface/runtime;
-- novo resumo nutricional diário opcional e parcial;
-- Diário agregado por data e Progresso com médias independentes;
-- IndexedDB v6 e backup v6 compatível com legado;
-- PWA menor, sem Tesseract, worker, wasm ou idioma OCR;
-- documentação e navegação alinhadas ao novo escopo.
+## Fora de escopo
 
-## Próximas possibilidades
-
-Agenda e lembretes locais podem evoluir respeitando limitações de segundo plano. Sincronização, integrações externas, scanner e recomendações médicas continuam fora do escopo.
-# Entregue na Etapa 08
-
-- Modo Academia dedicado e responsivo;
-- retomada exata e prevenção de sessão duplicada;
-- edição/undo, descanso por timestamp, resumo e recordes reais;
-- reload de PWA protegido durante sessão ativa.
+Login, nuvem, sincronização, integrações externas, scanner/OCR, IA, diagnóstico médico e recomendações clínicas não fazem parte do DEFYN atual.
