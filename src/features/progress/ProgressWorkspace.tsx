@@ -6,6 +6,7 @@ import type { UserProfile } from '../../domain/profile/profile';
 import { createProgressPeriod, MEASUREMENT_LABELS, normalizeDecimal, PROGRESS_PERIOD_LABELS, type BodyMeasurements, type ProgressPeriodPreset, type ProgressPhotoCategory, type ProgressPhotoMetadata, type ProgressRecord } from '../../domain/progress/progress';
 import { toLocalDateKey } from '../../domain/shared/local-date';
 import { repositories } from '../../infrastructure/repositories';
+import { Button } from '../../shared/components/Button';
 import { DefynSelect } from '../../shared/components/DefynSelect';
 import { browserCapabilities } from '../../platform/device-capabilities';
 import './progress-workspace.css';
@@ -51,7 +52,7 @@ function Overview({data,profile,onAddWeight,onCheckIn,onAddPhoto,onTab}:{data:Pr
     <SummaryCard tone="nutrition" eyebrow="Resumo nutricional" value={`${data.nutrition.registeredDays} dia(s)`} detail={data.nutrition.averageCalories===undefined?'Calorias sem dado não contam como zero':`${Math.round(data.nutrition.averageCalories).toLocaleString('pt-BR')} kcal em ${data.nutrition.calorieRegisteredDays} dia(s)`} onClick={()=>onTab('nutrition')}/>
     <SummaryCard tone="training" eyebrow="Treinos concluídos" value={`${data.training.completedSessions}`} detail={data.training.adherence===undefined?'Sem agenda comparável':`${data.training.adherence}% do planejado`} onClick={()=>onTab('training')}/>
   </div>
-  <div className="progress-overview-grid"><article className="progress-panel weight-feature"><PanelHead eyebrow="Evolução corporal" title="Peso no período" action={<button onClick={onAddWeight}>Registrar peso</button>}/><WeightChart records={data.records} target={profile.targetWeightKg}/></article>
+  <div className="progress-overview-grid"><article className="progress-panel weight-feature"><PanelHead eyebrow="Evolução corporal" title="Peso no período" action={<Button variant="secondary" compact onClick={onAddWeight}>Registrar peso</Button>}/><WeightChart records={data.records} target={profile.targetWeightKg}/></article>
   <article className="progress-panel insights-panel"><PanelHead eyebrow="Leitura determinística" title="Pontos do período"/><ul>{data.insights.length?data.insights.map((item)=><li key={item}>{item}</li>):<li>Registre alguns dias para o DEFYN resumir o período sem inventar conclusões.</li>}</ul></article></div>
   <div className="progress-quick-actions"><button onClick={onCheckIn}><span>01</span><strong>Check-in completo</strong><small>Peso, medidas, fotos e nota — tudo opcional.</small></button><button onClick={onAddPhoto}><span>02</span><strong>Adicionar foto</strong><small>Frente, lado, costas ou livre.</small></button><button onClick={()=>onTab('training')}><span>03</span><strong>Ver consistência</strong><small>Frequência, duração, séries e volume válido.</small></button></div>
   </section>;

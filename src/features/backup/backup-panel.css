@@ -51,8 +51,8 @@
 .export-card > button { color: #111519; background: #dfe5e9; }
 .restore-card > label { color: var(--text-primary); background: var(--surface-light-elevated); border-color: rgba(17,23,27,.12); }
 .backup-note { background: rgba(255,255,255,.52); border-color: var(--border-subtle); backdrop-filter: blur(16px); }
-.backup-export-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-.backup-export-actions button { flex: 1 1 130px; }
+.backup-export-actions { width: min(100%, 420px); display: flex; flex-wrap: nowrap; gap: .5rem; }
+.backup-export-actions button { min-width: 0; flex: 1 1 0; }
 .storage-card { margin-top: 1rem; padding: 1rem; display: flex; gap: 1rem; align-items: center; justify-content: space-between; background: rgba(255,255,255,.55); border: 1px solid var(--border-subtle); border-radius: var(--radius-card); }
 .storage-card > div { min-width: 0; display: grid; gap: .35rem; }
 .storage-card strong { font-size: .85rem; }

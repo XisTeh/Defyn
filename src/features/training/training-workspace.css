@@ -313,3 +313,24 @@
   .workout-picker-list b { flex: none; }
   .workout-picker > footer { display: grid; grid-template-columns: minmax(0,.75fr) minmax(0,1.25fr); }
 }
+
+/* Keep high-frequency actions aligned with the shared DEFYN button contract. */
+.training-week > header > div { min-width: 0; }
+.training-plan-edit { flex: none; }
+.set-table-head,
+.set-table > div:not(.set-table-head) { grid-template-columns: 55px 90px minmax(0,1fr) 132px; }
+.set-complete { padding-inline: .8rem; white-space: nowrap; }
+.session-exercise-actions button { min-width: 0; }
+
+@media (max-width:760px) {
+  .set-table > div:not(.set-table-head) { grid-template-columns: 32px minmax(0,1fr) 112px; }
+  .set-complete { padding-inline: .35rem; }
+  .session-exercise-actions { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .session-exercise-actions button { width: 100%; padding-inline: .55rem; font-size: var(--caption-size); }
+}
+
+@media (max-width:360px) {
+  .training-plan-edit { padding-inline: .65rem; }
+  .session-exercise-actions { gap: .4rem; }
+  .session-exercise-actions button { padding-inline: .35rem; font-size: .6rem; }
+}

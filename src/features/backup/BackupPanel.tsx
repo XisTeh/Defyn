@@ -4,6 +4,7 @@ import type { DefynBackup } from '../../domain/export/export-format';
 import { toLocalDateKey } from '../../domain/shared/local-date';
 import { repositories } from '../../infrastructure/repositories';
 import { browserCapabilities, formatBytes, readStorageSnapshot, type StorageSnapshot } from '../../platform/device-capabilities';
+import { Button } from '../../shared/components/Button';
 import './backup-panel.css';
 
 const backupService = new BackupService(repositories.backup);
@@ -86,7 +87,7 @@ export function BackupPanel({ onRestored }: { onRestored: () => Promise<void> })
   return <div className="backup-page page-container">
     <header className="section-page-header"><div><span className="page-eyebrow">Backup local</span><h1>Seus dados, sob seu controle.</h1><p>Exporte um JSON v4 validado, com imagens otimizadas, ou restaure uma cópia completa neste dispositivo.</p></div></header>
     <div className="backup-grid">
-      <article className="backup-card export-card"><span className="backup-symbol">↓</span><div><span className="page-eyebrow">Exportar</span><h2>Criar uma cópia completa</h2><p>Inclui perfis, metas, alimentos, diário, água, receitas, treinos, progresso e mídia necessária. O JSON é revalidado antes de sair.</p></div><div className="backup-export-actions"><button type="button" onClick={() => void exportBackup(false)}>Baixar arquivo</button>{capabilities.fileShare && <button type="button" onClick={() => void exportBackup(true)}>Compartilhar</button>}</div></article>
+      <article className="backup-card export-card"><span className="backup-symbol">↓</span><div><span className="page-eyebrow">Exportar</span><h2>Criar uma cópia completa</h2><p>Inclui perfis, metas, alimentos, diário, água, receitas, treinos, progresso e mídia necessária. O JSON é revalidado antes de sair.</p></div><div className="backup-export-actions"><Button variant="secondary" compact type="button" onClick={() => void exportBackup(false)}>Baixar arquivo</Button>{capabilities.fileShare && <Button variant="secondary" compact type="button" onClick={() => void exportBackup(true)}>Compartilhar</Button>}</div></article>
       <article className="backup-card restore-card"><span className="backup-symbol">↑</span><div><span className="page-eyebrow">Restaurar</span><h2>Substituir pelos dados de um backup</h2><p>O arquivo é validado antes de qualquer alteração. A restauração completa é transacional.</p></div><input ref={inputRef} id="backup-file" type="file" accept="application/json,.json" onChange={(event) => void selectFile(event)} /><label htmlFor="backup-file">{fileName || 'Selecionar arquivo JSON'}</label>{candidate && <div className="restore-confirm"><strong>Confirme a substituição completa</strong><p>Todos os dados atuais deste dispositivo serão substituídos pelo conteúdo validado.</p><button type="button" disabled={restoring} onClick={() => void restore()}>{restoring ? 'Restaurando…' : 'Restaurar este backup'}</button></div>}</article>
     </div>
     {status && <p className="backup-status" role="status">{status}</p>}{error && <p className="backup-error" role="alert">{error}</p>}
