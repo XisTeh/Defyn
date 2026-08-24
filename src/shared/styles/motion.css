@@ -1,6 +1,6 @@
 /*
  * Final interaction layer.
- * The explicit priority keeps legacy feature rules from making hover motion abrupt.
+ * The explicit priority keeps feature rules from making hover motion abrupt.
  */
 #root :is(
   .calorie-card,
@@ -8,12 +8,7 @@
   .water-card,
   .water-history-card,
   .diary-empty-card,
-  .catalog-toolbar,
-  .food-card,
-  .recipe-grid article,
-  .meal-card,
   .target-grid article,
-  .planner-catalog,
   .profile-list article,
   .backup-card,
   .nutrition-empty
@@ -76,12 +71,7 @@
     .water-card,
     .water-history-card,
     .diary-empty-card,
-    .catalog-toolbar,
-    .food-card,
-    .recipe-grid article,
-    .meal-card,
     .target-grid article,
-    .planner-catalog,
     .profile-list article,
     .backup-card,
     .nutrition-empty

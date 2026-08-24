@@ -1,19 +1,32 @@
 # Arquitetura
 
-Rotina segue as mesmas fronteiras: regras em `domain/routine`, orquestração em `application/routine`, Dexie em `infrastructure/indexed-db` e React em `features/routine`. A UI não importa nem consulta a base diretamente.
+```text
+React UI (features / app)
+          ↓
+Application (casos de uso)
+          ↓
+Domain (regras e contratos)
+          ↓
+Repositories
+          ↓
+IndexedDB / Dexie
 
-O projeto separa composição (`app`), casos de uso (`application`), regras/contratos (`domain`), experiências React (`features`) e persistência (`infrastructure`).
+PWA e service worker operam em paralelo ao shell do navegador.
+```
+
+O projeto separa composição (`app`), casos de uso (`application`), regras e contratos (`domain`), interface React (`features`) e persistência (`infrastructure`). A interface não consulta IndexedDB diretamente.
 
 ## Fluxos ativos
 
-- `TodayDashboard` combina target ativo, `DailyNutritionSummary`, água e treino do dia;
-- `DailyTrackingWorkspace` consulta explicitamente um perfil e uma data;
-- `ProgressService` agrega resumos, água, corpo e treino por período;
-- `TrainingService` preserva ficha versionada, snapshots e sessão persistente;
-- `BackupService` valida o envelope e o gateway transaciona todos os stores.
+- Hoje combina metas, resumo diário, água, rotina e treino;
+- Diário grava somente `DailyNutritionSummary` manual por perfil e data;
+- Rotina persiste horários, sono e preferências de lembrete por perfil;
+- Treino preserva fichas versionadas, snapshots, sessões e séries;
+- Progresso agrega registros corporais, fotos, hidratação, treino e resumo manual;
+- Backup valida o envelope e restaura todos os stores em transação.
 
-O módulo principal não instancia repositórios de alimentos, receitas ou diário por refeições. As tabelas legadas permanecem apenas no schema/migrations, backup e exclusão explícita do perfil. Fotos de perfil e progresso continuam usando a infraestrutura genérica de imagens.
+Stores de alimentos, receitas e diário por refeições são legado isolado: participam apenas de migrations, backup/restauração e exclusão explícita de perfil, sem rota nem módulo React ativo.
 
 ## PWA
 
-Vite gera chunks lazy para Diário, Treinos, Progresso e Backup. O Workbox precacheia shell, chunks, CSS, fontes, ícones e miniaturas de exercícios. Binários OCR não existem mais. `registerType: autoUpdate` ativa a versão nova sem prompt; o cliente adia somente o reload visual enquanto o Modo Academia estiver ativo.
+Vite carrega Diário, Treinos, Progresso, Rotina e Backup por chunks. Workbox precacheia shell, chunks, CSS, fontes, ícones e 52 miniaturas de exercícios; nunca mídia pessoal. `autoUpdate` ativa a versão nova sem prompt e o cliente só adia reload durante sessão de academia ou fluxo crítico marcado de rotina, instalação ou backup.

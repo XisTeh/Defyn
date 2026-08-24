@@ -5,6 +5,7 @@ import { toLocalDateKey } from '../../domain/shared/local-date';
 import { repositories } from '../../infrastructure/repositories';
 import { browserCapabilities, formatBytes, readStorageSnapshot, type StorageSnapshot } from '../../platform/device-capabilities';
 import { Button } from '../../shared/components/Button';
+import { APP_VERSION } from '../../app/version';
 import './backup-panel.css';
 
 const backupService = new BackupService(repositories.backup);
@@ -94,6 +95,6 @@ export function BackupPanel({ onRestored }: { onRestored: () => Promise<void> })
     </div>
     {status && <p className="backup-status" role="status">{status}</p>}{error && <p className="backup-error" role="alert">{error}</p>}
     <aside className={`storage-card ${storage.level}`}><div><span className="page-eyebrow">Armazenamento local</span><strong>{storage.usage === undefined ? 'Estimativa indisponível' : `${formatBytes(storage.usage)} usados de ${formatBytes(storage.quota)}`}</strong><p>{storage.level === 'critical' ? 'Espaço quase esgotado. Exporte um backup antes de remover fotos ou dados do navegador.' : storage.level === 'attention' ? 'O uso está alto. Mantenha um backup recente.' : storage.persisted ? 'O navegador marcou estes dados como persistentes.' : 'O navegador ainda pode remover dados sob pressão de espaço. Backup continua essencial.'}</p></div>{capabilities.persistentStorage && !storage.persisted && <button type="button" onClick={() => void requestPersistence()}>Solicitar proteção local</button>}</aside>
-    <aside className="backup-note"><strong>Privado por padrão</strong><p>O DEFYN não envia este arquivo para nenhum servidor. Você escolhe onde armazená-lo.</p></aside>
+    <aside className="backup-note"><strong>Privado por padrão</strong><p>O DEFYN não envia este arquivo para nenhum servidor. Você escolhe onde armazená-lo. App v{APP_VERSION} · backup v7.</p></aside>
   </div>;
 }

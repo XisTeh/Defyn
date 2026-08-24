@@ -43,7 +43,7 @@ Títulos usam a família condensada, `clamp()`, `overflow-wrap` e `text-wrap: ba
 
 A arquitetura aprovada da sidebar permanece: rail de 276 px, perfil no topo, ação principal, navegação agrupada e rodapé local-first. O material agora é vidro preto com blur de 22 px. O item ativo usa linha prata e preenchimento translúcido; a ação principal usa cinza-gelo.
 
-No mobile, header e bottom navigation usam o mesmo vidro escuro e respeitam safe area. A navegação inferior não possui recorte ou botão elevado, mantém altura estável e desaparece durante teclado, sheets, modais e sessão de treino. Sheets usam backdrop escuro sem blur pesado, `dvh`, rolagem interna e bordas superiores arredondadas.
+No mobile, o header compacto abre um drawer lateral com navegação, perfis e ações rápidas; ele respeita safe area, bloqueia o fundo e devolve o foco ao gatilho. Sheets usam backdrop escuro sem blur pesado, `dvh`, rolagem interna e bordas superiores arredondadas. Não há navegação inferior ativa.
 
 Instalação, atualização, estado offline e recursos de dispositivo reutilizam os mesmos materiais. Ações impossíveis são ocultadas; alternativas e estados negados são descritos em texto. Sessão de treino eleva inputs e conclusão de série para 52 px em telas estreitas.
 

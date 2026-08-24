@@ -97,7 +97,6 @@ body:has([aria-modal="true"]) { overflow: hidden; }
 
 /* Shared Puzoto glass material */
 .macro-card, .water-card, .water-history-card, .diary-empty-card,
-.catalog-toolbar, .food-card, .recipe-grid article, .meal-card, .planner-catalog,
 .profile-list article, .nutrition-empty {
   background: linear-gradient(145deg, rgba(255,255,255,.78), rgba(255,255,255,.38)) !important;
   border-color: var(--border-subtle) !important;
@@ -105,7 +104,7 @@ body:has([aria-modal="true"]) { overflow: hidden; }
   backdrop-filter: blur(18px) saturate(110%);
 }
 .macro-card:hover, .water-card:hover, .water-history-card:hover, .diary-empty-card:hover,
-.food-card:hover, .recipe-grid article:hover, .profile-list article:hover {
+.profile-list article:hover {
   border-color: var(--border-strong) !important;
   box-shadow: 0 24px 58px rgba(34,41,46,.13), inset 0 1px rgba(255,255,255,.9) !important;
 }

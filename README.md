@@ -1,30 +1,22 @@
 # DEFYN
 
-DEFYN é um aplicativo pessoal, local-first e responsivo para treinos e acompanhamento diário. Uma instalação suporta várias pessoas com metas, hidratação, fichas, sessões, peso, medidas e fotos isolados, sem conta, servidor ou sincronização.
+DEFYN 1.0 é um aplicativo pessoal, local-first e responsivo para treino e acompanhamento diário. Cada instalação suporta múltiplos perfis isolados, sem conta, backend ou sincronização automática.
 
-## Funcionalidades
+## Recursos
 
-- dashboard Hoje priorizando treino, hidratação contextual, rotina, sono, metas nutricionais e progresso;
-- Diário por data com síntese nutricional opcional, água, sono, treinos e registros corporais;
-- Rotina semanal por perfil com horários opcionais, referência à ficha ativa, registro factual de sono e lembretes locais opt-in;
-- metas de TMB, GET, calorias, proteína, carboidratos, gorduras e água;
-- perfil de treino, 52 exercícios-base, exercícios próprios, fichas versionadas e agenda;
-- Modo Academia dedicado com retomada exata, série rápida, edição/undo, descanso por timestamp, resumo, recordes reais e progressão determinística;
-- progresso de peso, medidas, fotos, treino, hidratação e médias por campo informado;
-- IndexedDB v7, backup JSON v7 compatível com backups v1–v6 e PWA offline;
-- atualização PWA automática após deploy, sem confirmação e com reload adiado durante sessão ativa ou formulário de rotina não salvo.
+- Hoje, Diário manual, hidratação, rotina e sono;
+- fichas, biblioteca de exercícios e Modo Academia com retomada e descanso;
+- progresso de peso, medidas e fotos locais;
+- perfis, metas e backup/restauração transacional;
+- PWA instalável, offline e com atualização automática segura.
 
-Detalhes operacionais: [Rotina](docs/ROUTINE_SYSTEM.md), [sono](docs/SLEEP_TRACKING.md), [lembretes](docs/REMINDERS.md), [Modo Academia](docs/GYM_MODE.md), [sistema de treinos](docs/TRAINING_SYSTEM.md) e [progressão](docs/WORKOUT_PROGRESSION.md).
+OCR nutricional, catálogo de alimentos, receitas e planejamento alimentar detalhado foram removidos deliberadamente. Dados legados só permanecem para compatibilidade de IndexedDB e backup.
 
-Catálogo de alimentos, receitas, planejamento alimentar, OCR e diário por refeições foram descontinuados na Etapa 07. Os stores legados continuam fisicamente preservados e seguem no backup, mas não são carregados pela interface principal.
+## Stack
 
-## Tecnologias
+React 19, TypeScript, Vite, Dexie/IndexedDB, `vite-plugin-pwa`, Vitest e ESLint.
 
-React 19, TypeScript, Vite, Dexie/IndexedDB, `vite-plugin-pwa`, Vitest e ESLint. Não há backend, OCR ou biblioteca de UI.
-
-## Execução e qualidade
-
-Requer Node.js 20.19+ ou 22.12+ e npm 10+.
+## Comandos
 
 ```bash
 npm install
@@ -33,6 +25,17 @@ npm run lint
 npm run typecheck
 npm run test
 npm run build
+npm run preview
 ```
 
-Estimativas são pontos de partida configuráveis, não diagnóstico ou prescrição médica.
+## Dados, privacidade e recuperação
+
+Os dados e fotos ficam no dispositivo. Não há upload automático, analytics ou backend. Exporte backups regularmente em **Backup** e guarde o JSON em local seguro; a importação substitui os dados locais somente depois de validação integral.
+
+Para recuperar dados, abra **Backup**, escolha um JSON exportado pelo DEFYN, revise a confirmação e restaure. O backup atual é v7; ele é independente da versão do app (1.0.0) e do schema IndexedDB (v7).
+
+## PWA
+
+O app pode ser instalado pelo navegador e abre offline após o primeiro carregamento. Atualizações de deploy são aplicadas automaticamente quando não há sessão ou formulário crítico aberto. Notificações, instalação e execução em segundo plano dependem do navegador e do sistema.
+
+Consulte [visão do projeto](docs/PROJECT_OVERVIEW.md), [backup](docs/BACKUP_AND_RESTORE.md), [release 1.0](docs/RELEASE_1.0.md) e o [checklist físico](docs/PHYSICAL_DEVICE_CHECKLIST.md).
