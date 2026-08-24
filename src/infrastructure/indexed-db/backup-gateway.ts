@@ -101,4 +101,21 @@ export class IndexedDbBackupGateway implements BackupGateway {
       await this.database.reminderSnoozes.bulkPut(data.reminderSnoozes);
     });
   }
+
+  async clearAll(): Promise<void> {
+    const tables = [
+      this.database.profiles, this.database.nutritionTargets, this.database.foods,
+      this.database.recipes, this.database.diaryEntries, this.database.mealCategories,
+      this.database.waterEntries, this.database.progressRecords,
+      this.database.progressPhotos, this.database.preferences,
+      this.database.foodPreferences, this.database.favoriteMeals, this.database.media,
+      this.database.trainingProfiles, this.database.exercises, this.database.exerciseFavorites,
+      this.database.workoutPlans, this.database.workoutSessions, this.database.workoutSetLogs,
+      this.database.dailyNutritionSummaries,
+      this.database.routineProfiles, this.database.routineDays, this.database.sleepRecords, this.database.reminderSnoozes,
+    ];
+    await this.database.transaction('rw', tables, async () => {
+      await Promise.all(tables.map((table) => table.clear()));
+    });
+  }
 }

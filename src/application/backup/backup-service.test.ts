@@ -8,6 +8,7 @@ class MemoryBackupGateway implements BackupGateway {
   constructor(public data: DefynBackupData) {}
   readAll() { return Promise.resolve(structuredClone(this.data)); }
   replaceAll(data: DefynBackupData) { this.data = structuredClone(data); return Promise.resolve(); }
+  clearAll() { this.data = emptyData(); return Promise.resolve(); }
 }
 
 describe('backup e restauração', () => {
@@ -123,6 +124,25 @@ describe('backup e restauração', () => {
     expect(destination.data.exercises[0]?.name).toBe('Exercício próprio');
     expect(destination.data.workoutPlans[0]?.versions[0]?.templates[0]?.name).toBe('Treino A');
     expect(destination.data.workoutSetLogs[0]).toMatchObject({ actualLoad: 30, actualReps: 10 });
+  });
+
+  it('reseta todas as coleções locais, inclusive mídia e stores legados', async () => {
+    const data = trainingDataFixture();
+    const collections = Object.keys(data) as (keyof DefynBackupData)[];
+    for (const name of collections) {
+      if (data[name].length === 0) (data[name] as unknown[]).push({ id: `sentinel-${name}`, profileId: 'profile-a' });
+    }
+    const gateway = new MemoryBackupGateway(data);
+    await new BackupService(gateway, fixedNow).reset();
+    for (const name of collections) expect(gateway.data[name]).toEqual([]);
+  });
+
+  it('exporta um backup v7 válido logo após reset', async () => {
+    const gateway = new MemoryBackupGateway(trainingDataFixture());
+    const service = new BackupService(gateway, fixedNow);
+    await service.reset();
+    const backup = await service.export();
+    expect(() => service.parse(JSON.stringify(backup))).not.toThrow();
   });
 });
 

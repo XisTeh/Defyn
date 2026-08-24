@@ -9,6 +9,7 @@ import { migrateProgressPhotoToV5, migrateProgressRecordToV5 } from '../../infra
 export interface BackupGateway {
   readAll(): Promise<DefynBackupData>;
   replaceAll(data: DefynBackupData): Promise<void>;
+  clearAll(): Promise<void>;
 }
 
 export class BackupValidationError extends Error {
@@ -220,5 +221,9 @@ export class BackupService {
   async restore(backup: DefynBackup): Promise<void> {
     const valid = validateBackup(backup);
     await this.gateway.replaceAll(valid.data);
+  }
+
+  async reset(): Promise<void> {
+    await this.gateway.clearAll();
   }
 }

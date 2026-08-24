@@ -1,6 +1,6 @@
 # DEFYN
 
-DEFYN 1.0 é um aplicativo pessoal, local-first e responsivo para treino e acompanhamento diário. Cada instalação suporta múltiplos perfis isolados, sem conta, backend ou sincronização automática.
+DEFYN 1.0.1 é um aplicativo pessoal, local-first e responsivo para treino e acompanhamento diário. Cada instalação suporta múltiplos perfis isolados, sem conta, backend ou sincronização automática.
 
 ## Recursos
 
@@ -32,7 +32,9 @@ npm run preview
 
 Os dados e fotos ficam no dispositivo. Não há upload automático, analytics ou backend. Exporte backups regularmente em **Backup** e guarde o JSON em local seguro; a importação substitui os dados locais somente depois de validação integral.
 
-Para recuperar dados, abra **Backup**, escolha um JSON exportado pelo DEFYN, revise a confirmação e restaure. O backup atual é v7; ele é independente da versão do app (1.0.0) e do schema IndexedDB (v7).
+Para recuperar dados, abra **Backup**, escolha um JSON exportado pelo DEFYN, revise a confirmação e restaure. O backup atual é v7; ele é independente da versão do app (1.0.1) e do schema IndexedDB (v7).
+
+Em **Backup → Dados locais**, o reset apaga somente os dados deste navegador/dispositivo após confirmação digitada. Ele não é executado por atualização, deploy ou migração; exporte um backup antes de usá-lo.
 
 ## PWA
 

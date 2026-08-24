@@ -2,6 +2,8 @@
 
 ## V1.0 implementado
 
+- Patch 1.0.1: planejamento habitual sem scrollbar em desktop e reset local seguro por dispositivo, com backup v7/IndexedDB v7 preservados.
+
 - Perfis locais isolados, metas, hidratação e PWA offline;
 - resumo nutricional manual diário, sem catálogo alimentar na interface;
 - treino completo e Modo Academia com retomada, descanso e histórico;

@@ -132,6 +132,7 @@ export function App() {
         onAdd={() => setEditingProfile('new')}
         onDelete={deleteProfile}
         onRestored={async () => { await loadSession(); setDataRevision((value) => value + 1); setView('today'); setNotice('Backup restaurado.'); }}
+        onReset={async () => { await loadSession(); setEditingProfile(undefined); setView('today'); setDataRevision((value) => value + 1); setNotice('Dados locais apagados neste dispositivo.'); }}
         onChanged={() => setDataRevision((value) => value + 1)}
         onNavigate={setView}
       />
@@ -150,6 +151,7 @@ interface CurrentViewProps {
   onAdd: () => void;
   onDelete: (id: string) => Promise<void>;
   onRestored: () => Promise<void>;
+  onReset: () => Promise<void>;
   onChanged: () => void;
   onNavigate: (view: AppView) => void;
 }
@@ -157,7 +159,7 @@ interface CurrentViewProps {
 function CurrentView(props: CurrentViewProps) {
   if (props.view === 'today') return <TodayDashboard profileId={props.activeProfile.id} revision={props.revision} onNotice={props.onNotice} onNavigateTraining={() => props.onNavigate('training')} onNavigateRoutine={() => props.onNavigate('routine')} onNavigateDiary={() => props.onNavigate('diary')} onNavigateProgress={() => props.onNavigate('progress')} />;
   if (props.view === 'profiles') return <ProfileManager profiles={props.profiles} activeProfileId={props.activeProfile.id} onSwitch={props.onSwitch} onEdit={props.onEdit} onAdd={props.onAdd} onDelete={props.onDelete} />;
-  if (props.view === 'backup') return <Suspense fallback={<ModuleFallback label="Abrindo backup" />}><BackupPanel onRestored={props.onRestored} /></Suspense>;
+  if (props.view === 'backup') return <Suspense fallback={<ModuleFallback label="Abrindo backup" />}><BackupPanel onRestored={props.onRestored} onReset={props.onReset} /></Suspense>;
   if (props.view === 'diary') return <Suspense fallback={<ModuleFallback label="Abrindo diário" />}><DailyTrackingWorkspace profile={props.activeProfile} revision={props.revision} onChanged={props.onChanged} onNotice={props.onNotice} /></Suspense>;
   if (props.view === 'routine') return <Suspense fallback={<ModuleFallback label="Abrindo rotina" />}><RoutineWorkspace profileId={props.activeProfile.id} revision={props.revision} onChanged={props.onChanged} onNotice={props.onNotice} /></Suspense>;
   if (props.view === 'training') return <Suspense fallback={<ModuleFallback label="Abrindo treinos" />}><TrainingWorkspace profile={props.activeProfile} revision={props.revision} onChanged={props.onChanged} onNotice={props.onNotice} /></Suspense>;
