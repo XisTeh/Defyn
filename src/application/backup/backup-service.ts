@@ -5,6 +5,8 @@ import {
   type DefynBackupData,
 } from '../../domain/export/export-format';
 import { migrateProgressPhotoToV5, migrateProgressRecordToV5 } from '../../infrastructure/indexed-db/migration-v5';
+import { createUuid } from '../../shared/ids/create-uuid';
+import { isUuid } from '../sync/sync-contract';
 
 export interface BackupGateway {
   readAll(): Promise<DefynBackupData>;
@@ -60,7 +62,7 @@ const collectionNames: readonly (keyof DefynBackupData)[] = [
   'reminderSnoozes',
 ];
 
-export function validateBackup(value: unknown): DefynBackup {
+export function validateBackup(value: unknown, idFactory: () => string = createUuid): DefynBackup {
   if (!isRecord(value) || value.format !== DEFYN_BACKUP_FORMAT) {
     throw new BackupValidationError('Este arquivo não é um backup do DEFYN.');
   }
@@ -70,7 +72,7 @@ export function validateBackup(value: unknown): DefynBackup {
   if (typeof value.exportedAt !== 'string' || !isRecord(value.data)) {
     throw new BackupValidationError('O backup está incompleto ou corrompido.');
   }
-  let candidate: Record<string, unknown> = value;
+  let candidate: Record<string, unknown> = structuredClone(value);
   if (candidate.version === 1 || candidate.version === 2) {
     const legacyData = candidate.data as Record<string, unknown>;
     candidate = { ...candidate, version: DEFYN_BACKUP_VERSION, data: {
@@ -141,6 +143,17 @@ export function validateBackup(value: unknown): DefynBackup {
   if (!(data.routineDays as unknown[]).every((item) => isRecord(item) && typeof item.dayOfWeek === 'string' && ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'].includes(item.dayOfWeek))) {
     throw new BackupValidationError('A coleção routineDays contém dia inválido.');
   }
+  const semanticRoutineDays = new Set<string>();
+  data.routineDays = (data.routineDays as unknown[]).map((item) => {
+    const day = item as Record<string, unknown>;
+    const semanticKey = `${String(day.profileId)}:${String(day.dayOfWeek)}`;
+    if (semanticRoutineDays.has(semanticKey)) throw new BackupValidationError('A coleção routineDays contém dias duplicados para o mesmo perfil.');
+    semanticRoutineDays.add(semanticKey);
+    if (isUuid(String(day.id))) return day;
+    const id = idFactory();
+    if (!isUuid(id)) throw new BackupValidationError('Não foi possível reparar a identidade de uma rotina antiga.');
+    return { ...day, id };
+  });
   if (!(data.sleepRecords as unknown[]).every((item) => isRecord(item) && typeof item.localDate === 'string' && typeof item.sleepStartedAt === 'string' && typeof item.wokeAt === 'string' && typeof item.durationMinutes === 'number' && item.durationMinutes > 0)) {
     throw new BackupValidationError('A coleção sleepRecords contém registro inválido.');
   }

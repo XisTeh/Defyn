@@ -4,7 +4,7 @@
 IndexedDB local ↔ Sync Engine ↔ Supabase ↔ Sync Engine ↔ IndexedDB local
 ```
 
-A 1.1.0 inclui o engine e a mídia privada no mesmo fluxo. Repositories continuam locais; nenhuma ação cotidiana aguarda Supabase para ser considerada salva.
+A 1.1.1 inclui o engine e a mídia privada no mesmo fluxo. Repositories continuam locais; nenhuma ação cotidiana aguarda Supabase para ser considerada salva.
 
 ## Escopo remoto do produto atual
 
@@ -41,4 +41,4 @@ O Modo Academia sempre persiste localmente. Sessão ativa, rascunhos, timer e co
 
 ## Evolução para múltiplas contas locais
 
-A 1.1.0 vincula uma instalação a uma única conta por vez. Isso resolve o caso principal — uma conta em vários dispositivos — sem duplicar bancos locais. Se o produto precisar suportar várias contas offline no mesmo perfil de navegador, a evolução deverá particionar stores ou bancos por `account_id`; remover o gate sem essa partição reabriria vazamento local entre sessões.
+A 1.1.1 vincula uma instalação a uma única conta por vez. Isso resolve o caso principal — uma conta em vários dispositivos — sem duplicar bancos locais. Se o produto precisar suportar várias contas offline no mesmo perfil de navegador, a evolução deverá particionar stores ou bancos por `account_id`; remover o gate sem essa partição reabriria vazamento local entre sessões.

@@ -1,4 +1,4 @@
-import type { OutboxEvent, RemoteSyncRecord, SyncEntityType } from '../../application/sync/sync-contract';
+import { mapRemoteOwnership, type OutboxEvent, type RemoteSyncRecord, type SyncEntityType } from '../../application/sync/sync-contract';
 import { TRAINING_DAYS } from '../../domain/training/training';
 
 function stringValue(payload: Record<string, unknown>, key: string): string | undefined {
@@ -12,13 +12,11 @@ function numberValue(payload: Record<string, unknown>, key: string): number | un
 export function toRemoteRow(event: OutboxEvent): Record<string, unknown> {
   const payload = event.payload;
   const base: Record<string, unknown> = {
-    id: event.entityId,
-    account_id: event.accountId,
+    ...mapRemoteOwnership(event.accountId, event.entityId, event.profileId),
     payload,
     created_at: stringValue(payload, 'createdAt') ?? event.createdAt,
     deleted_at: event.operation === 'DELETE' ? event.createdAt : null,
   };
-  if (event.profileId) base.profile_id = event.profileId;
   switch (event.entityType) {
     case 'defyn_profiles': return { ...base, name: stringValue(payload, 'name') ?? 'Perfil DEFYN' };
     case 'account_preferences': return { ...base, preference_key: stringValue(payload, 'key') ?? event.entityId };

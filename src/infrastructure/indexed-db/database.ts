@@ -15,9 +15,20 @@ import { migrateProfileToV2, selectMigratedActiveProfileId } from './migration-v
 import { migrateFoodToV3, migrateProfileToV3 } from './migration-v3';
 import { migrateProgressPhotoToV5, migrateProgressRecordToV5 } from './migration-v5';
 import type { OutboxEvent, PullCursor, SyncConflict, SyncMetadata } from '../../application/sync/sync-contract';
+import { migrateRoutineDayIdentityV9 } from './migration-v9';
 
 export const DATABASE_NAME = 'defyn-local';
-export const DATABASE_VERSION = 8;
+export const DATABASE_VERSION = 9;
+
+const SYNC_STORES = {
+  profiles: 'id, updatedAt', nutritionTargets: 'id, profileId, startsAt, endsAt, [profileId+startsAt]', foods: 'id, nameNormalized, searchTextNormalized, barcode, updatedAt', recipes: 'id, name, nameNormalized, updatedAt', diaryEntries: 'id, profileId, date, mealCategoryId, [profileId+date], [profileId+mealCategoryId]', mealCategories: 'id, profileId, order, [profileId+order]',
+  progressRecords: 'id, profileId, localDate, occurredAt, [profileId+localDate]', progressPhotos: 'id, profileId, localDate, occurredAt, category, mediaId, checkInId, [profileId+localDate], [profileId+category]', preferences: 'key', waterEntries: 'id, profileId, localDate, [profileId+localDate], occurredAt', media: 'id, kind, ownerType, ownerId, createdAt', foodPreferences: 'id, profileId, foodId, [profileId+foodId], favorite, lastUsedAt', favoriteMeals: 'id, profileId, updatedAt', trainingProfiles: 'id, &profileId, updatedAt', exercises: 'id, ownerProfileId, normalizedName, primaryMuscle, isCustom, updatedAt', exerciseFavorites: 'id, profileId, exerciseId, &[profileId+exerciseId]', workoutPlans: 'id, profileId, status, updatedAt, [profileId+status]', workoutSessions: 'id, profileId, planId, templateId, localDate, status, [profileId+localDate], [profileId+status]', workoutSetLogs: 'id, profileId, sessionId, exerciseId, [sessionId+exerciseId], [profileId+exerciseId], completedAt', dailyNutritionSummaries: 'id, profileId, localDate, &[profileId+localDate]',
+  routineProfiles: 'id, &profileId, updatedAt', routineDays: 'id, profileId, dayOfWeek, &[profileId+dayOfWeek], updatedAt', sleepRecords: 'id, profileId, localDate, &[profileId+localDate], sleepStartedAt', reminderSnoozes: 'id, profileId, reminderKind, &[profileId+reminderKind], snoozedUntil',
+  syncOutbox: 'id, accountId, entityType, profileId, createdAt, nextAttemptAt, [accountId+entityType]',
+  syncMetadata: 'id, accountId, entityType, entityId, state, [accountId+entityType]',
+  syncCursors: 'id, accountId, entityType',
+  syncConflicts: 'id, accountId, entityType, profileId, detectedAt, [accountId+entityType]',
+} as const;
 
 export class DefynDatabase extends Dexie {
   profiles!: EntityTable<UserProfile, 'id'>;
@@ -144,15 +155,8 @@ export class DefynDatabase extends Dexie {
       progressRecords: 'id, profileId, localDate, occurredAt, [profileId+localDate]', progressPhotos: 'id, profileId, localDate, occurredAt, category, mediaId, checkInId, [profileId+localDate], [profileId+category]', preferences: 'key', waterEntries: 'id, profileId, localDate, [profileId+localDate], occurredAt', media: 'id, kind, ownerType, ownerId, createdAt', foodPreferences: 'id, profileId, foodId, [profileId+foodId], favorite, lastUsedAt', favoriteMeals: 'id, profileId, updatedAt', trainingProfiles: 'id, &profileId, updatedAt', exercises: 'id, ownerProfileId, normalizedName, primaryMuscle, isCustom, updatedAt', exerciseFavorites: 'id, profileId, exerciseId, &[profileId+exerciseId]', workoutPlans: 'id, profileId, status, updatedAt, [profileId+status]', workoutSessions: 'id, profileId, planId, templateId, localDate, status, [profileId+localDate], [profileId+status]', workoutSetLogs: 'id, profileId, sessionId, exerciseId, [sessionId+exerciseId], [profileId+exerciseId], completedAt', dailyNutritionSummaries: 'id, profileId, localDate, &[profileId+localDate]',
       routineProfiles: 'id, &profileId, updatedAt', routineDays: 'id, profileId, dayOfWeek, &[profileId+dayOfWeek], updatedAt', sleepRecords: 'id, profileId, localDate, &[profileId+localDate], sleepStartedAt', reminderSnoozes: 'id, profileId, reminderKind, &[profileId+reminderKind], snoozedUntil',
     });
-    this.version(DATABASE_VERSION).stores({
-      profiles: 'id, updatedAt', nutritionTargets: 'id, profileId, startsAt, endsAt, [profileId+startsAt]', foods: 'id, nameNormalized, searchTextNormalized, barcode, updatedAt', recipes: 'id, name, nameNormalized, updatedAt', diaryEntries: 'id, profileId, date, mealCategoryId, [profileId+date], [profileId+mealCategoryId]', mealCategories: 'id, profileId, order, [profileId+order]',
-      progressRecords: 'id, profileId, localDate, occurredAt, [profileId+localDate]', progressPhotos: 'id, profileId, localDate, occurredAt, category, mediaId, checkInId, [profileId+localDate], [profileId+category]', preferences: 'key', waterEntries: 'id, profileId, localDate, [profileId+localDate], occurredAt', media: 'id, kind, ownerType, ownerId, createdAt', foodPreferences: 'id, profileId, foodId, [profileId+foodId], favorite, lastUsedAt', favoriteMeals: 'id, profileId, updatedAt', trainingProfiles: 'id, &profileId, updatedAt', exercises: 'id, ownerProfileId, normalizedName, primaryMuscle, isCustom, updatedAt', exerciseFavorites: 'id, profileId, exerciseId, &[profileId+exerciseId]', workoutPlans: 'id, profileId, status, updatedAt, [profileId+status]', workoutSessions: 'id, profileId, planId, templateId, localDate, status, [profileId+localDate], [profileId+status]', workoutSetLogs: 'id, profileId, sessionId, exerciseId, [sessionId+exerciseId], [profileId+exerciseId], completedAt', dailyNutritionSummaries: 'id, profileId, localDate, &[profileId+localDate]',
-      routineProfiles: 'id, &profileId, updatedAt', routineDays: 'id, profileId, dayOfWeek, &[profileId+dayOfWeek], updatedAt', sleepRecords: 'id, profileId, localDate, &[profileId+localDate], sleepStartedAt', reminderSnoozes: 'id, profileId, reminderKind, &[profileId+reminderKind], snoozedUntil',
-      syncOutbox: 'id, accountId, entityType, profileId, createdAt, nextAttemptAt, [accountId+entityType]',
-      syncMetadata: 'id, accountId, entityType, entityId, state, [accountId+entityType]',
-      syncCursors: 'id, accountId, entityType',
-      syncConflicts: 'id, accountId, entityType, profileId, detectedAt, [accountId+entityType]',
-    });
+    this.version(8).stores(SYNC_STORES);
+    this.version(DATABASE_VERSION).stores(SYNC_STORES).upgrade((transaction) => migrateRoutineDayIdentityV9(transaction));
   }
 }
 

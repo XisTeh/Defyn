@@ -4,7 +4,7 @@ O envelope atual é `defyn-backup` v7. Ele contém perfis, metas, resumo diário
 
 ## Limpeza local segura
 
-Em **Backup → Dados deste dispositivo**, **Limpar dados deste dispositivo** apaga somente o navegador atual. A ação exige `RESETAR`, destaca qualquer outbox pendente e deixa explícito que a nuvem não será apagada. O PWA permanece instalado; domínio e stores técnicas do IndexedDB v8 são limpos em uma transação.
+Em **Backup → Dados deste dispositivo**, **Limpar dados deste dispositivo** apaga somente o navegador atual. A ação exige `RESETAR`, destaca qualquer outbox pendente e deixa explícito que a nuvem não será apagada. O PWA permanece instalado; domínio e stores técnicas do IndexedDB v9 são limpos em uma transação.
 
 ## Compatibilidade e validação
 
@@ -22,7 +22,7 @@ Exporte periodicamente e guarde o JSON em local seguro. O navegador pode limpar 
 
 Sincronização e backup resolvem problemas diferentes: o sync replica mudanças e tombstones; um backup independente permite voltar a um estado anterior. O backup local v7 permanece disponível com conta autenticada.
 
-Na 1.1.0, a limpeza local continua sem chamar Supabase e é bloqueada enquanto houver outbox pendente. Após concluir, a sessão é encerrada para evitar um redownload imediato e sem contexto. No próximo login, dados já sincronizados podem ser baixados por pull inicial. Excluir conta/dados cloud continua fora de escopo.
+Na 1.1.1, a limpeza local continua sem chamar Supabase e é bloqueada enquanto houver outbox pendente. Após concluir, a sessão é encerrada para evitar um redownload imediato e sem contexto. No próximo login, dados já sincronizados podem ser baixados por pull inicial. Excluir conta/dados cloud continua fora de escopo.
 
 Restore continua local e transacional: preserva o owner compatível, limpa fila/cursor/conflitos e não escreve na cloud. Ao recarregar, o DEFYN volta a oferecer **Sincronizar meus dados**; somente o consentimento gera nova outbox e merge por ID/revisão.
 

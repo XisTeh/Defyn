@@ -392,7 +392,10 @@ export class IndexedDbRoutineRepository implements RoutineRepository {
   getProfile(profileId: string) { return this.database.routineProfiles.where('profileId').equals(profileId).first(); }
   async saveProfile(profile: RoutineProfile) { await saveProfileSettings(this.database, this.database.routineProfiles, profile); }
   listDays(profileId: string) { return this.database.routineDays.where('profileId').equals(profileId).toArray(); }
-  async saveDay(day: RoutineDay) { await saveSyncable(this.database, this.database.routineDays, 'routine_days', day); }
+  async saveDay(day: RoutineDay) {
+    const existing = await this.database.routineDays.where('[profileId+dayOfWeek]').equals([day.profileId, day.dayOfWeek]).first();
+    await saveSyncable(this.database, this.database.routineDays, 'routine_days', existing ? { ...day, id: existing.id } : day);
+  }
   async saveDays(days: RoutineDay[]) { for (const day of days) await this.saveDay(day); }
   getSleep(profileId: string, localDate: string) { return this.database.sleepRecords.where('[profileId+localDate]').equals([profileId, localDate]).first(); }
   listSleep(profileId: string, startLocalDate?: string, endLocalDate?: string) {

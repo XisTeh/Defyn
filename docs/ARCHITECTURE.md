@@ -9,7 +9,7 @@ Domain (regras e contratos)
           ↓
 Repositories
           ↓ (entidade + outbox, mesma transação)
-IndexedDB / Dexie v8
+IndexedDB / Dexie v9
           ↓
 Sync Engine → Supabase PostgreSQL/RLS
 
@@ -29,14 +29,14 @@ O projeto separa composição (`app`), casos de uso (`application`), regras e co
 
 Stores IndexedDB de alimentos, receitas e diário por refeições são legado isolado: participam apenas de migrations locais, backup/restauração e exclusão explícita de perfil, sem rota nem módulo React ativo. Eles não possuem tabelas Supabase e não entrarão no sync.
 
-## Sincronização e mídia 1.1.0
+## Sincronização e mídia 1.1.1
 
 ```text
-Dispositivo A: React → repositories → IndexedDB v8
+Dispositivo A: React → repositories → IndexedDB v9
                                  ↕ Sync Engine
                     Supabase Auth + PostgreSQL/RLS
                                  ↕ Sync Engine
-Dispositivo B: React → repositories → IndexedDB v8
+Dispositivo B: React → repositories → IndexedDB v9
 ```
 
 `infrastructure/supabase` é o único ponto que cria o cliente. `application/auth` mantém o contrato e o estado de sessão fora de `App.tsx`. Sem configuração, `AuthBoundary` entrega o app local atual; com URL e Publishable Key válidas, exige sessão. Configuração parcial falha com uma mensagem controlada.

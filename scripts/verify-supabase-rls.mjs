@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { loadEnv } from 'vite';
+import { assertQaCountsPreserved, snapshotQaCounts } from './qa-count-preservation.mjs';
 
 const environment = { ...loadEnv('qa', process.cwd(), ''), ...process.env };
 const requiredKeys = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'DEFYN_QA_A_EMAIL', 'DEFYN_QA_A_PASSWORD', 'DEFYN_QA_B_EMAIL', 'DEFYN_QA_B_PASSWORD'];
@@ -19,6 +20,10 @@ const cleanupHydrationIds = { A: new Set(), B: new Set() };
 let profileA;
 let profileB;
 const authenticated = { A: false, B: false };
+let baselineA;
+let baselineB;
+let accountA;
+let accountB;
 
 function record(operation, actor, expected, passed, obtained) {
   rows.push({ operation, actor, expected, obtained, status: passed ? 'PASS' : 'FAIL' });
@@ -129,7 +134,6 @@ async function cleanup(client, actor) {
   if (cleanupPaths[actor].size) await client.storage.from('defyn-media').remove([...cleanupPaths[actor]]);
   if (cleanupHydrationIds[actor].size) await client.from('hydration_entries').delete().in('id', [...cleanupHydrationIds[actor]]);
   if (cleanupProfileIds[actor].size) await client.from('defyn_profiles').delete().in('id', [...cleanupProfileIds[actor]]);
-  await client.auth.signOut();
 }
 
 try {
@@ -142,6 +146,8 @@ try {
   catch (error) { loginErrors.push(error instanceof Error ? error.message : 'Login QA B falhou.'); }
   if (loginErrors.length || !userA || !userB) throw new Error(loginErrors.join(' | '));
   if (userA.id === userB.id) throw new Error('As credenciais QA A/B pertencem à mesma conta.');
+  accountA = userA.id; accountB = userB.id;
+  [baselineA, baselineB] = await Promise.all([snapshotQaCounts(clientA, accountA), snapshotQaCounts(clientB, accountB)]);
 
   profileA = await createFixture(clientA, userA.id, 'A');
   profileB = await createFixture(clientB, userB.id, 'B');
@@ -156,5 +162,8 @@ try {
 } finally {
   await cleanup(clientA, 'A');
   await cleanup(clientB, 'B');
+  if (baselineA && accountA) assertQaCountsPreserved(baselineA, await snapshotQaCounts(clientA, accountA), 'RLS/A');
+  if (baselineB && accountB) assertQaCountsPreserved(baselineB, await snapshotQaCounts(clientB, accountB), 'RLS/B');
+  await Promise.allSettled([clientA.auth.signOut(), clientB.auth.signOut()]);
   console.table(rows);
 }

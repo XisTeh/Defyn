@@ -35,7 +35,7 @@ export class RoutineService {
 
   private newDay(profileId: string, dayOfWeek: TrainingDay): RoutineDay {
     const timestamp = this.stamp();
-    return { id: `${profileId}:${dayOfWeek}`, profileId, dayOfWeek, isRestDay: false, createdAt: timestamp, updatedAt: timestamp };
+    return { id: this.id(), profileId, dayOfWeek, isRestDay: false, createdAt: timestamp, updatedAt: timestamp };
   }
 
   async load(profileId: string): Promise<RoutineSnapshot> {
@@ -72,7 +72,7 @@ export class RoutineService {
 
   async copyDay(source: RoutineDay, targetDays: readonly TrainingDay[]): Promise<void> {
     const timestamp = this.stamp();
-    await this.routine.saveDays(targetDays.filter((day) => day !== source.dayOfWeek).map((dayOfWeek) => ({ ...source, id: `${source.profileId}:${dayOfWeek}`, dayOfWeek, createdAt: timestamp, updatedAt: timestamp })));
+    await this.routine.saveDays(targetDays.filter((day) => day !== source.dayOfWeek).map((dayOfWeek) => ({ ...source, id: this.id(), dayOfWeek, createdAt: timestamp, updatedAt: timestamp })));
   }
 
   async savePreferences(profile: RoutineProfile): Promise<void> {

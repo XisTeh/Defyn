@@ -1,4 +1,4 @@
-# Sync Engine 1.1.0
+# Sync Engine 1.1.1
 
 ## Fluxo
 
@@ -8,7 +8,7 @@ UI → caso de uso → repository → IndexedDB + outbox → Sync Engine → Sup
                                       └──── pull incremental ───┘
 ```
 
-A UI nunca aguarda rede para considerar uma ação salva. IndexedDB v8 é o armazenamento operacional; Supabase replica os dados estruturados entre instalações da mesma conta.
+A UI nunca aguarda rede para considerar uma ação salva. IndexedDB v9 é o armazenamento operacional; Supabase replica os dados estruturados entre instalações da mesma conta.
 
 ## Outbox
 
@@ -32,7 +32,7 @@ Ao receber `SUBSCRIBED` novamente após reconexão, o canal agenda catch-up pull
 
 ## Tombstones
 
-DELETE remove o item da UI/local, conserva seu snapshot na outbox e atualiza `deleted_at` remoto. Outros dispositivos recebem o tombstone e ocultam/removem o registro local. Não há garbage collector agressivo na 1.1.0.
+DELETE remove o item da UI/local, conserva seu snapshot na outbox e atualiza `deleted_at` remoto. Outros dispositivos recebem o tombstone e ocultam/removem o registro local. Não há garbage collector agressivo na 1.1.1.
 
 ## Conflitos
 
@@ -55,3 +55,5 @@ Estados visíveis: **Sincronizado**, **Sincronizando…**, **Offline · N altera
 Sincronizam as 14 entidades estruturadas e `media_metadata`. Para mídia, o engine envia o objeto privado antes da metadata e remove o objeto antes do tombstone. Avatares e fotos permanecem local-first; o cache lazy é descrito em `MEDIA_SYNC.md`. `foods`, `recipes`, `diaryEntries` legado e OCR nunca entram no engine. Backup manual continua independente e mantém formato v7.
 
 Uma instalação vazia só libera a aplicação depois do primeiro pull concluído. Se nunca foi preparada e estiver offline, mostra a necessidade de uma conexão inicial em vez de piscar onboarding. Bootstrap com dados locais é idempotente, inclui fotos depois dos perfis e pode ser retomado porque cada operação permanece na outbox até confirmação.
+
+`routine_days` usa UUID técnico estável e identidade funcional por perfil/dia. No upgrade v9, rotina, outbox, metadata e conflitos com ID composto legado são remapeados atomicamente; retry, update, cópia e tombstone preservam o UUID resultante.

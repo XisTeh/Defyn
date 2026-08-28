@@ -1,4 +1,4 @@
-# Media Sync 1.1.0
+# Media Sync 1.1.1
 
 ## Escopo e privacidade
 
@@ -8,7 +8,7 @@ O caminho persistente é `<account_id>/<profile_id>/<media_id>.<ext>`. `account_
 
 ## Upload local-first
 
-O navegador orienta, reduz e converte a imagem para a representação otimizada atual, salva o Blob em `media` e grava a operação `media_metadata` na outbox v8. A interface considera a foto salva nesse ponto. O upload posterior envia o objeto privado antes de confirmar a metadata remota. Retry usa o mesmo path; se o objeto já existir, tamanho, MIME e conteúdo válido são confirmados sem criar outro objeto.
+O navegador orienta, reduz e converte a imagem para a representação otimizada atual, salva o Blob em `media` e grava a operação `media_metadata` na outbox v9. A interface considera a foto salva nesse ponto. O upload posterior envia o objeto privado antes de confirmar a metadata remota. Retry usa o mesmo path; se o objeto já existir, tamanho, MIME e conteúdo válido são confirmados sem criar outro objeto.
 
 `media_metadata.payload` preserva dimensões, tamanho, finalidade, owner local e, para progresso, a metadata visual necessária. O Blob nunca entra em JSON, `syncMetadata` ou `media_metadata`.
 

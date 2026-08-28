@@ -1,6 +1,6 @@
 # Configurar o Supabase
 
-Este guia configura Auth, banco, isolamento, sync estruturado e mídia privada do DEFYN 1.1.0.
+Este guia configura Auth, banco, isolamento, sync estruturado e mídia privada do DEFYN 1.1.1.
 
 ## 1. Criar o projeto
 

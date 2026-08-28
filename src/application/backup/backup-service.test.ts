@@ -103,6 +103,15 @@ describe('backup e restauração', () => {
     expect(migrated.data.sleepRecords).toEqual([]);
   });
 
+  it('repara ID composto de routine_day em backup antigo sem perder conteúdo', () => {
+    const legacyId = 'profile-a:friday'; const repairedId = '11111111-1111-4111-8111-111111111111';
+    const legacy = { format:'defyn-backup', version:7, exportedAt:fixedNow().toISOString(), data:{...dataFixture(), routineDays:[{ id:legacyId, profileId:'profile-a', dayOfWeek:'friday', wakeTime:'07:00', sleepTime:'23:00', isRestDay:true, createdAt:fixedNow().toISOString(), updatedAt:fixedNow().toISOString() }] } };
+    const migrated = validateBackup(legacy, () => repairedId);
+    expect(migrated.version).toBe(7);
+    expect(migrated.data.routineDays).toEqual([{ ...legacy.data.routineDays[0], id:repairedId }]);
+    expect(legacy.data.routineDays[0]?.id).toBe(legacyId);
+  });
+
   it('preserva todas as colunas estruturadas de um rótulo no backup v5', async () => {
     const timestamp = fixedNow().toISOString();
     const food: Food = { id:'food-label', name:'Rótulo completo', nameNormalized:'rotulo completo', searchTextNormalized:'rotulo completo', basePortion:{ quantity:100, unit:'g' }, portions:[], nutrients:{ caloriesKcal:420, energyKj:1764, sodiumMg:500 }, dataSource:'nutrition-label-ocr', nutritionLabel:{ version:1, servingsPerContainer:4, declaredServing:{ quantity:60, unit:'g' }, columns:[

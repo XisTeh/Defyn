@@ -1,6 +1,6 @@
 # DEFYN
 
-DEFYN 1.1.0 é um aplicativo pessoal, local-first e responsivo para treino e acompanhamento diário. A versão inclui Auth, isolamento por conta, sincronização estruturada, wake-up Realtime e mídia privada entre dispositivos, mantendo o IndexedDB como armazenamento operacional.
+DEFYN 1.1.1 é um aplicativo pessoal, local-first e responsivo para treino e acompanhamento diário. A versão inclui Auth, isolamento por conta, sincronização estruturada, wake-up Realtime e mídia privada entre dispositivos, mantendo o IndexedDB como armazenamento operacional.
 
 ## Recursos
 
@@ -38,7 +38,7 @@ Copie `.env.example` para `.env.local` somente quando quiser validar Auth. Sem a
 
 O IndexedDB continua sendo o armazenamento operacional. Toda mutação é confirmada localmente e entra numa outbox persistente; o sync envia depois e recupera alterações por cursor incremental. Dados locais preexistentes só entram na nuvem após **Sincronizar meus dados**. Exporte backups regularmente: sincronização não substitui uma cópia independente.
 
-Para recuperar dados, abra **Backup**, escolha um JSON exportado pelo DEFYN, revise a confirmação e restaure. O backup continua v7; ele é independente da versão do app (1.1.0) e do schema IndexedDB (v8). Stores técnicas de sync não entram no JSON.
+Para recuperar dados, abra **Backup**, escolha um JSON exportado pelo DEFYN, revise a confirmação e restaure. O backup continua v7; ele é independente da versão do app (1.1.1) e do schema IndexedDB (v9). Stores técnicas de sync não entram no JSON.
 
 Avatar e fotos de progresso usam o bucket privado `defyn-media`, cache Blob offline e download lazy. Consulte `docs/MEDIA_SYNC.md`.
 

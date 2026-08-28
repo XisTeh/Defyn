@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { loadEnv } from 'vite';
+import { assertQaCountsPreserved, snapshotQaCounts } from './qa-count-preservation.mjs';
 
 const env = { ...loadEnv('qa', process.cwd(), ''), ...process.env };
 const required = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'DEFYN_QA_A_EMAIL', 'DEFYN_QA_A_PASSWORD', 'DEFYN_QA_B_EMAIL', 'DEFYN_QA_B_PASSWORD'];
@@ -54,11 +55,13 @@ async function cleanup() {
 }
 
 async function run() {
+  let accountA; let accountB; let baselineA; let baselineB;
   try {
-    const [accountA, accountB] = await Promise.all([
+    [accountA, accountB] = await Promise.all([
       login(clientA, env.DEFYN_QA_A_EMAIL, env.DEFYN_QA_A_PASSWORD, 'A'),
       login(clientB, env.DEFYN_QA_B_EMAIL, env.DEFYN_QA_B_PASSWORD, 'B'),
     ]);
+    [baselineA, baselineB] = await Promise.all([snapshotQaCounts(clientA, accountA), snapshotQaCounts(clientB, accountB)]);
     const [profileA] = await Promise.all([createProfile(clientA, accountA, 'A'), createProfile(clientB, accountB, 'B')]);
     const device1 = new Map(); const device2 = new Map();
 
@@ -120,6 +123,8 @@ async function run() {
     if (rows.some((item) => item.status !== 'PASS')) throw new Error('A matriz remota de mídia encontrou falha.');
   } finally {
     await cleanup();
+    if (baselineA && accountA) assertQaCountsPreserved(baselineA, await snapshotQaCounts(clientA, accountA), 'Media/A');
+    if (baselineB && accountB) assertQaCountsPreserved(baselineB, await snapshotQaCounts(clientB, accountB), 'Media/B');
     await Promise.allSettled([clientA.auth.signOut(), clientB.auth.signOut()]);
   }
 }

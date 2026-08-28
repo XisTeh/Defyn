@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { loadEnv } from 'vite';
+import { assertQaCountsPreserved, snapshotQaCounts } from './qa-count-preservation.mjs';
 
 const env = { ...loadEnv('qa', process.cwd(), ''), ...process.env };
 const required = ['VITE_SUPABASE_URL', 'VITE_SUPABASE_PUBLISHABLE_KEY', 'DEFYN_QA_A_EMAIL', 'DEFYN_QA_A_PASSWORD', 'DEFYN_QA_B_EMAIL', 'DEFYN_QA_B_PASSWORD'];
@@ -7,6 +8,7 @@ if (required.some((key) => !env[key])) throw new Error('Configuração QA incomp
 
 const options = { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } };
 const clientA = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY, options);
+const clientADevice2 = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY, options);
 const clientB = createClient(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY, options);
 const rows = [];
 const cleanup = { defyn_profiles: new Set(), nutrition_targets: new Set(), hydration_entries: new Set(), routine_days: new Set(), sleep_records: new Set(), training_plans: new Set(), workout_sessions: new Set(), workout_sets: new Set(), progress_records: new Set() };
@@ -50,12 +52,14 @@ async function cleanupFixtures(client) {
 }
 
 async function run() {
-  let accountA; let accountB;
+  let accountA; let accountB; let baselineA; let baselineB;
   try {
-    [accountA, accountB] = await Promise.all([
+    [accountA, , accountB] = await Promise.all([
       login(clientA, env.DEFYN_QA_A_EMAIL, env.DEFYN_QA_A_PASSWORD, 'A'),
+      login(clientADevice2, env.DEFYN_QA_A_EMAIL, env.DEFYN_QA_A_PASSWORD, 'A/D2'),
       login(clientB, env.DEFYN_QA_B_EMAIL, env.DEFYN_QA_B_PASSWORD, 'B'),
     ]);
+    [baselineA, baselineB] = await Promise.all([snapshotQaCounts(clientA, accountA), snapshotQaCounts(clientB, accountB)]);
     const profileId = uuid(); const device1 = new Map(); const device2 = new Map();
     const profilePayload = payload(profileId, { name: 'QA Sync D1', dateOfBirth: '1990-01-01' });
     device1.set(`profile:${profileId}`, profilePayload);
@@ -102,6 +106,26 @@ async function run() {
     ]);
     const [routineOnD2, hydrationOnD1] = await Promise.all([pullOne(clientA, 'routine_days', routineId), pullOne(clientA, 'hydration_entries', secondHydrationId)]);
     record('non-colliding concurrent merge', 'ambas preservadas', Boolean(routineOnD2 && hydrationOnD1), routineOnD2 && hydrationOnD1 ? 'ambas preservadas' : 'alteração perdida');
+
+    const d2Routine = await pullOne(clientADevice2, 'routine_days', routineId);
+    record('routine D1 push → D2 pull', 'UUID e segunda materializados', d2Routine?.id === routineId && d2Routine?.payload?.id === routineId && d2Routine?.payload?.dayOfWeek === 'monday', d2Routine ? 'materializado' : 'ausente');
+    if (!d2Routine) throw new Error('D2 não recebeu a rotina criada por D1.');
+    const d2RoutinePayload = { ...d2Routine.payload, wakeTime: '06:30', updatedAt: now(3) };
+    const routineUpdated = await clientADevice2.from('routine_days').update({ payload: d2RoutinePayload, deleted_at: null }).eq('id', routineId).eq('revision', d2Routine.revision).select('*').single();
+    const routineOnD1 = await pullOne(clientA, 'routine_days', routineId);
+    record('routine D2 update → D1 pull', 'mesmo UUID e novo horário', !routineUpdated.error && routineOnD1?.id === routineId && routineOnD1?.payload?.wakeTime === '06:30', routineUpdated.error ? safeError(routineUpdated.error) : 'convergente');
+    const routineDuplicateCount = await clientA.from('routine_days').select('id', { count: 'exact', head: true }).eq('profile_id', profileId).eq('day_of_week', 0).is('deleted_at', null);
+    record('routine logical uniqueness', '1 segunda-feira', !routineDuplicateCount.error && routineDuplicateCount.count === 1, `${routineDuplicateCount.count ?? 0} registro(s)`);
+
+    const copiedRoutineId = uuid();
+    const copiedRoutinePayload = payload(copiedRoutineId, { ...d2RoutinePayload, id: copiedRoutineId, profileId, dayOfWeek: 'tuesday', updatedAt: now(4) });
+    await insert('routine_days', { id: copiedRoutineId, account_id: accountA, profile_id: profileId, day_of_week: 1, payload: copiedRoutinePayload });
+    const copiedOnD2 = await pullOne(clientADevice2, 'routine_days', copiedRoutineId);
+    record('routine copy → distinct UUID → D2 pull', 'cópia única materializada', copiedOnD2?.id === copiedRoutineId && copiedRoutineId !== routineId && copiedOnD2?.payload?.dayOfWeek === 'tuesday', copiedOnD2 ? 'materializada' : 'ausente');
+
+    const deletedRoutine = await clientADevice2.from('routine_days').update({ deleted_at: now(5) }).eq('id', copiedRoutineId).select('*').single();
+    const tombstonedRoutine = await pullOne(clientA, 'routine_days', copiedRoutineId);
+    record('routine tombstone → convergence', 'mesmo UUID ocultável', !deletedRoutine.error && tombstonedRoutine?.id === copiedRoutineId && Boolean(tombstonedRoutine?.deleted_at), deletedRoutine.error ? safeError(deletedRoutine.error) : 'tombstone recebido');
 
     const staleRevision = updatedRemote.revision;
     const cloudWinnerPayload = { ...updatedPayload, name: 'QA Conflict Cloud', updatedAt: now(3) };
@@ -152,7 +176,9 @@ async function run() {
     if (rows.some((item) => item.status !== 'PASS')) throw new Error('A matriz remota de sync encontrou falha.');
   } finally {
     await cleanupFixtures(clientA);
-    await Promise.allSettled([clientA.auth.signOut(), clientB.auth.signOut()]);
+    if (baselineA && accountA) assertQaCountsPreserved(baselineA, await snapshotQaCounts(clientA, accountA), 'Sync/A');
+    if (baselineB && accountB) assertQaCountsPreserved(baselineB, await snapshotQaCounts(clientB, accountB), 'Sync/B');
+    await Promise.allSettled([clientA.auth.signOut(), clientADevice2.auth.signOut(), clientB.auth.signOut()]);
   }
 }
 

@@ -2,7 +2,7 @@
 
 Vitest cobre regras de domínio, casos de uso, migrations, backup, PWA e contratos de navegação. A suíte é determinística: datas relevantes são fixadas nos testes e não há dependência de rede ou dados reais do usuário.
 
-Cobertura de integridade inclui perfis e isolamento, hidratação, resumo diário, rotina, sono, treino, descanso, progresso, fotos, backup/restauração, migrations v2–v8 e atualização PWA segura.
+Cobertura de integridade inclui perfis e isolamento, hidratação, resumo diário, rotina, sono, treino, descanso, progresso, fotos, backup/restauração, migrations v2–v9 e atualização PWA segura.
 
 A suíte local cobre outbox, ordem topológica, retry, idempotência, cursor paginado, tombstone, conflito, merge sem colisão, offline, dois dispositivos, isolamento de conta, treino completo, MIME/assinatura, path privado, upload antes da metadata, delete seguro, cache offline, bootstrap retomável, primeiro login offline, restore e proteção de limpeza. A criação de UUID também é validada com e sem `crypto.randomUUID()`, incluindo UUID v4, variante RFC 4122, ausência de `Math.random`, hidratação e outbox. O wake-up Realtime é testado com sinal remoto sem materializar payload, debounce, self-event, reconexão, encerramento de canal, troca de conta e serialização de pull. Nenhum teste unitário acessa Supabase real.
 

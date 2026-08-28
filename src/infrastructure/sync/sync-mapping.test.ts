@@ -14,4 +14,10 @@ describe('mapeamento do sync', () => {
     expect(toRemoteRow(media)).toMatchObject({ kind: 'profile-avatar', storage_path: media.payload.storagePath, mime_type: 'image/webp' });
     expect(JSON.stringify(toRemoteRow(media))).not.toContain('signed');
   });
+  it('projeta routine_days somente com UUID remoto válido', () => {
+    const routine = { ...base, entityType: 'routine_days' as const, payload: { ...base.payload, dayOfWeek: 'friday' } };
+    expect(toRemoteRow(routine)).toMatchObject({ id: base.entityId, profile_id: base.profileId, day_of_week: 4 });
+    expect(toRemoteRow({ ...routine, operation: 'DELETE' })).toMatchObject({ id: base.entityId, deleted_at: base.createdAt });
+    expect(() => toRemoteRow({ ...routine, entityId: `${base.profileId}:friday` })).toThrow(/UUID estável/);
+  });
 });
