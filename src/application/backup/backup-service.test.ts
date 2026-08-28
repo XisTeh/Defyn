@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { BackupGateway } from './backup-service';
-import { BackupService, BackupValidationError, validateBackup } from './backup-service';
+import { BackupService, BackupValidationError, canClearLocalData, validateBackup } from './backup-service';
 import type { DefynBackupData } from '../../domain/export/export-format';
 import type { Food } from '../../domain/food/food';
 
@@ -12,6 +12,7 @@ class MemoryBackupGateway implements BackupGateway {
 }
 
 describe('backup e restauração', () => {
+  it('bloqueia limpeza local enquanto houver outbox pendente', () => { expect(canClearLocalData(1)).toBe(false); expect(canClearLocalData(0)).toBe(true); });
   it('exporta formato e versão válidos com todos os stores', async () => {
     const backup = await new BackupService(new MemoryBackupGateway(dataFixture()), fixedNow).export();
     expect(backup.format).toBe('defyn-backup');

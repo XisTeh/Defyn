@@ -3,6 +3,8 @@ import type { AuditedEntity } from '../shared/types';
 export type MediaKind = 'profile-avatar' | 'nutrition-label' | 'progress-photo' | 'food-photo' | 'exercise-image';
 
 export interface LocalMedia extends AuditedEntity {
+  /** Perfil proprietário. Opcional apenas para mídia criada antes do sync 1.1C. */
+  profileId?: string;
   kind: MediaKind;
   ownerType: 'profile' | 'food' | 'progress' | 'exercise';
   ownerId?: string;
@@ -15,8 +17,8 @@ export interface LocalMedia extends AuditedEntity {
 
 export interface MediaRepository {
   getById(id: string): Promise<LocalMedia | undefined>;
-  save(media: LocalMedia): Promise<void>;
-  remove(id: string): Promise<void>;
+  save(media: LocalMedia, profileId?: string): Promise<void>;
+  remove(id: string, profileId?: string): Promise<void>;
   list(): Promise<LocalMedia[]>;
   removeOrphans(referencedIds: ReadonlySet<string>): Promise<number>;
 }

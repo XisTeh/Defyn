@@ -1,18 +1,22 @@
 {
   "name": "defyn",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "vitest run",
+    "test:rls:remote": "node scripts/verify-supabase-rls.mjs",
+    "test:sync:remote": "node scripts/verify-supabase-sync.mjs",
+    "test:media:remote": "node scripts/verify-supabase-media.mjs",
     "test:watch": "vitest",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint . --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
     "dexie": "^4.0.11",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"

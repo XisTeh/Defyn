@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { WaterEntry } from '../../domain/hydration/hydration';
 import type { WaterRepository } from '../../domain/hydration/repository';
 import { WaterService } from './water-service';
+
+afterEach(() => vi.unstubAllGlobals());
 
 class MemoryWaterRepository implements WaterRepository {
   entries = new Map<string, WaterEntry>();
@@ -17,6 +19,18 @@ describe('registro de água', () => {
     const service = new WaterService(repository, () => new Date(2026, 7, 21, 23, 50), () => 'water-1');
     const entry = await service.log('profile-a', 300);
     expect(entry).toMatchObject({ id: 'water-1', profileId: 'profile-a', amountMl: 300, localDate: '2026-08-21' });
+  });
+
+  it('continua criando água sem crypto.randomUUID', async () => {
+    const getRandomValues = (bytes: Uint8Array) => {
+      bytes.set([16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]);
+      return bytes;
+    };
+    vi.stubGlobal('crypto', { getRandomValues });
+    const service = new WaterService(new MemoryWaterRepository(), () => new Date(2026, 7, 21, 10));
+
+    const entry = await service.log('profile-a', 300);
+    expect(entry.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
   });
 
   it('edita um registro preservando identidade e horário', async () => {

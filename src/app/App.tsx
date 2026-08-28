@@ -59,6 +59,12 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    const refreshFromSync = () => { void loadSession().then(() => setDataRevision((value) => value + 1)); };
+    window.addEventListener('defyn:remote-applied', refreshFromSync);
+    return () => window.removeEventListener('defyn:remote-applied', refreshFromSync);
+  }, [loadSession]);
+
+  useEffect(() => {
     if (!notice) return;
     const timeout = window.setTimeout(() => setNotice(''), 3200);
     return () => window.clearTimeout(timeout);
@@ -131,8 +137,8 @@ export function App() {
         onEdit={(profile) => setEditingProfile(profile)}
         onAdd={() => setEditingProfile('new')}
         onDelete={deleteProfile}
-        onRestored={async () => { await loadSession(); setDataRevision((value) => value + 1); setView('today'); setNotice('Backup restaurado.'); }}
-        onReset={async () => { await loadSession(); setEditingProfile(undefined); setView('today'); setDataRevision((value) => value + 1); setNotice('Dados locais apagados neste dispositivo.'); }}
+        onRestored={async () => { window.location.reload(); }}
+        onReset={async () => { window.location.reload(); }}
         onChanged={() => setDataRevision((value) => value + 1)}
         onNavigate={setView}
       />

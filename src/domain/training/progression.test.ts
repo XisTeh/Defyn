@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createUuid } from '../../shared/ids/create-uuid';
 import { suggestDoubleProgression } from './progression';
 import { calculateTrainingAdherence, type WorkoutExerciseSnapshot, type WorkoutSession, type WorkoutSetLog } from './training';
 
@@ -13,7 +14,7 @@ describe('dupla progressão', () => {
 });
 
 describe('aderência de treino', () => {
-  const session = (status: WorkoutSession['status']): WorkoutSession => ({ id: crypto.randomUUID(), profileId: 'a', planId: 'p', planVersion: 1, templateId: 't', templateName: 'Treino A', localDate: '2026-08-21', status, startedAt: '2026-08-21T12:00:00.000Z', currentExerciseIndex: 0, exercises: [], skippedExerciseIds: [], createdAt: '2026-08-21T12:00:00.000Z', updatedAt: '2026-08-21T12:00:00.000Z' });
+  const session = (status: WorkoutSession['status']): WorkoutSession => ({ id: createUuid(), profileId: 'a', planId: 'p', planVersion: 1, templateId: 't', templateName: 'Treino A', localDate: '2026-08-21', status, startedAt: '2026-08-21T12:00:00.000Z', currentExerciseIndex: 0, exercises: [], skippedExerciseIds: [], createdAt: '2026-08-21T12:00:00.000Z', updatedAt: '2026-08-21T12:00:00.000Z' });
   it('calcula apenas sessões concluídas e limita o resultado a 100%', () => { expect(calculateTrainingAdherence([session('completed'), session('active'), session('completed')], 3)).toBe(67); expect(calculateTrainingAdherence([session('completed'), session('completed')], 1)).toBe(100); });
   it('retorna zero quando não existe meta planejada', () => { expect(calculateTrainingAdherence([session('completed')], 0)).toBe(0); });
 });

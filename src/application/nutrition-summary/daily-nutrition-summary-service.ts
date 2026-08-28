@@ -5,6 +5,7 @@ import {
   type DailyNutritionValues,
 } from '../../domain/nutrition-summary/daily-nutrition-summary';
 import type { DailyNutritionSummaryRepository } from '../../domain/nutrition-summary/repository';
+import { createUuid } from '../../shared/ids/create-uuid';
 
 export function parseOptionalBrazilianDecimal(value: string): number | undefined {
   const compact = value.trim().replace(/\s/g, '');
@@ -19,7 +20,7 @@ export class DailyNutritionSummaryService {
   constructor(
     private readonly repository: DailyNutritionSummaryRepository,
     private readonly now: () => Date = () => new Date(),
-    private readonly id: () => string = () => crypto.randomUUID(),
+    private readonly id: () => string = createUuid,
   ) {}
 
   get(profileId: string, localDate: string) {

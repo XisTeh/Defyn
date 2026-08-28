@@ -1,12 +1,13 @@
 import { validateWaterAmount, type WaterEntry } from '../../domain/hydration/hydration';
 import type { WaterRepository } from '../../domain/hydration/repository';
 import { toLocalDateKey } from '../../domain/shared/local-date';
+import { createUuid } from '../../shared/ids/create-uuid';
 
 export class WaterService {
   constructor(
     private readonly water: WaterRepository,
     private readonly now: () => Date = () => new Date(),
-    private readonly id: () => string = () => crypto.randomUUID(),
+    private readonly id: () => string = createUuid,
   ) {}
 
   async log(profileId: string, amountMl: number): Promise<WaterEntry> {

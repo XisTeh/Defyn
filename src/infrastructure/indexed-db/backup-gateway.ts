@@ -1,6 +1,7 @@
 import type { BackupGateway } from '../../application/backup/backup-service';
 import type { DefynBackupData } from '../../domain/export/export-format';
 import type { DefynDatabase } from './database';
+import { isInstallationOnlyPreference, LOCAL_OWNER_ACCOUNT_ID_KEY } from '../../application/auth/local-installation-ownership';
 
 async function blobToDataUrl(blob: Blob): Promise<string> {
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -55,13 +56,14 @@ export class IndexedDbBackupGateway implements BackupGateway {
     const serializedMedia = await Promise.all(media.map(async ({ blob, ...item }) => ({ ...item, dataUrl: await blobToDataUrl(blob) })));
     return {
       profiles, nutritionTargets, foods, recipes, diaryEntries, mealCategories,
-      waterEntries, progressRecords, progressPhotos, preferences, foodPreferences, favoriteMeals, media: serializedMedia,
+      waterEntries, progressRecords, progressPhotos, preferences: preferences.filter((item) => !isInstallationOnlyPreference(item.key)), foodPreferences, favoriteMeals, media: serializedMedia,
       trainingProfiles, exercises, exerciseFavorites, workoutPlans, workoutSessions, workoutSetLogs, dailyNutritionSummaries,
       routineProfiles, routineDays, sleepRecords, reminderSnoozes,
     };
   }
 
   async replaceAll(data: DefynBackupData): Promise<void> {
+    const localOwner = await this.database.preferences.get(LOCAL_OWNER_ACCOUNT_ID_KEY);
     const tables = [
       this.database.profiles, this.database.nutritionTargets, this.database.foods,
       this.database.recipes, this.database.diaryEntries, this.database.mealCategories,
@@ -72,6 +74,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
       this.database.workoutPlans, this.database.workoutSessions, this.database.workoutSetLogs,
       this.database.dailyNutritionSummaries,
       this.database.routineProfiles, this.database.routineDays, this.database.sleepRecords, this.database.reminderSnoozes,
+      this.database.syncOutbox, this.database.syncMetadata, this.database.syncCursors, this.database.syncConflicts,
     ];
     await this.database.transaction('rw', tables, async () => {
       await Promise.all(tables.map((table) => table.clear()));
@@ -84,7 +87,8 @@ export class IndexedDbBackupGateway implements BackupGateway {
       await this.database.waterEntries.bulkPut(data.waterEntries);
       await this.database.progressRecords.bulkPut(data.progressRecords);
       await this.database.progressPhotos.bulkPut(data.progressPhotos);
-      await this.database.preferences.bulkPut(data.preferences);
+      await this.database.preferences.bulkPut(data.preferences.filter((item) => !isInstallationOnlyPreference(item.key)));
+      if (localOwner) await this.database.preferences.put(localOwner);
       await this.database.foodPreferences.bulkPut(data.foodPreferences);
       await this.database.favoriteMeals.bulkPut(data.favoriteMeals);
       await this.database.media.bulkPut(data.media.map(({ dataUrl, ...item }) => ({ ...item, blob: dataUrlToBlob(dataUrl) })));
@@ -113,6 +117,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
       this.database.workoutPlans, this.database.workoutSessions, this.database.workoutSetLogs,
       this.database.dailyNutritionSummaries,
       this.database.routineProfiles, this.database.routineDays, this.database.sleepRecords, this.database.reminderSnoozes,
+      this.database.syncOutbox, this.database.syncMetadata, this.database.syncCursors, this.database.syncConflicts,
     ];
     await this.database.transaction('rw', tables, async () => {
       await Promise.all(tables.map((table) => table.clear()));

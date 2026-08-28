@@ -10,6 +10,7 @@ import { ageOnDate, type BodyGoal, type UserProfile } from '../../domain/profile
 import type { ProfileRepository } from '../../domain/profile/repository';
 import type { NutritionTargetSnapshot } from '../../domain/targets/nutrition-target';
 import type { NutritionTargetRepository } from '../../domain/targets/repository';
+import { createUuid } from '../../shared/ids/create-uuid';
 
 export interface CreateProfileCommand {
   profileId?: string;
@@ -35,7 +36,7 @@ export class CreateProfileService {
     private readonly profiles: ProfileRepository,
     private readonly targets: NutritionTargetRepository,
     private readonly now: () => Date = () => new Date(),
-    private readonly id: () => string = () => crypto.randomUUID(),
+    private readonly id: () => string = createUuid,
   ) {}
 
   async execute(command: CreateProfileCommand): Promise<CreateProfileResult> {

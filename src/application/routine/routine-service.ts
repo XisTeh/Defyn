@@ -11,6 +11,7 @@ import {
   type SleepRecord,
 } from '../../domain/routine/routine';
 import type { RoutineRepository } from '../../domain/routine/repository';
+import { createUuid } from '../../shared/ids/create-uuid';
 
 export interface RoutineSnapshot {
   profile: RoutineProfile;
@@ -27,7 +28,7 @@ export class RoutineService {
     private readonly plans: WorkoutPlanRepository,
     private readonly sessions: WorkoutSessionRepository,
     private readonly now: () => Date = () => new Date(),
-    private readonly id: () => string = () => crypto.randomUUID(),
+    private readonly id: () => string = createUuid,
   ) {}
 
   private stamp() { return this.now().toISOString(); }

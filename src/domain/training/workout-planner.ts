@@ -1,5 +1,6 @@
 import { BASE_EXERCISES } from './exercise-library';
 import { TRAINING_DAYS, type Equipment, type Exercise, type MuscleGroup, type TrainingProfile, type WorkoutPlan, type WorkoutTemplate } from './training';
+import { createUuid } from '../../shared/ids/create-uuid';
 
 type TemplateRule = { name: string; focus: string; muscles: MuscleGroup[] };
 
@@ -46,7 +47,7 @@ function equipmentCompatible(exercise: Exercise, profile: TrainingProfile): bool
   return exercise.equipment.every((item) => available.has(item)) || exercise.equipment.includes('bodyweight');
 }
 
-export function generateStarterPlan(profile: TrainingProfile, now = new Date(), id: () => string = () => crypto.randomUUID()): StarterPlanResult {
+export function generateStarterPlan(profile: TrainingProfile, now = new Date(), id: () => string = createUuid): StarterPlanResult {
   const dayCount = Math.min(6, Math.max(1, profile.availableDaysPerWeek));
   const rules = RULES[dayCount] ?? RULES[3]!;
   const days = profile.preferredTrainingDays.length >= dayCount

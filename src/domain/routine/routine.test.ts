@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createUuid } from '../../shared/ids/create-uuid';
 import {
   DEFAULT_REMINDER_PREFERENCES,
   averageSleepMinutes,
@@ -50,5 +51,5 @@ describe('rotina, sono e lembretes', () => {
 });
 
 function record(durationMinutes: number): SleepRecord {
-  return { id: crypto.randomUUID(), profileId: 'profile-a', localDate: '2026-08-23', sleepStartedAt: '2026-08-22T23:00:00-03:00', wokeAt: '2026-08-23T07:00:00-03:00', durationMinutes, createdAt: '', updatedAt: '' };
+  return { id: createUuid(), profileId: 'profile-a', localDate: '2026-08-23', sleepStartedAt: '2026-08-22T23:00:00-03:00', wokeAt: '2026-08-23T07:00:00-03:00', durationMinutes, createdAt: '', updatedAt: '' };
 }

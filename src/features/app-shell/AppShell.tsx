@@ -8,6 +8,7 @@ import { useDocumentScrollLock } from '../../shared/hooks/use-document-scroll-lo
 import { isActiveNavigation, mobileDrawerReducer, navigationSections, uniqueProfileSwitchItems } from './mobile-navigation';
 import './app-shell.css';
 import { ReminderCoordinator } from '../routine/ReminderCoordinator';
+import { syncLabel, useSyncStatus } from '../sync/sync-status-context';
 
 interface AppShellProps {
   profiles: UserProfile[];
@@ -83,7 +84,7 @@ export function AppShell({
           <button type="button" className={view === 'profiles' ? 'active' : ''} onClick={() => navigate('profiles')}><span className="nav-symbol" aria-hidden="true">◉</span><span>Perfis</span><span className="nav-count">{profiles.length}</span></button>
           <button type="button" className={view === 'backup' ? 'active' : ''} onClick={() => navigate('backup')}><span className="nav-symbol" aria-hidden="true">⇅</span><span>Backup</span></button>
         </nav>
-        <div className={`sidebar-foot ${deviceExperience.online ? '' : 'is-offline'}`}><span className="status-dot" /> <span>{deviceExperience.online ? 'Offline disponível' : 'Sem conexão'}</span><small>{deviceExperience.offlineReady ? 'Aplicativo pronto para uso offline' : 'Dados neste dispositivo'}</small>{deviceExperience.canInstall && <button type="button" onClick={() => void deviceExperience.install()}>Instalar DEFYN</button>}</div>
+        <div className={`sidebar-foot ${deviceExperience.online ? '' : 'is-offline'}`}><SyncStatusButton />{deviceExperience.canInstall && <button type="button" onClick={() => void deviceExperience.install()}>Instalar DEFYN</button>}</div>
       </aside>
 
       <div className="app-main-column">
@@ -137,8 +138,20 @@ function MobileDrawer({ profiles, activeProfile, view, deviceExperience, onClose
         </section>
         <nav className="mobile-drawer-nav" aria-label="Áreas do DEFYN">{navigationSections.map((section) => <section key={section.label}><span className="drawer-kicker">{section.label}</span>{section.items.map((item) => <button key={item.view} type="button" className={isActiveNavigation(view, item.view) ? 'active' : ''} aria-current={isActiveNavigation(view, item.view) ? 'page' : undefined} onClick={() => onNavigate(item.view)}><span aria-hidden="true">{item.symbol}</span><strong>{item.label}</strong>{item.view === 'profiles' && <small>{profiles.length}</small>}</button>)}</section>)}</nav>
         <section className="drawer-quick-water"><span className="drawer-kicker">Água rápida</span><div>{[200, 300, 500].map((amount) => <button key={amount} type="button" onClick={() => void onQuickWater(amount)}>+ {amount} ml</button>)}</div></section>
+        <section className="drawer-sync"><span className="drawer-kicker">Conta e sincronização</span><SyncStatusButton /><DrawerSignOutButton /></section>
         {deviceExperience.canInstall && <button className="drawer-install" type="button" onClick={() => { onClose(); void deviceExperience.install(); }}>Instalar DEFYN</button>}
       </div>
     </aside>
   </div>;
+}
+
+function SyncStatusButton() {
+  const sync = useSyncStatus();
+  if (!sync.available) return <div className="sync-status-button offline" aria-label="Dados somente neste dispositivo"><span className="status-dot" /><span>Somente neste dispositivo</span><small>Modo local · offline disponível</small></div>;
+  return <button type="button" className={`sync-status-button ${sync.state}`} onClick={sync.openDetails}><span className="status-dot" /><span>{syncLabel(sync)}</span><small>{sync.state === 'error' ? 'Dados seguros neste dispositivo' : 'Local primeiro · nuvem depois'}</small></button>;
+}
+
+function DrawerSignOutButton() {
+  const sync = useSyncStatus();
+  return <button className="drawer-sign-out" type="button" onClick={sync.requestSignOut}>Sair</button>;
 }

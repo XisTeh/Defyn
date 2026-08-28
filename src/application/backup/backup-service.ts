@@ -19,6 +19,10 @@ export class BackupValidationError extends Error {
   }
 }
 
+export function canClearLocalData(pendingCount: number): boolean {
+  return Number.isInteger(pendingCount) && pendingCount === 0;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

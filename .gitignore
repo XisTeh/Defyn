@@ -12,6 +12,8 @@ screenshots/
 .env.*
 !.env.example
 .vercel/
+.supabase/
+supabase/.temp/
 .DS_Store
 Thumbs.db
 .idea/

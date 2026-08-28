@@ -3,6 +3,7 @@ import type { ExerciseRepository, TrainingProfileRepository, WorkoutPlanReposito
 import { currentPlanVersion, localDayFor, type TrainingProfile, type WorkoutExercisePrescription, type WorkoutExerciseSnapshot, type WorkoutPlan, type WorkoutSession, type WorkoutSetLog, type WorkoutTemplate } from '../../domain/training/training';
 import { generateStarterPlan, withNewPlanVersion } from '../../domain/training/workout-planner';
 import { toLocalDateKey } from '../../domain/shared/local-date';
+import { createUuid } from '../../shared/ids/create-uuid';
 
 export interface TodayWorkout {
   plan?: WorkoutPlan;
@@ -18,7 +19,7 @@ export class TrainingService {
     private readonly plans: WorkoutPlanRepository,
     private readonly sessions: WorkoutSessionRepository,
     private readonly now: () => Date = () => new Date(),
-    private readonly id: () => string = () => crypto.randomUUID(),
+    private readonly id: () => string = createUuid,
   ) {}
 
   async setupProfile(profile: Omit<TrainingProfile, 'id' | 'createdAt' | 'updatedAt'>, createPlan = true) {

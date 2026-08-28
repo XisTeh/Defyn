@@ -1,4 +1,5 @@
 import type { LocalMedia, MediaKind } from '../../domain/media/media';
+import { createUuid } from '../../shared/ids/create-uuid';
 
 const ALLOWED = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -9,7 +10,7 @@ export async function optimizeImage(
   kind: MediaKind,
   ownerType: LocalMedia['ownerType'],
   ownerId?: string,
-  id = crypto.randomUUID(),
+  id = createUuid(),
   now = new Date(),
   options: ImagePreparationOptions = {},
 ): Promise<LocalMedia> {

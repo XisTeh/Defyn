@@ -26,13 +26,15 @@ import type { DailyNutritionSummary } from '../../domain/nutrition-summary/daily
 import type { DailyNutritionSummaryRepository } from '../../domain/nutrition-summary/repository';
 import type { RoutineRepository } from '../../domain/routine/repository';
 import type { ReminderSnooze, RoutineDay, RoutineProfile, SleepRecord } from '../../domain/routine/routine';
+import { enqueueSyncMutation, enrolledSyncAccount, removeAccountPreference, removeSyncable, saveAccountPreference, saveProfileSettings, saveSyncable } from '../sync/indexed-db-sync-store';
+import { createMediaMetadataPayload } from '../../application/media/media-sync';
 
 export class IndexedDbProfileRepository implements ProfileRepository {
   constructor(private readonly database: DefynDatabase) {}
   getById(id: string) { return this.database.profiles.get(id); }
   list() { return this.database.profiles.orderBy('updatedAt').reverse().toArray(); }
-  async save(profile: UserProfile) { await this.database.profiles.put(profile); }
-  async remove(id: string) { await this.database.profiles.delete(id); }
+  async save(profile: UserProfile) { await saveSyncable(this.database, this.database.profiles, 'defyn_profiles', profile); }
+  async remove(id: string) { await removeSyncable(this.database, this.database.profiles, 'defyn_profiles', id); }
 }
 
 export class IndexedDbActiveProfileRepository implements ActiveProfileRepository {
@@ -42,14 +44,14 @@ export class IndexedDbActiveProfileRepository implements ActiveProfileRepository
     return typeof preference?.value === 'string' ? preference.value : undefined;
   }
   async set(profileId: string) {
-    await this.database.preferences.put({ key: 'activeProfileId', value: profileId });
+    await saveAccountPreference(this.database, 'activeProfileId', profileId);
   }
-  async clear() { await this.database.preferences.delete('activeProfileId'); }
+  async clear() { await removeAccountPreference(this.database, 'activeProfileId'); }
 }
 
 export class IndexedDbNutritionTargetRepository implements NutritionTargetRepository {
   constructor(private readonly database: DefynDatabase) {}
-  async save(snapshot: NutritionTargetSnapshot) { await this.database.nutritionTargets.put(snapshot); }
+  async save(snapshot: NutritionTargetSnapshot) { await saveSyncable(this.database, this.database.nutritionTargets, 'nutrition_targets', snapshot); }
   getActiveForProfile(profileId: string) {
     return this.database.nutritionTargets
       .where('profileId')
@@ -69,8 +71,8 @@ export class IndexedDbDailyNutritionSummaryRepository implements DailyNutritionS
   constructor(private readonly database: DefynDatabase) {}
   get(profileId: string, localDate: string) { return this.database.dailyNutritionSummaries.where('[profileId+localDate]').equals([profileId, localDate]).first(); }
   listByPeriod(profileId: string, startLocalDate: string | undefined, endLocalDate: string) { return this.database.dailyNutritionSummaries.where('[profileId+localDate]').between([profileId, startLocalDate ?? '0000-00-00'], [profileId, endLocalDate], true, true).sortBy('localDate'); }
-  async save(summary: DailyNutritionSummary) { await this.database.dailyNutritionSummaries.put(summary); }
-  async remove(profileId: string, localDate: string) { await this.database.dailyNutritionSummaries.where('[profileId+localDate]').equals([profileId, localDate]).delete(); }
+  async save(summary: DailyNutritionSummary) { await saveSyncable(this.database, this.database.dailyNutritionSummaries, 'nutrition_summaries', summary); }
+  async remove(profileId: string, localDate: string) { const value = await this.get(profileId, localDate); if (value) await removeSyncable(this.database, this.database.dailyNutritionSummaries, 'nutrition_summaries', value.id, profileId); }
   async removeByProfile(profileId: string) { await this.database.dailyNutritionSummaries.where('profileId').equals(profileId).delete(); }
 }
 
@@ -126,8 +128,32 @@ export class IndexedDbFoodPreferenceRepository {
 export class IndexedDbMediaRepository implements MediaRepository {
   constructor(private readonly database: DefynDatabase) {}
   getById(id: string) { return this.database.media.get(id); }
-  async save(media: LocalMedia) { await this.database.media.put(media); }
-  async remove(id: string) { await this.database.media.delete(id); }
+  async save(media: LocalMedia, profileId?: string) {
+    await this.database.transaction('rw', [this.database.media, this.database.preferences, this.database.syncOutbox, this.database.syncMetadata], async () => {
+      const ownerProfileId = profileId ?? media.profileId ?? (media.kind === 'profile-avatar' ? media.ownerId : undefined);
+      const value = ownerProfileId ? { ...media, profileId: ownerProfileId } : media;
+      await this.database.media.put(value);
+      const accountId = await enrolledSyncAccount(this.database);
+      if (accountId && ownerProfileId && isCurrentProductMedia(media)) {
+        await enqueueSyncMutation(this.database, accountId, 'media_metadata', media.id, createMediaMetadataPayload(accountId, ownerProfileId, value), 'UPSERT', ownerProfileId);
+      }
+    });
+    notifyLocalMutation();
+  }
+  async remove(id: string, profileId?: string) {
+    await this.database.transaction('rw', [this.database.media, this.database.preferences, this.database.syncOutbox, this.database.syncMetadata], async () => {
+      const media = await this.database.media.get(id);
+      if (!media) return;
+      const ownerProfileId = profileId ?? media.profileId ?? (media.kind === 'profile-avatar' ? media.ownerId : undefined);
+      const accountId = await enrolledSyncAccount(this.database);
+      if (accountId && ownerProfileId && isCurrentProductMedia(media)) {
+        await enqueueSyncMutation(this.database, accountId, 'media_metadata', media.id, createMediaMetadataPayload(accountId, ownerProfileId, media), 'DELETE', ownerProfileId);
+      }
+      const pending = accountId ? await this.database.syncOutbox.get(`${accountId}:media_metadata:${id}`) : undefined;
+      if (!pending) await this.database.media.delete(id);
+    });
+    notifyLocalMutation();
+  }
   list() { return this.database.media.toArray(); }
   async removeOrphans(referencedIds: ReadonlySet<string>) {
     const orphans = await this.database.media.filter((item) => !referencedIds.has(item.id)).primaryKeys();
@@ -138,19 +164,54 @@ export class IndexedDbMediaRepository implements MediaRepository {
 
 export class IndexedDbProgressRepository implements ProgressRepository {
   constructor(private readonly database: DefynDatabase) {}
-  async saveRecord(record: ProgressRecord) { await this.database.progressRecords.put(record); }
+  async saveRecord(record: ProgressRecord) { await saveSyncable(this.database, this.database.progressRecords, record.source === 'check-in' ? 'check_ins' : 'progress_records', record); }
   async getRecord(profileId: string, id: string) { const item = await this.database.progressRecords.get(id); return item?.profileId === profileId ? item : undefined; }
   listRecords(profileId: string, period?: ProgressPeriod) { return period ? this.database.progressRecords.where('[profileId+localDate]').between([profileId, period.startLocalDate ?? '0000-00-00'], [profileId, period.endLocalDate], true, true).sortBy('localDate') : this.database.progressRecords.where('profileId').equals(profileId).sortBy('localDate'); }
-  async removeRecord(profileId: string, id: string) { const item = await this.getRecord(profileId,id); if (item) await this.database.progressRecords.delete(id); }
+  async removeRecord(profileId: string, id: string) { const item = await this.getRecord(profileId,id); if (item) await removeSyncable(this.database, this.database.progressRecords, item.source === 'check-in' ? 'check_ins' : 'progress_records', id, profileId); }
   async savePhotoMetadata(photo: ProgressPhotoMetadata) { await this.database.progressPhotos.put(photo); }
+  async savePhotoWithMedia(photo: ProgressPhotoMetadata, media: LocalMedia) {
+    await this.database.transaction('rw', [this.database.progressPhotos, this.database.media, this.database.preferences, this.database.syncOutbox, this.database.syncMetadata], async () => {
+      const value = { ...media, profileId: photo.profileId, ownerType: 'progress' as const, ownerId: photo.id };
+      await this.database.media.put(value);
+      await this.database.progressPhotos.put(photo);
+      const accountId = await enrolledSyncAccount(this.database);
+      if (accountId) await enqueueSyncMutation(this.database, accountId, 'media_metadata', value.id, createMediaMetadataPayload(accountId, photo.profileId, value, photo), 'UPSERT', photo.profileId);
+    });
+    notifyLocalMutation();
+  }
   async getPhotoMetadata(profileId: string, id: string) { const item = await this.database.progressPhotos.get(id); return item?.profileId === profileId ? item : undefined; }
   async listPhotoMetadata(profileId: string, period?: ProgressPeriod, category?: ProgressPhotoCategory) { const items = period ? await this.database.progressPhotos.where('[profileId+localDate]').between([profileId, period.startLocalDate ?? '0000-00-00'], [profileId, period.endLocalDate], true, true).sortBy('localDate') : await this.database.progressPhotos.where('profileId').equals(profileId).sortBy('localDate'); return category ? items.filter((item)=>item.category===category) : items; }
-  async removePhoto(profileId: string, id: string) { const photo = await this.getPhotoMetadata(profileId,id); if (!photo) return; await this.database.transaction('rw',[this.database.progressPhotos,this.database.media],async()=>{ await this.database.progressPhotos.delete(id); if(photo.mediaId) await this.database.media.delete(photo.mediaId); }); }
-  async removeCheckIn(profileId: string, id: string) { const record=await this.getRecord(profileId,id); if(!record) return; const photos=await this.database.progressPhotos.where('checkInId').equals(id).filter((p)=>p.profileId===profileId).toArray(); await this.database.transaction('rw',[this.database.progressRecords,this.database.progressPhotos,this.database.media],async()=>{ await this.database.progressRecords.delete(id); await this.database.progressPhotos.bulkDelete(photos.map((p)=>p.id)); await this.database.media.bulkDelete(photos.flatMap((p)=>p.mediaId?[p.mediaId]:[])); }); }
+  async removePhoto(profileId: string, id: string) { const photo = await this.getPhotoMetadata(profileId,id); if (!photo) return; await this.database.transaction('rw',[this.database.progressPhotos,this.database.media,this.database.preferences,this.database.syncOutbox,this.database.syncMetadata],async()=>{ if(photo.mediaId){const media=await this.database.media.get(photo.mediaId);const accountId=await enrolledSyncAccount(this.database);if(media&&accountId)await enqueueSyncMutation(this.database,accountId,'media_metadata',media.id,createMediaMetadataPayload(accountId,profileId,media,photo),'DELETE',profileId);const pending=accountId?await this.database.syncOutbox.get(`${accountId}:media_metadata:${photo.mediaId}`):undefined;if(!pending)await this.database.media.delete(photo.mediaId);}await this.database.progressPhotos.delete(id); }); notifyLocalMutation(); }
+  async removeCheckIn(profileId: string, id: string) {
+    const record = await this.getRecord(profileId, id);
+    if (!record) return;
+    await removeSyncable(this.database, this.database.progressRecords, record.source === 'check-in' ? 'check_ins' : 'progress_records', id, profileId);
+    const photos = await this.database.progressPhotos.where('checkInId').equals(id).filter((photo) => photo.profileId === profileId).toArray();
+    await this.database.transaction('rw', [this.database.progressPhotos, this.database.media, this.database.preferences, this.database.syncOutbox, this.database.syncMetadata], async () => {
+      const accountId = await enrolledSyncAccount(this.database);
+      for (const photo of photos) {
+        if (!photo.mediaId) continue;
+        const media = await this.database.media.get(photo.mediaId);
+        if (media && accountId) await enqueueSyncMutation(this.database, accountId, 'media_metadata', media.id, createMediaMetadataPayload(accountId, profileId, media, photo), 'DELETE', profileId);
+        const pending = accountId ? await this.database.syncOutbox.get(`${accountId}:media_metadata:${photo.mediaId}`) : undefined;
+        if (!pending) await this.database.media.delete(photo.mediaId);
+      }
+      await this.database.progressPhotos.bulkDelete(photos.map((photo) => photo.id));
+    });
+    notifyLocalMutation();
+  }
   async removeByProfile(profileId: string) {
     await this.database.progressRecords.where('profileId').equals(profileId).delete();
     await this.database.progressPhotos.where('profileId').equals(profileId).delete();
   }
+}
+
+function isCurrentProductMedia(media: LocalMedia): boolean {
+  return media.kind === 'profile-avatar' || media.kind === 'progress-photo';
+}
+
+function notifyLocalMutation(): void {
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('defyn:local-mutation'));
 }
 
 export class IndexedDbRecipeRepository implements RecipeRepository {
@@ -167,8 +228,8 @@ export class IndexedDbWaterRepository implements WaterRepository {
     return this.database.waterEntries.where('[profileId+localDate]').equals([profileId, localDate]).toArray();
   }
   listByPeriod(profileId: string, startLocalDate: string | undefined, endLocalDate: string) { return this.database.waterEntries.where('[profileId+localDate]').between([profileId,startLocalDate ?? '0000-00-00'],[profileId,endLocalDate],true,true).toArray(); }
-  async save(entry: WaterEntry) { await this.database.waterEntries.put(entry); }
-  async remove(id: string) { await this.database.waterEntries.delete(id); }
+  async save(entry: WaterEntry) { await saveSyncable(this.database, this.database.waterEntries, 'hydration_entries', entry); }
+  async remove(id: string) { await removeSyncable(this.database, this.database.waterEntries, 'hydration_entries', id); }
   async removeByProfile(profileId: string) {
     await this.database.waterEntries.where('profileId').equals(profileId).delete();
   }
@@ -201,10 +262,48 @@ export class IndexedDbProfileDataGateway implements ProfileDataGateway {
         this.database.routineDays,
         this.database.sleepRecords,
         this.database.reminderSnoozes,
+        this.database.preferences,
+        this.database.syncOutbox,
+        this.database.syncMetadata,
       ],
       async () => {
+        const accountId = await enrolledSyncAccount(this.database);
         const customExerciseIds = await this.database.exercises.where('ownerProfileId').equals(profileId).primaryKeys();
         const progressMediaIds = (await this.database.progressPhotos.where('profileId').equals(profileId).toArray()).flatMap((photo) => photo.mediaId ? [photo.mediaId] : []);
+        if (accountId) {
+          const [profile, targets, summaries, water, days, sleep, plans, sessions, sets, progress, trainingProfile, routineProfile, ownedMedia, progressPhotos] = await Promise.all([
+            this.database.profiles.get(profileId),
+            this.database.nutritionTargets.where('profileId').equals(profileId).toArray(),
+            this.database.dailyNutritionSummaries.where('profileId').equals(profileId).toArray(),
+            this.database.waterEntries.where('profileId').equals(profileId).toArray(),
+            this.database.routineDays.where('profileId').equals(profileId).toArray(),
+            this.database.sleepRecords.where('profileId').equals(profileId).toArray(),
+            this.database.workoutPlans.where('profileId').equals(profileId).toArray(),
+            this.database.workoutSessions.where('profileId').equals(profileId).toArray(),
+            this.database.workoutSetLogs.where('profileId').equals(profileId).toArray(),
+            this.database.progressRecords.where('profileId').equals(profileId).toArray(),
+            this.database.trainingProfiles.where('profileId').equals(profileId).first(),
+            this.database.routineProfiles.where('profileId').equals(profileId).first(),
+            this.database.media.filter((item) => item.profileId === profileId || (item.kind === 'profile-avatar' && item.ownerId === profileId) || progressMediaIds.includes(item.id)).toArray(),
+            this.database.progressPhotos.where('profileId').equals(profileId).toArray(),
+          ]);
+          const queue = <T extends { id: string }>(entityType: Parameters<typeof enqueueSyncMutation>[2], value: T, ownerProfileId: string | undefined = profileId) => enqueueSyncMutation(this.database, accountId, entityType, value.id, value as unknown as Record<string, unknown>, 'DELETE', ownerProfileId);
+          for (const value of sets) await queue('workout_sets', value);
+          for (const value of sessions) await queue('workout_sessions', value);
+          for (const value of plans) await queue('training_plans', value);
+          for (const value of sleep) await queue('sleep_records', value);
+          for (const value of days) await queue('routine_days', value);
+          for (const value of water) await queue('hydration_entries', value);
+          for (const value of summaries) await queue('nutrition_summaries', value);
+          for (const value of targets) await queue('nutrition_targets', value);
+          for (const value of progress) await queue(value.source === 'check-in' ? 'check_ins' : 'progress_records', value);
+          const photoByMediaId = new Map(progressPhotos.filter((item) => item.mediaId).map((item) => [item.mediaId!, item]));
+          for (const media of ownedMedia) await enqueueSyncMutation(this.database, accountId, 'media_metadata', media.id, createMediaMetadataPayload(accountId, profileId, media, photoByMediaId.get(media.id)), 'DELETE', profileId);
+          if (trainingProfile || routineProfile) {
+            await queue('profile_settings', { id: profileId, profileId, trainingProfile, routineProfile, createdAt: profile?.createdAt, updatedAt: new Date().toISOString() });
+          }
+          if (profile) await queue('defyn_profiles', profile, undefined);
+        }
         await Promise.all([
           this.database.profiles.delete(profileId),
           this.database.nutritionTargets.where('profileId').equals(profileId).delete(),
@@ -237,7 +336,7 @@ export class IndexedDbProfileDataGateway implements ProfileDataGateway {
 export class IndexedDbTrainingProfileRepository implements TrainingProfileRepository {
   constructor(private readonly database: DefynDatabase) {}
   get(profileId: string) { return this.database.trainingProfiles.where('profileId').equals(profileId).first(); }
-  async save(profile: TrainingProfile) { await this.database.trainingProfiles.put(profile); }
+  async save(profile: TrainingProfile) { await saveProfileSettings(this.database, this.database.trainingProfiles, profile); }
   async removeByProfile(profileId: string) { await this.database.trainingProfiles.where('profileId').equals(profileId).delete(); }
 }
 
@@ -268,7 +367,7 @@ export class IndexedDbWorkoutPlanRepository implements WorkoutPlanRepository {
   getActive(profileId: string) { return this.database.workoutPlans.where('[profileId+status]').equals([profileId, 'active']).last(); }
   async getById(profileId: string, planId: string) { const plan = await this.database.workoutPlans.get(planId); return plan?.profileId === profileId ? plan : undefined; }
   list(profileId: string) { return this.database.workoutPlans.where('profileId').equals(profileId).reverse().sortBy('updatedAt'); }
-  async save(plan: WorkoutPlan) { await this.database.workoutPlans.put(plan); }
+  async save(plan: WorkoutPlan) { await saveSyncable(this.database, this.database.workoutPlans, 'training_plans', plan); }
   async removeByProfile(profileId: string) { await this.database.workoutPlans.where('profileId').equals(profileId).delete(); }
 }
 
@@ -279,29 +378,29 @@ export class IndexedDbWorkoutSessionRepository implements WorkoutSessionReposito
   list(profileId: string) { return this.database.workoutSessions.where('profileId').equals(profileId).reverse().sortBy('startedAt'); }
   listByPeriod(profileId: string, startLocalDate: string | undefined, endLocalDate: string) { return this.database.workoutSessions.where('[profileId+localDate]').between([profileId,startLocalDate ?? '0000-00-00'],[profileId,endLocalDate],true,true).toArray(); }
   listByDate(profileId: string, localDate: string) { return this.database.workoutSessions.where('[profileId+localDate]').equals([profileId, localDate]).toArray(); }
-  async save(session: WorkoutSession) { await this.database.workoutSessions.put(session); }
+  async save(session: WorkoutSession) { await saveSyncable(this.database, this.database.workoutSessions, 'workout_sessions', session); }
   listSetLogs(profileId: string, sessionId: string) { return this.database.workoutSetLogs.where('sessionId').equals(sessionId).filter((item) => item.profileId === profileId).toArray(); }
   listExerciseLogs(profileId: string, exerciseId: string) { return this.database.workoutSetLogs.where('[profileId+exerciseId]').equals([profileId, exerciseId]).toArray(); }
   listSetLogsForSessions(profileId: string, sessionIds: string[]) { return sessionIds.length ? this.database.workoutSetLogs.where('sessionId').anyOf(sessionIds).filter((item)=>item.profileId===profileId).toArray() : Promise.resolve([]); }
-  async saveSetLog(log: WorkoutSetLog) { await this.database.workoutSetLogs.put(log); }
-  async removeSetLog(profileId: string, logId: string) { const log = await this.database.workoutSetLogs.get(logId); if (log?.profileId === profileId) await this.database.workoutSetLogs.delete(logId); }
+  async saveSetLog(log: WorkoutSetLog) { await saveSyncable(this.database, this.database.workoutSetLogs, 'workout_sets', log); }
+  async removeSetLog(profileId: string, logId: string) { const log = await this.database.workoutSetLogs.get(logId); if (log?.profileId === profileId) await removeSyncable(this.database, this.database.workoutSetLogs, 'workout_sets', logId, profileId); }
   async removeByProfile(profileId: string) { await this.database.workoutSessions.where('profileId').equals(profileId).delete(); await this.database.workoutSetLogs.where('profileId').equals(profileId).delete(); }
 }
 
 export class IndexedDbRoutineRepository implements RoutineRepository {
   constructor(private readonly database: DefynDatabase) {}
   getProfile(profileId: string) { return this.database.routineProfiles.where('profileId').equals(profileId).first(); }
-  async saveProfile(profile: RoutineProfile) { await this.database.routineProfiles.put(profile); }
+  async saveProfile(profile: RoutineProfile) { await saveProfileSettings(this.database, this.database.routineProfiles, profile); }
   listDays(profileId: string) { return this.database.routineDays.where('profileId').equals(profileId).toArray(); }
-  async saveDay(day: RoutineDay) { await this.database.routineDays.put(day); }
-  async saveDays(days: RoutineDay[]) { await this.database.routineDays.bulkPut(days); }
+  async saveDay(day: RoutineDay) { await saveSyncable(this.database, this.database.routineDays, 'routine_days', day); }
+  async saveDays(days: RoutineDay[]) { for (const day of days) await this.saveDay(day); }
   getSleep(profileId: string, localDate: string) { return this.database.sleepRecords.where('[profileId+localDate]').equals([profileId, localDate]).first(); }
   listSleep(profileId: string, startLocalDate?: string, endLocalDate?: string) {
     if (!startLocalDate && !endLocalDate) return this.database.sleepRecords.where('profileId').equals(profileId).toArray();
     return this.database.sleepRecords.where('[profileId+localDate]').between([profileId, startLocalDate ?? '0000-00-00'], [profileId, endLocalDate ?? '9999-12-31'], true, true).toArray();
   }
-  async saveSleep(record: SleepRecord) { await this.database.sleepRecords.put(record); }
-  async removeSleep(profileId: string, id: string) { const record = await this.database.sleepRecords.get(id); if (record?.profileId === profileId) await this.database.sleepRecords.delete(id); }
+  async saveSleep(record: SleepRecord) { await saveSyncable(this.database, this.database.sleepRecords, 'sleep_records', record); }
+  async removeSleep(profileId: string, id: string) { const record = await this.database.sleepRecords.get(id); if (record?.profileId === profileId) await removeSyncable(this.database, this.database.sleepRecords, 'sleep_records', id, profileId); }
   getSnooze(profileId: string, reminderKind: string) { return this.database.reminderSnoozes.where('[profileId+reminderKind]').equals([profileId, reminderKind]).first(); }
   async saveSnooze(snooze: ReminderSnooze) { await this.database.reminderSnoozes.put(snooze); }
   async removeByProfile(profileId: string) {

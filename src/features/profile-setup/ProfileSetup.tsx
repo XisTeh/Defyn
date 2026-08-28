@@ -190,10 +190,10 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
           : { mode: 'weight-based', mlPerKg: Number(form.hydrationValue) },
       });
       let avatarMediaId = removeAvatar ? undefined : result.profile.avatarMediaId;
-      if (removeAvatar && result.profile.avatarMediaId) await repositories.media.remove(result.profile.avatarMediaId);
+      if (removeAvatar && result.profile.avatarMediaId) await repositories.media.remove(result.profile.avatarMediaId, result.profile.id);
       if (avatarFile) {
-        if (result.profile.avatarMediaId) await repositories.media.remove(result.profile.avatarMediaId);
-        const media = await optimizeImage(avatarFile, 'profile-avatar', 'profile', result.profile.id); await repositories.media.save(media); avatarMediaId = media.id;
+        if (result.profile.avatarMediaId) await repositories.media.remove(result.profile.avatarMediaId, result.profile.id);
+        const media = await optimizeImage(avatarFile, 'profile-avatar', 'profile', result.profile.id); await repositories.media.save({...media,profileId:result.profile.id},result.profile.id); avatarMediaId = media.id;
       }
       const enriched = { ...result.profile, avatarMediaId, nutritionPlanning: profile?.nutritionPlanning, hydrationRoutine: { wakeTime: form.wakeTime, sleepTime: form.sleepTime, remindersEnabled: form.remindersEnabled, pacingMode: form.pacingMode } };
       await repositories.profiles.save(enriched);
@@ -311,7 +311,7 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
                 <span className="button-arrow" aria-hidden="true">↗</span>
               </button>
             </div>
-            <p className="save-feedback" role="status" aria-live="polite">{status === 'saved' ? 'Perfil e snapshot de metas salvos.' : 'Os dados ficam somente neste dispositivo.'}</p>
+            <p className="save-feedback" role="status" aria-live="polite">{status === 'saved' ? 'Perfil e snapshot de metas salvos.' : 'Os dados são salvos primeiro neste dispositivo.'}</p>
           </form>
         </section>
         <ResultPanel result={preview} method={form.metabolicMethod} />
@@ -354,11 +354,11 @@ function AvatarField({ profile, file, preview, accepted, removeAvatar, cameraInp
         {file && <button type="button" className={accepted ? 'accepted' : 'accept-photo'} onClick={onAccept}>{accepted ? 'Foto pronta ✓' : 'Usar foto'}</button>}
         {(file || hasExisting) && <button type="button" className="remove-photo" onClick={onRemove}>Remover</button>}
       </div>
-      <input ref={cameraInput} aria-label="Tirar foto do perfil" type="file" accept="image/*" capture="user" onChange={onSelect} />
+      <input ref={cameraInput} aria-label="Tirar foto do perfil" type="file" accept="image/jpeg,image/png,image/webp" capture="user" onChange={onSelect} />
       <input ref={galleryInput} aria-label="Escolher foto do perfil na galeria" type="file" accept="image/jpeg,image/png,image/webp" onChange={onSelect} />
     </div>
     {file && <small className="avatar-selection-status">{accepted ? 'Esta foto será usada ao salvar.' : `Selecionada: ${file.name}. Confirme em “Usar foto”.`}</small>}
-    <small>O DEFYN corrige orientação, reduz e comprime localmente. Nada é enviado.</small>
+    <small>O DEFYN corrige orientação, reduz e comprime localmente. Com a sincronização ativa, uma cópia privada é enviada depois.</small>
   </fieldset>;
 }
 
