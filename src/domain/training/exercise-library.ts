@@ -60,7 +60,7 @@ const rows: readonly ExerciseSeed[] = [...originalRows, ...EXTENDED_EXERCISE_ROW
 
 // The public catalog only exposes exercises that have their own reviewed thumbnail.
 // IDs remain based on the complete seed list so existing plans never change meaning.
-const illustratedTailIds = new Set(['defyn-exercise-239', 'defyn-exercise-241', 'defyn-exercise-242', 'defyn-exercise-243', 'defyn-exercise-249', 'defyn-exercise-333']);
+const illustratedTailIds = new Set(['defyn-exercise-239', 'defyn-exercise-241', 'defyn-exercise-242', 'defyn-exercise-243', 'defyn-exercise-249', 'defyn-exercise-333', 'defyn-exercise-334']);
 
 export function normalizeExerciseName(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/\s+/g, ' ').trim();
@@ -95,9 +95,15 @@ export function findBaseExercise(id: string): Exercise | undefined {
 
 export function searchExercises(exercises: readonly Exercise[], query: string, muscle?: MuscleGroup, equipment?: Equipment): Exercise[] {
   const normalized = normalizeExerciseName(query);
-  return exercises.filter((exercise) =>
-    (!normalized || exercise.normalizedName.includes(normalized) || normalizeExerciseName(MUSCLE_LABELS[exercise.primaryMuscle]).includes(normalized) || exercise.equipment.some((item) => normalizeExerciseName(EQUIPMENT_LABELS[item]).includes(normalized))) &&
-    (!muscle || exercise.primaryMuscle === muscle || exercise.secondaryMuscles.includes(muscle)) &&
-    (!equipment || exercise.equipment.includes(equipment)),
-  );
+  const queryTokens = normalized.split(' ').filter(Boolean);
+  return exercises.filter((exercise) => {
+    const searchableText = [
+      exercise.normalizedName,
+      normalizeExerciseName(MUSCLE_LABELS[exercise.primaryMuscle]),
+      ...exercise.equipment.map((item) => normalizeExerciseName(EQUIPMENT_LABELS[item])),
+    ].join(' ');
+    return queryTokens.every((token) => searchableText.includes(token)) &&
+      (!muscle || exercise.primaryMuscle === muscle || exercise.secondaryMuscles.includes(muscle)) &&
+      (!equipment || exercise.equipment.includes(equipment));
+  });
 }

@@ -7,7 +7,7 @@ describe('catálogo expandido de exercícios', () => {
     const names = BASE_EXERCISES.map((exercise) => exercise.normalizedName);
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(names).size).toBe(names.length);
-    expect(BASE_EXERCISES).toHaveLength(242);
+    expect(BASE_EXERCISES).toHaveLength(243);
     expect(ids.slice(0, 52)).toEqual(Array.from({ length: 52 }, (_, index) => `defyn-exercise-${String(index + 1).padStart(2, '0')}`));
   });
 
@@ -57,6 +57,16 @@ describe('catálogo expandido de exercícios', () => {
       id: 'defyn-exercise-66',
       name: 'Crucifixo na máquina',
       primaryMuscle: 'chest',
+      equipment: ['machine'],
+    }));
+  });
+
+  it('inclui o tríceps testa na máquina com miniatura exclusiva', () => {
+    const results = searchExercises(BASE_EXERCISES, 'triceps testa maquina');
+    expect(results).toContainEqual(expect.objectContaining({
+      id: 'defyn-exercise-334',
+      name: 'Tríceps testa na máquina',
+      primaryMuscle: 'triceps',
       equipment: ['machine'],
     }));
   });
