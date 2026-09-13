@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BASE_EXERCISES } from '../../domain/training/exercise-library';
-import { getOriginalExerciseImage, getRepresentativeExerciseImage } from './exercise-images';
-import { getBaseExerciseMedia } from './exercise-media';
+import { getOriginalExerciseImage } from './exercise-images';
 import { resolveExerciseIllustrationPose } from './exercise-pose';
 
 const exercise = (name: string) => {
@@ -10,27 +9,18 @@ const exercise = (name: string) => {
   return found;
 };
 
-describe('ilustração técnica do catálogo expandido', () => {
-  it('resolve uma pose para todos os exercícios sem PNG', () => {
-    for (const item of BASE_EXERCISES.slice(52)) {
-      const pose = resolveExerciseIllustrationPose(item);
-      expect(pose).toBeTruthy();
-      expect(getOriginalExerciseImage(item.id) ?? getRepresentativeExerciseImage(pose)).toMatch(/defyn-exercise-\d{2}\.png$/);
-    }
-  });
-
-  it('mantém as miniaturas originais e usa uma miniatura anatômica equivalente nas novas opções', () => {
+describe('ilustrações do catálogo publicado', () => {
+  it('exige uma miniatura exclusiva por exercício publicado', () => {
+    const images = new Set<string>();
     for (const item of BASE_EXERCISES) {
-      const media = getBaseExerciseMedia(item.id);
-      const pose = media?.pose ?? resolveExerciseIllustrationPose(item);
-      const image = getOriginalExerciseImage(item.id) ?? getRepresentativeExerciseImage(pose);
-      expect(image).toMatch(/defyn-exercise-\d{2}\.png$/);
+      const image = getOriginalExerciseImage(item.id);
+      expect(image).toMatch(new RegExp(`${item.id}[^/]*\\.png$`));
+      images.add(image!);
     }
+    expect(images.size).toBe(BASE_EXERCISES.length);
   });
 
   it('representa famílias de movimento e equipamento', () => {
-    expect(resolveExerciseIllustrationPose(exercise('Abdominal bicicleta'))).toBe('crunch');
-    expect(resolveExerciseIllustrationPose(exercise('Elevação de pernas na barra'))).toBe('leg-raise');
     expect(resolveExerciseIllustrationPose(exercise('Agachamento búlgaro com halteres'))).toBe('lunge');
     expect(resolveExerciseIllustrationPose(exercise('Supino reto na máquina'))).toBe('chest-machine');
     expect(resolveExerciseIllustrationPose(exercise('Remada baixa unilateral'))).toBe('cable-row');

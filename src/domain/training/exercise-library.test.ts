@@ -7,7 +7,7 @@ describe('catálogo expandido de exercícios', () => {
     const names = BASE_EXERCISES.map((exercise) => exercise.normalizedName);
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(names).size).toBe(names.length);
-    expect(BASE_EXERCISES).toHaveLength(332);
+    expect(BASE_EXERCISES).toHaveLength(241);
     expect(ids.slice(0, 52)).toEqual(Array.from({ length: 52 }, (_, index) => `defyn-exercise-${String(index + 1).padStart(2, '0')}`));
   });
 

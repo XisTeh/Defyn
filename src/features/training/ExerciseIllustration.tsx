@@ -1,5 +1,5 @@
 import { getBaseExerciseMedia, type ExerciseIllustrationPose } from '../../assets/exercises/exercise-media';
-import { getOriginalExerciseImage, getRepresentativeExerciseImage } from '../../assets/exercises/exercise-images';
+import { getOriginalExerciseImage } from '../../assets/exercises/exercise-images';
 import { resolveExerciseIllustrationPose } from '../../assets/exercises/exercise-pose';
 import { MUSCLE_LABELS, type Exercise, type MuscleGroup } from '../../domain/training/training';
 
@@ -10,7 +10,7 @@ export function ExerciseIllustration({ exercise, large = false, className = '' }
   if (!exercise) return <ExerciseInitials large={large} className={className} />;
   const media = getBaseExerciseMedia(exercise.id);
   const pose = media?.pose ?? resolveExerciseIllustrationPose(exercise);
-  const image = getOriginalExerciseImage(exercise.id) ?? getRepresentativeExerciseImage(pose);
+  const image = getOriginalExerciseImage(exercise.id);
   return <span className={`exercise-mark exercise-illustration muscle-${exercise.primaryMuscle} ${large ? 'large' : ''} ${className}`.trim()} role="img" aria-label={`Ilustração de ${exercise.name}`} data-asset={media?.asset ?? `defyn-derived:${pose}`}>{image ? <img src={image} alt="" /> : <TechnicalFigure pose={pose} muscle={exercise.primaryMuscle} />}</span>;
 }
 

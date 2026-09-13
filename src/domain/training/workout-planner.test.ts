@@ -11,7 +11,7 @@ function ids() { let value = 0; return () => `id-${++value}`; }
 
 describe('biblioteca e planejador de treino', () => {
   it('mantém um catálogo amplo com IDs únicos', () => {
-    expect(BASE_EXERCISES.length).toBeGreaterThan(250);
+    expect(BASE_EXERCISES.length).toBeGreaterThan(200);
     expect(new Set(BASE_EXERCISES.map((item) => item.id)).size).toBe(BASE_EXERCISES.length);
   });
 

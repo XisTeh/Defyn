@@ -58,13 +58,17 @@ const originalRows: readonly ExerciseSeed[] = [
 
 const rows: readonly ExerciseSeed[] = [...originalRows, ...EXTENDED_EXERCISE_ROWS];
 
+// The public catalog only exposes exercises that have their own reviewed thumbnail.
+// IDs remain based on the complete seed list so existing plans never change meaning.
+const illustratedTailIds = new Set(['defyn-exercise-239', 'defyn-exercise-241', 'defyn-exercise-242', 'defyn-exercise-243', 'defyn-exercise-249']);
+
 export function normalizeExerciseName(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/\s+/g, ' ').trim();
 }
 
 const timestamp = '2026-01-01T00:00:00.000Z';
 
-export const BASE_EXERCISES: readonly Exercise[] = rows.map(([name, primaryMuscle, equipment, movementPattern, secondaryMuscles = []], index) => ({
+export const BASE_EXERCISES: readonly Exercise[] = rows.map<Exercise>(([name, primaryMuscle, equipment, movementPattern, secondaryMuscles = []], index) => ({
   id: `defyn-exercise-${String(index + 1).padStart(2, '0')}`,
   name,
   normalizedName: normalizeExerciseName(name),
@@ -83,7 +87,7 @@ export const BASE_EXERCISES: readonly Exercise[] = rows.map(([name, primaryMuscl
   metric: /prancha|\bhold\b|isometri/i.test(name) ? 'seconds' : 'reps',
   createdAt: timestamp,
   updatedAt: timestamp,
-}));
+})).filter((exercise, index) => index < 236 || illustratedTailIds.has(exercise.id));
 
 export function findBaseExercise(id: string): Exercise | undefined {
   return BASE_EXERCISES.find((exercise) => exercise.id === id);

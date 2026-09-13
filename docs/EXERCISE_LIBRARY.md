@@ -1,6 +1,6 @@
 # Biblioteca de exercícios
 
-O catálogo possui **332 exercícios**, cobrindo peitoral, costas/dorsais, lombar, trapézio, deltoides, braços, quadríceps, posteriores, glúteos, panturrilhas, tibial anterior, flexores do quadril, adutores, core, pescoço e corpo inteiro.
+O catálogo publicado possui **241 exercícios de uso frequente**, cobrindo peitoral, costas/dorsais, lombar, trapézio, deltoides, braços, quadríceps, posteriores, glúteos, panturrilhas, adutores e core.
 
 As variações são itens independentes para preservar histórico e carga próprios. O catálogo diferencia barra, barra W, trap bar, halteres, kettlebell, máquina, polia, Smith, landmine, leg press, peso corporal, elástico, fita de suspensão, argolas, medicine ball, bola suíça, roda abdominal, anilha, step, trenó e corda naval. Os 52 IDs originais foram preservados para manter fichas e históricos existentes compatíveis.
 
@@ -8,7 +8,7 @@ Cada `Exercise` possui nome normalizado, músculo principal/secundários, equipa
 
 ## Imagens e fallbacks
 
-Os 52 exercícios originais têm miniaturas PNG do DEFYN, mapeadas por `exerciseId` em `src/assets/exercises/exercise-media.ts`. Elas usam corpo/equipamento em grafite e o músculo principal em coral discreto. As 280 novas variações reutilizam a miniatura anatômica original mais próxima, determinada pelo movimento, equipamento, músculo e lateralidade, mantendo uma única linguagem visual e sem hotlink. O fallback de iniciais fica restrito a referências indisponíveis. `thumbnailMediaId` e `imageMediaId` continuam disponíveis para exercícios próprios.
+Cada um dos 241 exercícios publicados possui seu próprio arquivo PNG, correspondente ao nome, movimento e equipamento. As miniaturas usam anatomia em tons de cinza, equipamento grafite e músculo principal em coral discreto. Não há reutilização de uma miniatura entre exercícios diferentes nem hotlink. `thumbnailMediaId` e `imageMediaId` continuam disponíveis para exercícios próprios.
 
 ## Exercícios próprios e favoritos
 

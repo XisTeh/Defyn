@@ -4,9 +4,9 @@ import { getOriginalExerciseImage } from './exercise-images';
 import { BASE_EXERCISE_MEDIA, BASE_EXERCISE_MEDIA_COUNT, getBaseExerciseMedia } from './exercise-media';
 
 describe('base exercise illustration manifest', () => {
-  it('keeps the original illustrated catalog stable and lets expanded rows use the safe fallback', () => {
+  it('keeps the original illustrated catalog stable inside the expanded library', () => {
     expect(BASE_EXERCISE_MEDIA_COUNT).toBe(52);
-    expect(BASE_EXERCISES.length).toBeGreaterThan(250);
+    expect(BASE_EXERCISES.length).toBeGreaterThan(200);
     expect(Object.keys(BASE_EXERCISE_MEDIA).sort()).toEqual(BASE_EXERCISES.slice(0, 52).map((exercise) => exercise.id).sort());
     expect(new Set(Object.values(BASE_EXERCISE_MEDIA).map((media) => media.asset)).size).toBe(52);
     for (const exercise of BASE_EXERCISES.slice(0, 52)) {
