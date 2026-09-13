@@ -1,8 +1,7 @@
-import { EQUIPMENT_LABELS, MUSCLE_LABELS, type Equipment, type Exercise, type MovementPattern, type MuscleGroup } from './training';
+import { EQUIPMENT_LABELS, MUSCLE_LABELS, type Equipment, type Exercise, type MuscleGroup } from './training';
+import { EXTENDED_EXERCISE_ROWS, type ExerciseSeed } from './exercise-catalog-extended';
 
-type Seed = readonly [name: string, muscle: MuscleGroup, equipment: readonly Equipment[], pattern: MovementPattern, secondary?: readonly MuscleGroup[]];
-
-const rows: readonly Seed[] = [
+const originalRows: readonly ExerciseSeed[] = [
   ['Supino reto com barra', 'chest', ['barbell', 'bench'], 'horizontal-push', ['triceps', 'front-delts']],
   ['Supino reto com halteres', 'chest', ['dumbbell', 'bench'], 'horizontal-push', ['triceps', 'front-delts']],
   ['Supino inclinado com halteres', 'chest', ['dumbbell', 'bench'], 'horizontal-push', ['front-delts', 'triceps']],
@@ -57,6 +56,8 @@ const rows: readonly Seed[] = [
   ['Rosca de punho', 'forearms', ['dumbbell'], 'isolation'],
 ] as const;
 
+const rows: readonly ExerciseSeed[] = [...originalRows, ...EXTENDED_EXERCISE_ROWS];
+
 export function normalizeExerciseName(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/\s+/g, ' ').trim();
 }
@@ -71,7 +72,7 @@ export const BASE_EXERCISES: readonly Exercise[] = rows.map(([name, primaryMuscl
   secondaryMuscles: [...secondaryMuscles],
   equipment: [...equipment],
   movementPattern,
-  laterality: /unilateral|alternada|passada/i.test(name) ? 'unilateral' : 'bilateral',
+  laterality: /alternad[ao]s?|caminhando/i.test(name) ? 'alternating' : /unilateral|búlgaro|pistol|step-up|step-down|meadows|serrote|suitcase/i.test(name) ? 'unilateral' : 'bilateral',
   instructions: [
     'Ajuste a posição e estabilize o corpo antes de iniciar.',
     'Execute com amplitude confortável e controle o movimento.',
@@ -79,7 +80,7 @@ export const BASE_EXERCISES: readonly Exercise[] = rows.map(([name, primaryMuscl
   ],
   source: 'defyn',
   isCustom: false,
-  metric: /prancha/i.test(name) ? 'seconds' : 'reps',
+  metric: /prancha|\bhold\b|isometri/i.test(name) ? 'seconds' : 'reps',
   createdAt: timestamp,
   updatedAt: timestamp,
 }));

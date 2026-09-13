@@ -44,7 +44,7 @@ export interface StarterPlanResult { plan: WorkoutPlan; warnings: string[]; }
 function equipmentCompatible(exercise: Exercise, profile: TrainingProfile): boolean {
   const available = new Set<Equipment>(profile.availableEquipment);
   if (profile.trainingLocation !== 'home' && available.size === 0) return true;
-  return exercise.equipment.every((item) => available.has(item)) || exercise.equipment.includes('bodyweight');
+  return exercise.equipment.every((item) => available.has(item));
 }
 
 export function generateStarterPlan(profile: TrainingProfile, now = new Date(), id: () => string = createUuid): StarterPlanResult {

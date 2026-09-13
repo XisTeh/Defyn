@@ -10,9 +10,8 @@ function profile(overrides: Partial<TrainingProfile> = {}): TrainingProfile {
 function ids() { let value = 0; return () => `id-${++value}`; }
 
 describe('biblioteca e planejador de treino', () => {
-  it('mantém uma biblioteca inicial útil de 40–60 exercícios', () => {
-    expect(BASE_EXERCISES.length).toBeGreaterThanOrEqual(40);
-    expect(BASE_EXERCISES.length).toBeLessThanOrEqual(60);
+  it('mantém um catálogo amplo com IDs únicos', () => {
+    expect(BASE_EXERCISES.length).toBeGreaterThan(250);
     expect(new Set(BASE_EXERCISES.map((item) => item.id)).size).toBe(BASE_EXERCISES.length);
   });
 
