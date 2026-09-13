@@ -1,15 +1,17 @@
 import { getBaseExerciseMedia, type ExerciseIllustrationPose } from '../../assets/exercises/exercise-media';
 import { getOriginalExerciseImage } from '../../assets/exercises/exercise-images';
+import { resolveExerciseIllustrationPose } from '../../assets/exercises/exercise-pose';
 import { MUSCLE_LABELS, type Exercise, type MuscleGroup } from '../../domain/training/training';
 
 type Props = { exercise?: Exercise; large?: boolean; className?: string };
 
 /** Original, compact SVG illustrations for the fixed DEFYN exercise library. */
 export function ExerciseIllustration({ exercise, large = false, className = '' }: Props) {
-  const media = exercise ? getBaseExerciseMedia(exercise.id) : undefined;
-  if (!media || !exercise) return <ExerciseInitials exercise={exercise} large={large} className={className} />;
+  if (!exercise) return <ExerciseInitials large={large} className={className} />;
+  const media = getBaseExerciseMedia(exercise.id);
   const image = getOriginalExerciseImage(exercise.id);
-  return <span className={`exercise-mark exercise-illustration muscle-${exercise.primaryMuscle} ${large ? 'large' : ''} ${className}`.trim()} role="img" aria-label={`Ilustração de ${exercise.name}`} data-asset={media.asset}>{image ? <img src={image} alt="" /> : <TechnicalFigure pose={media.pose} muscle={exercise.primaryMuscle} />}</span>;
+  const pose = media?.pose ?? resolveExerciseIllustrationPose(exercise);
+  return <span className={`exercise-mark exercise-illustration muscle-${exercise.primaryMuscle} ${large ? 'large' : ''} ${className}`.trim()} role="img" aria-label={`Ilustração de ${exercise.name}`} data-asset={media?.asset ?? `defyn-procedural:${pose}`}>{image ? <img src={image} alt="" /> : <TechnicalFigure pose={pose} muscle={exercise.primaryMuscle} />}</span>;
 }
 
 function ExerciseInitials({ exercise, large, className }: Props) {

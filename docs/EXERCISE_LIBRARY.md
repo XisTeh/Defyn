@@ -8,7 +8,7 @@ Cada `Exercise` possui nome normalizado, músculo principal/secundários, equipa
 
 ## Imagens e fallbacks
 
-Os 52 exercícios originais têm miniaturas PNG do DEFYN, mapeadas por `exerciseId` em `src/assets/exercises/exercise-media.ts`. Elas usam corpo/equipamento em grafite e o músculo principal em coral discreto. As 280 novas variações usam o fallback visual por grupo muscular, sem hotlink ou requisição externa. `thumbnailMediaId` e `imageMediaId` continuam disponíveis para exercícios próprios.
+Os 52 exercícios originais têm miniaturas PNG do DEFYN, mapeadas por `exerciseId` em `src/assets/exercises/exercise-media.ts`. Elas usam corpo/equipamento em grafite e o músculo principal em coral discreto. As 280 novas variações recebem ilustrações vetoriais técnicas determinadas pelo movimento, equipamento, músculo e lateralidade, sem hotlink ou requisição externa. O fallback de iniciais fica restrito a referências de exercícios indisponíveis. `thumbnailMediaId` e `imageMediaId` continuam disponíveis para exercícios próprios.
 
 ## Exercícios próprios e favoritos
 

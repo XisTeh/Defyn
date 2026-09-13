@@ -5,10 +5,10 @@ As ilustrações de exercícios são **ativos originais DEFYN**. Não foram copi
 ## Estratégia
 
 - Miniaturas PNG anatômicas originais geradas localmente, recortadas em `src/assets/exercises/generated/thumbnails/`; não há requisição de imagem nem hotlink.
-- O manifesto `exercise-media.ts` associa os 52 exercícios originais às ilustrações; `exercise-images.ts` carrega o arquivo local correspondente em build-time. O catálogo expandido usa o fallback visual por grupo muscular.
+- O manifesto `exercise-media.ts` associa os 52 exercícios originais às ilustrações; `exercise-images.ts` carrega o arquivo local correspondente em build-time. O catálogo expandido usa figuras vetoriais técnicas escolhidas por movimento e equipamento.
 - Os ativos são estáticos do aplicativo, não entram no IndexedDB nem nos backups. Como fazem parte do bundle, já estão disponíveis no cache do app instalado/offline.
 - As 52 miniaturas PNG entram no precache estático; mídia de exercício personalizada continua pessoal no IndexedDB e não é adicionada ao service worker.
-- Exercícios personalizados conservam `thumbnailMediaId`/`imageMediaId`; se não houver mídia ou mapeamento, o fallback de iniciais continua visível e sem quebra de layout.
+- Exercícios personalizados conservam `thumbnailMediaId`/`imageMediaId`; sem mídia ou mapeamento, recebem uma figura técnica pelo padrão cadastrado. Iniciais aparecem somente quando a referência do exercício está indisponível.
 
 ## Matriz de cobertura
 
@@ -67,7 +67,7 @@ As ilustrações de exercícios são **ativos originais DEFYN**. Não foram copi
 | defyn-exercise-51 | Encolhimento com halteres | `encolhimento-halteres` | Sim |
 | defyn-exercise-52 | Rosca de punho | `rosca-punho` | Sim |
 
-O teste `src/assets/exercises/exercise-media.test.ts` falha se um dos 52 exercícios ilustrados perder o manifesto, se um asset for repetido ou se os IDs históricos forem alterados. As variações expandidas são verificadas separadamente e usam fallback.
+O teste `src/assets/exercises/exercise-media.test.ts` falha se um dos 52 exercícios ilustrados perder o manifesto, se um asset for repetido ou se os IDs históricos forem alterados. As variações expandidas são verificadas separadamente e todas precisam resolver uma pose vetorial.
 # Uso no Modo Academia
 
 A sessão reutiliza o mesmo pipeline de imagem da biblioteca. Assets originais são preferidos; a ilustração técnica e, por fim, iniciais por grupo muscular formam os fallbacks offline sem bloquear o registro.
