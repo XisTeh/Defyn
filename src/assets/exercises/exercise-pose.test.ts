@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BASE_EXERCISES } from '../../domain/training/exercise-library';
+import { getOriginalExerciseImage, getRepresentativeExerciseImage } from './exercise-images';
+import { getBaseExerciseMedia } from './exercise-media';
 import { resolveExerciseIllustrationPose } from './exercise-pose';
 
 const exercise = (name: string) => {
@@ -11,7 +13,18 @@ const exercise = (name: string) => {
 describe('ilustração técnica do catálogo expandido', () => {
   it('resolve uma pose para todos os exercícios sem PNG', () => {
     for (const item of BASE_EXERCISES.slice(52)) {
-      expect(resolveExerciseIllustrationPose(item)).toBeTruthy();
+      const pose = resolveExerciseIllustrationPose(item);
+      expect(pose).toBeTruthy();
+      expect(getOriginalExerciseImage(item.id) ?? getRepresentativeExerciseImage(pose)).toMatch(/defyn-exercise-\d{2}\.png$/);
+    }
+  });
+
+  it('mantém as miniaturas originais e usa uma miniatura anatômica equivalente nas novas opções', () => {
+    for (const item of BASE_EXERCISES) {
+      const media = getBaseExerciseMedia(item.id);
+      const pose = media?.pose ?? resolveExerciseIllustrationPose(item);
+      const image = getOriginalExerciseImage(item.id) ?? getRepresentativeExerciseImage(pose);
+      expect(image).toMatch(/defyn-exercise-\d{2}\.png$/);
     }
   });
 
