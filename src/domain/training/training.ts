@@ -6,7 +6,7 @@ export type TrainingGoal = 'hypertrophy' | 'strength' | 'conditioning' | 'body-c
 export type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
 export type TrainingLocation = 'gym' | 'home' | 'both';
 export type Equipment = 'barbell' | 'ez-bar' | 'trap-bar' | 'dumbbell' | 'kettlebell' | 'bench' | 'machine' | 'cable' | 'smith' | 'landmine' | 'leg-press' | 'bodyweight' | 'band' | 'suspension' | 'rings' | 'medicine-ball' | 'stability-ball' | 'ab-wheel' | 'plate' | 'step' | 'sled' | 'battle-rope' | 'other';
-export type MuscleGroup = 'chest' | 'back' | 'lats' | 'lower-back' | 'traps' | 'front-delts' | 'side-delts' | 'rear-delts' | 'biceps' | 'triceps' | 'forearms' | 'quadriceps' | 'hamstrings' | 'glutes' | 'calves' | 'tibialis' | 'core' | 'hip-flexors' | 'adductors' | 'neck' | 'full-body' | 'other';
+export type MuscleGroup = 'chest' | 'back' | 'lats' | 'lower-back' | 'traps' | 'front-delts' | 'side-delts' | 'rear-delts' | 'rotator-cuff' | 'biceps' | 'triceps' | 'forearms' | 'quadriceps' | 'hamstrings' | 'glutes' | 'calves' | 'tibialis' | 'core' | 'hip-flexors' | 'adductors' | 'neck' | 'full-body' | 'other';
 export type MovementPattern = 'horizontal-push' | 'vertical-push' | 'horizontal-pull' | 'vertical-pull' | 'squat' | 'hinge' | 'knee-extension' | 'knee-flexion' | 'isolation' | 'core' | 'rotation' | 'calf' | 'carry' | 'locomotion' | 'olympic' | 'plyometric' | 'other';
 export type LoadUnit = 'kg' | 'lb' | 'plate' | 'none';
 export type SetType = 'warmup' | 'working' | 'optional';
@@ -162,7 +162,7 @@ export const DAY_LABELS: Record<TrainingDay, string> = {
 };
 
 export const MUSCLE_LABELS: Record<MuscleGroup, string> = {
-  chest: 'Peitoral', back: 'Costas', lats: 'Dorsais', 'lower-back': 'Lombar', traps: 'Trapézio', 'front-delts': 'Deltoide anterior', 'side-delts': 'Deltoide lateral', 'rear-delts': 'Deltoide posterior', biceps: 'Bíceps', triceps: 'Tríceps', forearms: 'Antebraços', quadriceps: 'Quadríceps', hamstrings: 'Posteriores', glutes: 'Glúteos', calves: 'Panturrilhas', tibialis: 'Tibial anterior', core: 'Core', 'hip-flexors': 'Flexores do quadril', adductors: 'Adutores', neck: 'Pescoço', 'full-body': 'Corpo inteiro', other: 'Outros',
+  chest: 'Peitoral', back: 'Costas', lats: 'Dorsais', 'lower-back': 'Lombar', traps: 'Trapézio', 'front-delts': 'Deltoide anterior', 'side-delts': 'Deltoide lateral', 'rear-delts': 'Deltoide posterior', 'rotator-cuff': 'Manguito rotador', biceps: 'Bíceps', triceps: 'Tríceps', forearms: 'Antebraços', quadriceps: 'Quadríceps', hamstrings: 'Posteriores', glutes: 'Glúteos', calves: 'Panturrilhas', tibialis: 'Tibial anterior', core: 'Core', 'hip-flexors': 'Flexores do quadril', adductors: 'Adutores', neck: 'Pescoço', 'full-body': 'Corpo inteiro', other: 'Outros',
 };
 
 export const EQUIPMENT_LABELS: Record<Equipment, string> = {

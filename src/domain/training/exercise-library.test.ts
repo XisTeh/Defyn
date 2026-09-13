@@ -7,7 +7,7 @@ describe('catálogo expandido de exercícios', () => {
     const names = BASE_EXERCISES.map((exercise) => exercise.normalizedName);
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(names).size).toBe(names.length);
-    expect(BASE_EXERCISES).toHaveLength(241);
+    expect(BASE_EXERCISES).toHaveLength(242);
     expect(ids.slice(0, 52)).toEqual(Array.from({ length: 52 }, (_, index) => `defyn-exercise-${String(index + 1).padStart(2, '0')}`));
   });
 
@@ -29,5 +29,15 @@ describe('catálogo expandido de exercícios', () => {
     expect(searchExercises(BASE_EXERCISES, '', undefined, 'machine').length).toBeGreaterThan(25);
     expect(searchExercises(BASE_EXERCISES, '', undefined, 'dumbbell').length).toBeGreaterThan(35);
     expect(BASE_EXERCISES.find((exercise) => exercise.name === 'Farmer hold com halteres')?.metric).toBe('seconds');
+  });
+
+  it('inclui o aquecimento unilateral de manguito rotador na polia', () => {
+    const exercise = BASE_EXERCISES.find((candidate) => candidate.name === 'Aquecimento de manguito rotador na polia');
+    expect(exercise).toMatchObject({
+      id: 'defyn-exercise-333',
+      primaryMuscle: 'rotator-cuff',
+      equipment: ['cable'],
+      laterality: 'unilateral',
+    });
   });
 });

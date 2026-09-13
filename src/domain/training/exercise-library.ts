@@ -60,7 +60,7 @@ const rows: readonly ExerciseSeed[] = [...originalRows, ...EXTENDED_EXERCISE_ROW
 
 // The public catalog only exposes exercises that have their own reviewed thumbnail.
 // IDs remain based on the complete seed list so existing plans never change meaning.
-const illustratedTailIds = new Set(['defyn-exercise-239', 'defyn-exercise-241', 'defyn-exercise-242', 'defyn-exercise-243', 'defyn-exercise-249']);
+const illustratedTailIds = new Set(['defyn-exercise-239', 'defyn-exercise-241', 'defyn-exercise-242', 'defyn-exercise-243', 'defyn-exercise-249', 'defyn-exercise-333']);
 
 export function normalizeExerciseName(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/\s+/g, ' ').trim();
@@ -76,7 +76,7 @@ export const BASE_EXERCISES: readonly Exercise[] = rows.map<Exercise>(([name, pr
   secondaryMuscles: [...secondaryMuscles],
   equipment: [...equipment],
   movementPattern,
-  laterality: /alternad[ao]s?|caminhando/i.test(name) ? 'alternating' : /unilateral|búlgaro|pistol|step-up|step-down|meadows|serrote|suitcase/i.test(name) ? 'unilateral' : 'bilateral',
+  laterality: /alternad[ao]s?|caminhando/i.test(name) ? 'alternating' : /unilateral|búlgaro|pistol|step-up|step-down|meadows|serrote|suitcase|manguito rotador/i.test(name) ? 'unilateral' : 'bilateral',
   instructions: [
     'Ajuste a posição e estabilize o corpo antes de iniciar.',
     'Execute com amplitude confortável e controle o movimento.',
