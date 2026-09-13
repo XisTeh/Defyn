@@ -17,7 +17,7 @@ As ilustrações de exercícios são **ativos originais DEFYN**. Não foram copi
 | defyn-exercise-01 | Supino reto com barra | `supino-reto-barra` | Sim |
 | defyn-exercise-02 | Supino reto com halteres | `supino-reto-halteres` | Sim |
 | defyn-exercise-03 | Supino inclinado com halteres | `supino-inclinado-halteres` | Sim |
-| defyn-exercise-04 | Chest press | `chest-press` | Sim |
+| defyn-exercise-04 | Supino na máquina | `chest-press` | Sim |
 | defyn-exercise-05 | Crucifixo com halteres | `crucifixo-halteres` | Sim |
 | defyn-exercise-06 | Crossover na polia | `crossover-polia` | Sim |
 | defyn-exercise-07 | Flexão de braços | `flexao-bracos` | Sim |

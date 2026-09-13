@@ -40,4 +40,24 @@ describe('catálogo expandido de exercícios', () => {
       laterality: 'unilateral',
     });
   });
+
+  it('expõe o chest press pelo nome em português Supino na máquina', () => {
+    const results = searchExercises(BASE_EXERCISES, 'supino na maquina');
+    expect(results).toContainEqual(expect.objectContaining({
+      id: 'defyn-exercise-04',
+      name: 'Supino na máquina',
+      primaryMuscle: 'chest',
+      equipment: ['machine'],
+    }));
+  });
+
+  it('expõe o peck deck pelo nome em português Crucifixo na máquina', () => {
+    const results = searchExercises(BASE_EXERCISES, 'crucifixo na maquina');
+    expect(results).toContainEqual(expect.objectContaining({
+      id: 'defyn-exercise-66',
+      name: 'Crucifixo na máquina',
+      primaryMuscle: 'chest',
+      equipment: ['machine'],
+    }));
+  });
 });

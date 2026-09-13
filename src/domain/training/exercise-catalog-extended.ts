@@ -28,7 +28,7 @@ export const EXTENDED_EXERCISE_ROWS: readonly ExerciseSeed[] = [
   ['Supino no chão com halteres', 'chest', ['dumbbell'], 'horizontal-push', ['triceps']],
   ['Crucifixo inclinado com halteres', 'chest', ['dumbbell', 'bench'], 'isolation', ['front-delts']],
   ['Crucifixo declinado com halteres', 'chest', ['dumbbell', 'bench'], 'isolation'],
-  ['Peck deck', 'chest', ['machine'], 'isolation', ['front-delts']],
+  ['Crucifixo na máquina', 'chest', ['machine'], 'isolation', ['front-delts']],
   ['Crossover na polia alta', 'chest', ['cable'], 'isolation'],
   ['Crossover na polia baixa', 'chest', ['cable'], 'isolation', ['front-delts']],
   ['Crucifixo unilateral na polia', 'chest', ['cable'], 'isolation', ['core']],
