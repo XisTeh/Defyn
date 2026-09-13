@@ -312,7 +312,8 @@ export const EXTENDED_EXERCISE_ROWS: readonly ExerciseSeed[] = [
   ['Flexão cervical com elástico', 'neck', ['band'], 'isolation'],
   ['Extensão cervical com elástico', 'neck', ['band'], 'isolation'],
 
-  // Aquecimento e saúde dos ombros (adicionado ao final para preservar IDs existentes)
+  // Adicionados ao final para preservar todos os IDs existentes.
   ['Aquecimento de manguito rotador na polia', 'rotator-cuff', ['cable'], 'isolation', ['rear-delts']],
   ['Tríceps testa na máquina', 'triceps', ['machine'], 'isolation'],
+  ['Leg press articulado', 'quadriceps', ['leg-press'], 'squat', ['glutes', 'hamstrings']],
 ] as const;

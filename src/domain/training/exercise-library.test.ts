@@ -7,7 +7,7 @@ describe('catálogo expandido de exercícios', () => {
     const names = BASE_EXERCISES.map((exercise) => exercise.normalizedName);
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(names).size).toBe(names.length);
-    expect(BASE_EXERCISES).toHaveLength(243);
+    expect(BASE_EXERCISES).toHaveLength(244);
     expect(ids.slice(0, 52)).toEqual(Array.from({ length: 52 }, (_, index) => `defyn-exercise-${String(index + 1).padStart(2, '0')}`));
   });
 
@@ -68,6 +68,17 @@ describe('catálogo expandido de exercícios', () => {
       name: 'Tríceps testa na máquina',
       primaryMuscle: 'triceps',
       equipment: ['machine'],
+    }));
+  });
+
+  it('diferencia o leg press 45° do leg press articulado', () => {
+    expect(searchExercises(BASE_EXERCISES, 'leg press 45')).toContainEqual(expect.objectContaining({
+      id: 'defyn-exercise-31',
+      name: 'Leg press 45°',
+    }));
+    expect(searchExercises(BASE_EXERCISES, 'leg press articulado')).toContainEqual(expect.objectContaining({
+      id: 'defyn-exercise-335',
+      name: 'Leg press articulado',
     }));
   });
 

@@ -60,7 +60,7 @@ const rows: readonly ExerciseSeed[] = [...originalRows, ...EXTENDED_EXERCISE_ROW
 
 // The public catalog only exposes exercises that have their own reviewed thumbnail.
 // IDs remain based on the complete seed list so existing plans never change meaning.
-const illustratedTailIds = new Set(['defyn-exercise-239', 'defyn-exercise-241', 'defyn-exercise-242', 'defyn-exercise-243', 'defyn-exercise-249', 'defyn-exercise-333', 'defyn-exercise-334']);
+const illustratedTailIds = new Set(['defyn-exercise-239', 'defyn-exercise-241', 'defyn-exercise-242', 'defyn-exercise-243', 'defyn-exercise-249', 'defyn-exercise-333', 'defyn-exercise-334', 'defyn-exercise-335']);
 
 export function normalizeExerciseName(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').replace(/\s+/g, ' ').trim();

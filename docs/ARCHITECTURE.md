@@ -49,6 +49,6 @@ Uma instalação vazia faz pull inicial antes de montar o app. Dados estruturado
 
 ## PWA
 
-Vite carrega Diário, Treinos, Progresso, Rotina e Backup por chunks. Workbox precacheia shell, chunks, CSS, fontes, ícones e 243 miniaturas de exercícios; nunca mídia pessoal. `autoUpdate` adia reload durante sessão de academia, bootstrap, sync crítico, conflito ou fluxos críticos já existentes.
+Vite carrega Diário, Treinos, Progresso, Rotina e Backup por chunks. Workbox precacheia shell, chunks, CSS, fontes, ícones e 244 miniaturas de exercícios; nunca mídia pessoal. `autoUpdate` adia reload durante sessão de academia, bootstrap, sync crítico, conflito ou fluxos críticos já existentes.
 
 Mídia segue `Blob local → outbox media_metadata → Storage privado → metadata remota`. No recebimento, metadata chega pelo pull incremental; avatar baixa primeiro, fotos recentes em background limitado e histórico sob demanda. O dashboard nunca aguarda foto histórica. Validação de assinatura/MIME acontece tanto no upload quanto no download.

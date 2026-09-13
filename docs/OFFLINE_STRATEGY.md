@@ -1,6 +1,6 @@
 # Estratégia offline
 
-O build precacheia o shell HTML/CSS/JS, chunks lazy, fontes, ícones PWA e 243 miniaturas de exercícios. `cleanupOutdatedCaches` remove gerações antigas e o fallback de navegação usa `index.html`.
+O build precacheia o shell HTML/CSS/JS, chunks lazy, fontes, ícones PWA e 244 miniaturas de exercícios. `cleanupOutdatedCaches` remove gerações antigas e o fallback de navegação usa `index.html`.
 
 Mídia pessoal não entra no Workbox: fotos baixadas ficam como Blob no IndexedDB. Avatar é priorizado no primeiro pull; fotos recentes baixam com concorrência limitada e o histórico é solicitado sob demanda. Depois do cache, todas abrem offline. Assets OCR, modelo de idioma, worker e wasm foram removidos na Etapa 07.
 

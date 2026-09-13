@@ -5,9 +5,9 @@ As ilustrações de exercícios são **ativos originais DEFYN**. Não foram copi
 ## Estratégia
 
 - Miniaturas PNG anatômicas originais geradas localmente, recortadas em `src/assets/exercises/generated/thumbnails/`; não há requisição de imagem nem hotlink.
-- O manifesto `exercise-media.ts` preserva os metadados das 52 ilustrações originais; `exercise-images.ts` carrega em build-time o PNG exclusivo de cada um dos 243 exercícios publicados.
+- O manifesto `exercise-media.ts` preserva os metadados das 52 ilustrações originais; `exercise-images.ts` carrega em build-time o PNG exclusivo de cada um dos 244 exercícios publicados.
 - Os ativos são estáticos do aplicativo, não entram no IndexedDB nem nos backups. Como fazem parte do bundle, já estão disponíveis no cache do app instalado/offline.
-- As 243 miniaturas PNG entram no precache estático; mídia de exercício personalizada continua pessoal no IndexedDB e não é adicionada ao service worker.
+- As 244 miniaturas PNG entram no precache estático; mídia de exercício personalizada continua pessoal no IndexedDB e não é adicionada ao service worker.
 - Exercícios personalizados conservam `thumbnailMediaId`/`imageMediaId`; iniciais aparecem apenas para exercícios próprios sem mídia ou referências indisponíveis.
 
 ## Matriz de cobertura

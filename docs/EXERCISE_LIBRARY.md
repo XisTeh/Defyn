@@ -1,6 +1,6 @@
 # Biblioteca de exercícios
 
-O catálogo publicado possui **243 exercícios de uso frequente**, cobrindo peitoral, costas/dorsais, lombar, trapézio, deltoides, manguito rotador, braços, quadríceps, posteriores, glúteos, panturrilhas, adutores e core.
+O catálogo publicado possui **244 exercícios de uso frequente**, cobrindo peitoral, costas/dorsais, lombar, trapézio, deltoides, manguito rotador, braços, quadríceps, posteriores, glúteos, panturrilhas, adutores e core.
 
 As variações são itens independentes para preservar histórico e carga próprios. O catálogo diferencia barra, barra W, trap bar, halteres, kettlebell, máquina, polia, Smith, landmine, leg press, peso corporal, elástico, fita de suspensão, argolas, medicine ball, bola suíça, roda abdominal, anilha, step, trenó e corda naval. Os 52 IDs originais foram preservados para manter fichas e históricos existentes compatíveis.
 
@@ -8,7 +8,7 @@ Cada `Exercise` possui nome normalizado, músculo principal/secundários, equipa
 
 ## Imagens e fallbacks
 
-Cada um dos 243 exercícios publicados possui seu próprio arquivo PNG, correspondente ao nome, movimento e equipamento. As miniaturas usam anatomia em tons de cinza, equipamento grafite e músculo principal em coral discreto. Não há reutilização de uma miniatura entre exercícios diferentes nem hotlink. `thumbnailMediaId` e `imageMediaId` continuam disponíveis para exercícios próprios.
+Cada um dos 244 exercícios publicados possui seu próprio arquivo PNG, correspondente ao nome, movimento e equipamento. As miniaturas usam anatomia em tons de cinza, equipamento grafite e músculo principal em coral discreto. Não há reutilização de uma miniatura entre exercícios diferentes nem hotlink. `thumbnailMediaId` e `imageMediaId` continuam disponíveis para exercícios próprios.
 
 ## Exercícios próprios e favoritos
 
