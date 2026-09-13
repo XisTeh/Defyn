@@ -41,7 +41,7 @@ export function resolveExerciseIllustrationPose(exercise: Exercise): ExerciseIll
   }
 
   if (exercise.primaryMuscle === 'glutes') {
-    if (name.includes('hip thrust')) return 'hip-thrust';
+    if (name.includes('hip thrust') || name.includes('elevação pélvica')) return 'hip-thrust';
     if (hasAny(name, ['ponte', 'frog pump'])) return 'glute-bridge';
     if (hasAny(name, ['abducao', 'coice', 'caminhada lateral'])) return 'hip-abduction';
     if (exercise.movementPattern === 'squat') return equipment.has('smith') ? 'smith-squat' : usesDumbbell ? 'goblet-squat' : 'squat';

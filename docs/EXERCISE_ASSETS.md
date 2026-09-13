@@ -53,7 +53,7 @@ As ilustrações de exercícios são **ativos originais DEFYN**. Não foram copi
 | defyn-exercise-37 | Stiff com barra | `stiff-barra` | Sim |
 | defyn-exercise-38 | Levantamento terra romeno com halteres | `terra-romeno-halteres` | Sim |
 | defyn-exercise-39 | Levantamento terra | `levantamento-terra` | Sim |
-| defyn-exercise-40 | Hip thrust | `hip-thrust` | Sim |
+| defyn-exercise-40 | Elevação pélvica | `hip-thrust` | Sim |
 | defyn-exercise-41 | Ponte de glúteos | `ponte-gluteos` | Sim |
 | defyn-exercise-42 | Cadeira abdutora | `cadeira-abdutora` | Sim |
 | defyn-exercise-43 | Cadeira adutora | `cadeira-adutora` | Sim |

@@ -70,4 +70,15 @@ describe('catálogo expandido de exercícios', () => {
       equipment: ['machine'],
     }));
   });
+
+  it('usa Elevação pélvica em todas as variações publicadas', () => {
+    const variants = searchExercises(BASE_EXERCISES, 'elevacao pelvica');
+    expect(variants.map((exercise) => exercise.name)).toEqual(expect.arrayContaining([
+      'Elevação pélvica',
+      'Elevação pélvica com halter',
+      'Elevação pélvica no Smith',
+      'Elevação pélvica na máquina',
+    ]));
+    expect(variants.every((exercise) => !exercise.name.toLocaleLowerCase('pt-BR').includes('hip thrust'))).toBe(true);
+  });
 });

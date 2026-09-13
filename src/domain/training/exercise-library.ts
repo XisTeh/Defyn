@@ -41,7 +41,7 @@ const originalRows: readonly ExerciseSeed[] = [
   ['Stiff com barra', 'hamstrings', ['barbell'], 'hinge', ['glutes']],
   ['Levantamento terra romeno com halteres', 'hamstrings', ['dumbbell'], 'hinge', ['glutes', 'back']],
   ['Levantamento terra', 'glutes', ['barbell'], 'hinge', ['hamstrings', 'back']],
-  ['Hip thrust', 'glutes', ['barbell', 'bench'], 'hinge', ['hamstrings']],
+  ['Elevação pélvica', 'glutes', ['barbell', 'bench'], 'hinge', ['hamstrings']],
   ['Ponte de glúteos', 'glutes', ['bodyweight'], 'hinge', ['hamstrings']],
   ['Cadeira abdutora', 'glutes', ['machine'], 'isolation'],
   ['Cadeira adutora', 'adductors', ['machine'], 'isolation'],
