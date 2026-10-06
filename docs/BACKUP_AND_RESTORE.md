@@ -26,4 +26,4 @@ Na 1.1.1, a limpeza local continua sem chamar Supabase e é bloqueada enquanto h
 
 Restore continua local e transacional: preserva o owner compatível, limpa fila/cursor/conflitos e não escreve na cloud. Ao recarregar, o DEFYN volta a oferecer **Sincronizar meus dados**; somente o consentimento gera nova outbox e merge por ID/revisão.
 
-Preferências técnicas `sync:*`, outbox, metadata, cursores e conflitos não entram no JSON. Restaurar limpa o estado técnico antigo e exige bootstrap explícito para o conteúdo restaurado. O reset também apaga os caches locais de todas as contas e reinicia a instalação como vazia.
+Preferências técnicas `sync:*`, outbox, metadata, cursores e conflitos não entram no JSON. Restaurar preserva somente a identidade da conta ativa neste navegador, limpa o estado técnico anterior e exige bootstrap explícito para o conteúdo restaurado. O reset também apaga os caches locais de todas as contas e reinicia a instalação como vazia.

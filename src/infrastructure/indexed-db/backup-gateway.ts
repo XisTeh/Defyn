@@ -1,7 +1,7 @@
 import type { BackupGateway } from '../../application/backup/backup-service';
 import type { DefynBackupData } from '../../domain/export/export-format';
 import type { DefynDatabase } from './database';
-import { isInstallationOnlyPreference } from '../sync/local-sync-state';
+import { SYNC_ACTIVE_ACCOUNT_ID_KEY, isInstallationOnlyPreference } from '../sync/local-sync-state';
 
 async function blobToDataUrl(blob: Blob): Promise<string> {
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -78,6 +78,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
   }
 
   async replaceAll(data: DefynBackupData): Promise<void> {
+    const activeAccount = await this.database.preferences.get(SYNC_ACTIVE_ACCOUNT_ID_KEY);
     const tables = this.workingTables();
     await this.database.transaction('rw', tables, async () => {
       await Promise.all(tables.map((table) => table.clear()));
@@ -91,6 +92,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
       await this.database.progressRecords.bulkPut(data.progressRecords);
       await this.database.progressPhotos.bulkPut(data.progressPhotos);
       await this.database.preferences.bulkPut(data.preferences.filter((item) => !isInstallationOnlyPreference(item.key)));
+      if (activeAccount) await this.database.preferences.put(activeAccount);
       await this.database.foodPreferences.bulkPut(data.foodPreferences);
       await this.database.favoriteMeals.bulkPut(data.favoriteMeals);
       await this.database.media.bulkPut(data.media.map(({ dataUrl, ...item }) => ({ ...item, blob: dataUrlToBlob(dataUrl) })));
@@ -115,10 +117,4 @@ export class IndexedDbBackupGateway implements BackupGateway {
     });
   }
 
-  async clearWorkingData(): Promise<void> {
-    const tables = this.workingTables();
-    await this.database.transaction('rw', tables, async () => {
-      await Promise.all(tables.map((table) => table.clear()));
-    });
-  }
 }

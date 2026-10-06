@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DefynBackupData } from '../../domain/export/export-format';
-import { LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, SYNC_ENROLLMENT_ACCOUNT_ID_KEY } from '../sync/local-sync-state';
+import { LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, SYNC_ACTIVE_ACCOUNT_ID_KEY, SYNC_ENROLLMENT_ACCOUNT_ID_KEY } from '../sync/local-sync-state';
 import { IndexedDbBackupGateway } from './backup-gateway';
 import type { DefynDatabase } from './database';
 
@@ -46,6 +46,7 @@ describe('backup e estado técnico local', () => {
     const preferences = database.preferences as unknown as FakeTable<{ key: string; value: string }>;
     preferences.rows = [
       { key: LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-a' },
+      { key: SYNC_ACTIVE_ACCOUNT_ID_KEY, value: 'account-a' },
       { key: SYNC_ENROLLMENT_ACCOUNT_ID_KEY, value: 'account-a' },
       { key: 'activeProfileId', value: 'profile-a' },
     ];
@@ -56,6 +57,7 @@ describe('backup e estado técnico local', () => {
   it('restauração descarta preferências técnicas vindas do backup', async () => {
     const database = fakeDatabase();
     const preferences = database.preferences as unknown as FakeTable<{ key: string; value: string }>;
+    preferences.rows = [{ key: SYNC_ACTIVE_ACCOUNT_ID_KEY, value: 'account-a' }];
     const data = emptyData();
     data.preferences = [
       { key: LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-b' },
@@ -65,6 +67,7 @@ describe('backup e estado técnico local', () => {
     await new IndexedDbBackupGateway(database).replaceAll(data);
     expect(await preferences.get(LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY)).toBeUndefined();
     expect(await preferences.get(SYNC_ENROLLMENT_ACCOUNT_ID_KEY)).toBeUndefined();
+    expect(await preferences.get(SYNC_ACTIVE_ACCOUNT_ID_KEY)).toEqual({ key: SYNC_ACTIVE_ACCOUNT_ID_KEY, value: 'account-a' });
     expect(await preferences.get('activeProfileId')).toEqual({ key: 'activeProfileId', value: 'profile-a' });
   });
 

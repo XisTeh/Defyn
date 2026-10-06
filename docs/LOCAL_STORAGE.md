@@ -12,7 +12,7 @@ Fotos e avatares ficam como Blob otimizado em `media`. Quando a conta opta pela 
 
 `syncOutbox` preserva UPSERT/DELETE até confirmação remota; `syncMetadata` guarda estado e revisão; `syncCursors` mantém `(updated_at,id)` por tabela/conta; `syncConflicts` preserva as duas versões. Essas stores não aparecem na UI de domínio nem no backup v7. `accountCaches` guarda, sob o UUID de cada conta, o cache local de quem já entrou neste navegador.
 
-As preferências `sync:*` e a antiga `localOwnerAccountId` são técnicas e ficam fora do backup. Ao trocar de conta, o cache operacional anterior é salvo em `accountCaches` e o da conta autenticada é restaurado automaticamente. Assim, é possível usar contas diferentes no mesmo navegador sem misturar snapshots, perfis ou mídia.
+As preferências `sync:*` e a antiga `localOwnerAccountId` são técnicas e ficam fora do backup exportável. Ao trocar de conta, uma única transação guarda em `accountCaches` os dados locais, mídia, fila pendente, revisões e cursores, e restaura o cache da conta autenticada. Assim, é possível usar contas diferentes no mesmo navegador sem misturar dados nem perder alterações ainda não enviadas.
 
 A 1.1.1 adiciona a migration local v8 → v9 sem remover stores. Ela converte IDs compostos antigos de `routineDays` em UUIDs e remapeia, na mesma transação, `syncOutbox`, `syncMetadata` e `syncConflicts`. Conteúdo, `profileId`, dia e horários são preservados; operações pendentes continuam aptas a retry.
 

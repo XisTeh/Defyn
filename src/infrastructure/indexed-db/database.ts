@@ -33,13 +33,21 @@ const SYNC_STORES = {
 
 const CACHE_STORES = { ...SYNC_STORES, accountCaches: 'accountId, savedAt' } as const;
 
-export interface AccountLocalCache {
+export interface CurrentAccountLocalCache {
+  accountId: string;
+  tables: Record<string, unknown[]>;
+  savedAt: string;
+}
+
+export interface LegacyAccountLocalCache {
   accountId: string;
   data: DefynBackupData;
   enrolled: boolean;
   initialPullComplete: boolean;
   savedAt: string;
 }
+
+export type AccountLocalCache = CurrentAccountLocalCache | LegacyAccountLocalCache;
 
 export class DefynDatabase extends Dexie {
   profiles!: EntityTable<UserProfile, 'id'>;

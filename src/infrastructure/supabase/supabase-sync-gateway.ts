@@ -26,6 +26,11 @@ function errorMessage(error: unknown): string {
   return error && typeof error === 'object' && 'message' in error && typeof error.message === 'string' ? error.message : 'Falha na sincronização remota.';
 }
 
+function remoteError(error: unknown, entityType: string): Error {
+  const result = new Error(errorMessage(error));
+  return Object.assign(result, { code: errorCode(error), entityType });
+}
+
 export class SupabaseSyncGateway implements RemoteSyncGateway {
   constructor(private readonly client: DefynSupabaseClient, private readonly localMedia?: (id: string) => Promise<LocalMedia | undefined>) {}
 
@@ -38,8 +43,14 @@ export class SupabaseSyncGateway implements RemoteSyncGateway {
     const row = toRemoteRow(event);
     const table = this.client.from(event.entityType);
     if (expectedRevision !== undefined) {
-      const updated = await table.update(row as never).eq('id', event.entityId).eq('revision', expectedRevision).select('*').maybeSingle();
-      if (updated.error) throw new Error(errorMessage(updated.error));
+      const mutableRow = { ...row };
+      delete mutableRow.id;
+      delete mutableRow.account_id;
+      delete mutableRow.profile_id;
+      delete mutableRow.created_at;
+      const changes = event.operation === 'DELETE' ? { deleted_at: row.deleted_at } : mutableRow;
+      const updated = await table.update(changes as never).eq('id', event.entityId).eq('revision', expectedRevision).select('*').maybeSingle();
+      if (updated.error) throw remoteError(updated.error, event.entityType);
       if (updated.data) return { status: 'success', record: remoteRecord(updated.data) };
       const current = await this.fetchOne(event);
       if (current) return { status: 'conflict', record: current };
@@ -47,7 +58,7 @@ export class SupabaseSyncGateway implements RemoteSyncGateway {
 
     const inserted = await table.insert(row as never).select('*').single();
     if (!inserted.error) return { status: 'success', record: remoteRecord(inserted.data) };
-    if (errorCode(inserted.error) !== '23505') throw new Error(errorMessage(inserted.error));
+    if (errorCode(inserted.error) !== '23505') throw remoteError(inserted.error, event.entityType);
     const current = await this.fetchOne(event);
     if (!current) throw new Error('O registro remoto não pôde ser confirmado.');
     const expectedDeleted = event.operation === 'DELETE';
@@ -85,13 +96,13 @@ export class SupabaseSyncGateway implements RemoteSyncGateway {
     let query = this.client.from(entityType).select('*').order('updated_at', { ascending: true }).order('id', { ascending: true }).limit(limit);
     if (cursor) query = query.or(`updated_at.gt.${cursor.updatedAt},and(updated_at.eq.${cursor.updatedAt},id.gt.${cursor.entityId})`);
     const result = await query;
-    if (result.error) throw new Error(errorMessage(result.error));
+    if (result.error) throw remoteError(result.error, entityType);
     return (result.data ?? []).map(remoteRecord);
   }
 
   private async fetchOne(event: OutboxEvent): Promise<RemoteSyncRecord | undefined> {
     const result = await this.client.from(event.entityType).select('*').eq('id', event.entityId).maybeSingle();
-    if (result.error) throw new Error(errorMessage(result.error));
+    if (result.error) throw remoteError(result.error, event.entityType);
     return result.data ? remoteRecord(result.data) : undefined;
   }
 }

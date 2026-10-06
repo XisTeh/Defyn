@@ -14,9 +14,9 @@ import {
   type SyncEntityType,
   type SyncMetadata,
 } from '../../application/sync/sync-contract';
-import { LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, SYNC_ENROLLMENT_ACCOUNT_ID_KEY, SYNC_INITIAL_PULL_COMPLETE_KEY, SYNC_LAST_SUCCESS_AT_KEY, isInstallationOnlyPreference } from './local-sync-state';
+import { SYNC_ENROLLMENT_ACCOUNT_ID_KEY, SYNC_INITIAL_PULL_COMPLETE_KEY, SYNC_LAST_SUCCESS_AT_KEY, isInstallationOnlyPreference } from './local-sync-state';
 import type { DefynDatabase } from '../indexed-db/database';
-import { IndexedDbBackupGateway } from '../indexed-db/backup-gateway';
+import { prepareLocalAccount } from './account-cache';
 import { payloadFromRemote, samePayload } from './sync-mapping';
 import { createMediaMetadataPayload } from '../../application/media/media-sync';
 import type { ProgressPhotoMetadata } from '../../domain/progress/progress';
@@ -164,35 +164,7 @@ export class IndexedDbSyncStore implements LocalSyncGateway {
 
   /** Swaps the browser cache automatically when the authenticated account changes. */
   async prepareAccount(accountId: string): Promise<void> {
-    const [enrollment, legacyOwner] = await Promise.all([
-      this.database.preferences.get(SYNC_ENROLLMENT_ACCOUNT_ID_KEY),
-      this.database.preferences.get(LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY),
-    ]);
-    const enrolledAccountId = typeof enrollment?.value === 'string' ? enrollment.value : undefined;
-    const legacyAccountId = typeof legacyOwner?.value === 'string' ? legacyOwner.value : undefined;
-    const activeAccountId = enrolledAccountId ?? legacyAccountId;
-
-    if (!activeAccountId || activeAccountId === accountId) {
-      if (legacyAccountId) await this.database.preferences.delete(LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY);
-      return;
-    }
-
-    const backups = new IndexedDbBackupGateway(this.database);
-    const initialPull = await this.database.preferences.get(SYNC_INITIAL_PULL_COMPLETE_KEY);
-    await this.database.accountCaches.put({
-      accountId: activeAccountId,
-      data: await backups.readAll(),
-      enrolled: enrolledAccountId === activeAccountId,
-      initialPullComplete: initialPull?.value === activeAccountId,
-      savedAt: new Date().toISOString(),
-    });
-    await backups.clearWorkingData();
-
-    const nextCache = await this.database.accountCaches.get(accountId);
-    if (!nextCache) return;
-    await backups.replaceAll(nextCache.data);
-    if (nextCache.enrolled) await this.database.preferences.put({ key: SYNC_ENROLLMENT_ACCOUNT_ID_KEY, value: accountId });
-    if (nextCache.initialPullComplete) await this.database.preferences.put({ key: SYNC_INITIAL_PULL_COMPLETE_KEY, value: accountId });
+    await prepareLocalAccount(this.database, accountId);
   }
 
   async isEnrolled(accountId: string): Promise<boolean> {

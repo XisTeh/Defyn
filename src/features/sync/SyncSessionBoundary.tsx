@@ -3,7 +3,7 @@ import type { DefynSupabaseClient } from '../../infrastructure/supabase/client';
 import { SupabaseSyncGateway } from '../../infrastructure/supabase/supabase-sync-gateway';
 import { IndexedDbSyncStore, type BootstrapSummary } from '../../infrastructure/sync/indexed-db-sync-store';
 import { defynDatabase } from '../../infrastructure/indexed-db/database';
-import { SyncEngine } from '../../application/sync/sync-engine';
+import { SyncEngine, safeSyncError } from '../../application/sync/sync-engine';
 import type { SyncConflict, SyncStatusSnapshot } from '../../application/sync/sync-contract';
 import { Button } from '../../shared/components/Button';
 import { SyncContext, syncLabel, type SyncContextValue } from './sync-status-context';
@@ -56,8 +56,8 @@ export function SyncSessionBoundary({ accountId, email, client, onSignOut, child
         window.dispatchEvent(new Event('defyn:remote-applied'));
         void mediaCache.then((cache) => cache.downloadRecentPhotos(accountId)).catch(() => undefined);
         if (announce) channel.current?.postMessage({ type: 'sync-complete', accountId });
-      } catch {
-        await refreshStatus('error', 'Seus dados continuam salvos neste dispositivo.');
+      } catch (caught) {
+        await refreshStatus('error', safeSyncError(caught));
       }
     };
     running.current = execute().finally(() => { running.current = undefined; });
@@ -201,7 +201,7 @@ function BootstrapConfirmation({ summary, busy, onConfirm, onLater }: { summary:
 }
 
 function SyncDetails({ status, conflicts, onClose, onRetry, onResolve }: { status: SyncStatusSnapshot; conflicts: SyncConflict[]; onClose: () => void; onRetry: () => void; onResolve: (id: string, choice: 'local' | 'remote') => void }) {
-  return <div className="sync-dialog-backdrop"><section className="sync-dialog" role="dialog" aria-modal="true" aria-label="Estado da sincronização"><header><div><span className="page-eyebrow">Sincronização</span><h2>{syncLabel(status)}</h2></div><button type="button" onClick={onClose} aria-label="Fechar">×</button></header><p>{status.state === 'error' ? 'Seus dados continuam salvos neste dispositivo.' : 'O DEFYN salva primeiro neste dispositivo e sincroniza automaticamente quando possível.'}</p>{status.pendingCount > 0 && <p><strong>{status.pendingCount}</strong> alteração(ões) pendente(s).</p>}{conflicts.map((conflict) => <article key={conflict.id}><strong>Este item foi alterado em outro dispositivo.</strong><p>Escolha qual versão deve permanecer.</p><div><Button compact type="button" onClick={() => onResolve(conflict.id, 'local')}>Usar deste dispositivo</Button><Button compact variant="secondary" type="button" onClick={() => onResolve(conflict.id, 'remote')}>Usar da nuvem</Button></div></article>)}<footer><Button variant="secondary" type="button" onClick={onRetry}>Tentar novamente</Button></footer></section></div>;
+  return <div className="sync-dialog-backdrop"><section className="sync-dialog" role="dialog" aria-modal="true" aria-label="Estado da sincronização"><header><div><span className="page-eyebrow">Sincronização</span><h2>{syncLabel(status)}</h2></div><button type="button" onClick={onClose} aria-label="Fechar">×</button></header><p>{status.state === 'error' ? 'Seus dados continuam salvos neste dispositivo.' : 'O DEFYN salva primeiro neste dispositivo e sincroniza automaticamente quando possível.'}</p>{status.state === 'error' && status.message && <p className="sync-error" role="alert">{status.message}</p>}{status.pendingCount > 0 && <p><strong>{status.pendingCount}</strong> alteração(ões) pendente(s).</p>}{conflicts.map((conflict) => <article key={conflict.id}><strong>Este item foi alterado em outro dispositivo.</strong><p>Escolha qual versão deve permanecer.</p><div><Button compact type="button" onClick={() => onResolve(conflict.id, 'local')}>Usar deste dispositivo</Button><Button compact variant="secondary" type="button" onClick={() => onResolve(conflict.id, 'remote')}>Usar da nuvem</Button></div></article>)}<footer><Button variant="secondary" type="button" onClick={onRetry}>Tentar novamente</Button></footer></section></div>;
 }
 
 function LogoutDialog({ online, pending, busy, error, onClose, onSync, onLeave }: { online: boolean; pending: number; busy: boolean; error: string; onClose: () => void; onSync: () => void; onLeave: () => void }) {

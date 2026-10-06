@@ -233,7 +233,7 @@ export function ProfileSetup({ profile, standalone = false, onSaved, onCancel }:
             <AvatarField profile={profile} file={avatarFile} preview={avatarPreview} accepted={avatarAccepted} removeAvatar={removeAvatar} cameraInput={avatarCameraInput} galleryInput={avatarGalleryInput} onSelect={(event) => { const file = event.target.files?.[0]; if (!file) return; setAvatarFile(file); setAvatarAccepted(false); setRemoveAvatar(false); event.target.value = ''; }} onAccept={() => setAvatarAccepted(true)} onRemove={() => { setRemoveAvatar(true); setAvatarFile(undefined); setAvatarAccepted(false); }} />
             <div className="field field-wide">
               <label htmlFor="name">Nome ou apelido</label>
-              <input id="name" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="Como identificar esta pessoa?" autoComplete="name" required />
+              <input id="name" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="Como identificar esta pessoa?" autoComplete="name" maxLength={120} required />
             </div>
             <div className="field">
               <label htmlFor="birth-date">Data de nascimento</label>

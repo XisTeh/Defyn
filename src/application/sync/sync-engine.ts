@@ -115,8 +115,13 @@ export class SyncEngine {
 export function safeSyncError(caught: unknown): string {
   if (!(caught instanceof Error)) return 'Falha temporária de sincronização.';
   const normalized = caught.message.toLowerCase();
+  const code = 'code' in caught && typeof caught.code === 'string' ? caught.code : undefined;
+  const entityType = 'entityType' in caught && typeof caught.entityType === 'string' ? caught.entityType : undefined;
   if (normalized.includes('fetch') || normalized.includes('network') || normalized.includes('offline')) return 'Sem conexão com a nuvem.';
   if (normalized.includes('jwt') || normalized.includes('token') || normalized.includes('session')) return 'A sessão precisa ser renovada.';
+  if (entityType === 'defyn_profiles' && (code === '23514' || normalized.includes('defyn_profiles_name_check'))) return 'O nome do perfil precisa ter entre 1 e 120 caracteres.';
+  if (code === 'PGRST204') return 'O aplicativo precisa ser atualizado para sincronizar com o banco.';
+  if (code && /^[A-Z0-9]{5}$/.test(code)) return `O servidor recusou a sincronização (código ${code}).`;
   return 'Não foi possível sincronizar agora.';
 }
 

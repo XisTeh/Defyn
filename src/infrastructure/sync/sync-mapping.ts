@@ -18,7 +18,7 @@ export function toRemoteRow(event: OutboxEvent): Record<string, unknown> {
     deleted_at: event.operation === 'DELETE' ? event.createdAt : null,
   };
   switch (event.entityType) {
-    case 'defyn_profiles': return { ...base, name: stringValue(payload, 'name') ?? 'Perfil DEFYN' };
+    case 'defyn_profiles': return { ...base, name: Array.from(stringValue(payload, 'name')?.trim() || 'Perfil DEFYN').slice(0, 120).join('') };
     case 'account_preferences': return { ...base, preference_key: stringValue(payload, 'key') ?? event.entityId };
     case 'nutrition_targets': return { ...base, starts_at: stringValue(payload, 'startsAt'), ends_at: stringValue(payload, 'endsAt') ?? null };
     case 'nutrition_summaries': return { ...base, local_date: stringValue(payload, 'localDate') };

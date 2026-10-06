@@ -41,4 +41,4 @@ O Modo Academia sempre persiste localmente. Sessão ativa, rascunhos, timer e co
 
 ## Contas no mesmo navegador
 
-Cada sessão pode usar qualquer conta em qualquer dispositivo. Antes de uma troca de sessão, o cache operacional atual é salvo em `accountCaches` sob o UUID da conta; depois o cache da nova sessão é restaurado ou, no primeiro acesso, preenchido por pull remoto. Essa troca ocorre antes da UI de domínio montar, para que dados de uma conta não apareçam em outra.
+Cada sessão pode usar qualquer conta em qualquer dispositivo. Na troca de sessão, uma transação IndexedDB salva o cache operacional, a fila pendente, revisões e cursores sob o UUID da conta em `accountCaches`, e restaura o cache da nova conta. No primeiro acesso, o conteúdo é preenchido por pull remoto. A troca ocorre antes da UI de domínio montar, para que dados de uma conta não apareçam em outra.
