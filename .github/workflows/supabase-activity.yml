@@ -1,0 +1,40 @@
+name: Supabase activity
+
+on:
+  schedule:
+    # 09:17 and 15:17 in São Paulo (UTC-3), every day.
+    - cron: '17 12 * * *'
+    - cron: '17 18 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  database-request:
+    name: Keep the Free project active
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Send a safe database request
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          homepage="$(curl --fail --silent --show-error --retry 3 --connect-timeout 15 https://defyn-gold.vercel.app/)"
+          bundle_path="$(printf '%s' "$homepage" | grep -oE '/assets/index-[^"]+\.js' | head -n 1)"
+          test -n "$bundle_path"
+
+          bundle="$(curl --fail --silent --show-error --retry 3 --connect-timeout 15 "https://defyn-gold.vercel.app${bundle_path}")"
+          project_url="$(printf '%s' "$bundle" | grep -oE 'https://[a-z0-9-]+\.supabase\.co' | head -n 1)"
+          publishable_key="$(printf '%s' "$bundle" | grep -oE 'sb_publishable_[A-Za-z0-9._-]+' | head -n 1)"
+          test -n "$project_url"
+          test -n "$publishable_key"
+
+          # `accounts` is private under RLS. This reaches PostgREST and the database,
+          # returns no account data, and keeps credentials out of repository settings.
+          status="$(curl --silent --show-error --retry 3 --connect-timeout 15 --output /dev/null --write-out '%{http_code}' \
+            --header "apikey: ${publishable_key}" \
+            --header 'Accept: application/json' \
+            "${project_url}/rest/v1/accounts?select=id&limit=1")"
+
+          test "$status" = '200' -o "$status" = '401' -o "$status" = '403'

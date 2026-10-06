@@ -76,7 +76,13 @@ Em **Project Settings → Environment Variables**, adicione somente `VITE_SUPABA
 
 Adicione na Vercel, para Production e apenas nos Previews desejados: `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`. Nenhuma secret/service role é necessária ou permitida no frontend. Sem as variáveis, o build continua no modo local.
 
-## 7. Testar
+## 7. Evitar pausa no plano Free
+
+Projetos Free podem ser pausados após uma semana com pouca atividade. O repositório inclui `.github/workflows/supabase-activity.yml`, que faz duas requisições diárias ao banco pela API pública do app. A consulta tenta ler somente o ID de `accounts`; como a tabela é protegida por RLS, ela não retorna dados de nenhuma conta e não usa chave secreta.
+
+O workflow extrai apenas a URL e a Publishable Key já expostas no bundle público da produção, portanto não exige salvar token, senha do banco ou `service_role` no GitHub. Se o projeto já estiver pausado, retome-o pelo Dashboard; a rotina só previne novas pausas enquanto o projeto estiver ativo.
+
+## 8. Testar
 
 1. execute `npm run dev`;
 2. crie uma conta com e-mail de QA e observe se aparece confirmação pendente quando habilitada;
