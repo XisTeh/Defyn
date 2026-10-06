@@ -89,3 +89,15 @@ export function withNewPlanVersion(plan: WorkoutPlan, templates: WorkoutTemplate
   const version = plan.currentVersion + 1;
   return { ...plan, currentVersion: version, versions: [...plan.versions, { version, createdAt: now.toISOString(), note, templates: structuredClone(templates) }], updatedAt: now.toISOString() };
 }
+
+/** Moves a complete workout to the neighboring slot and exchanges their scheduled days. */
+export function swapAdjacentWorkoutDays(templates: WorkoutTemplate[], index: number, delta: -1 | 1): WorkoutTemplate[] {
+  const neighborIndex = index + delta;
+  const workout = templates[index];
+  const neighbor = templates[neighborIndex];
+  if (!workout || !neighbor) return templates;
+  const swapped = [...templates];
+  swapped[index] = { ...neighbor, scheduledDay: workout.scheduledDay };
+  swapped[neighborIndex] = { ...workout, scheduledDay: neighbor.scheduledDay };
+  return swapped;
+}

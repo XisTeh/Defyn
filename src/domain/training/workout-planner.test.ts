@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BASE_EXERCISES } from './exercise-library';
-import type { TrainingProfile } from './training';
-import { generateStarterPlan } from './workout-planner';
+import { currentPlanVersion, type TrainingDay, type TrainingProfile } from './training';
+import { generateStarterPlan, swapAdjacentWorkoutDays, withNewPlanVersion } from './workout-planner';
 
 function profile(overrides: Partial<TrainingProfile> = {}): TrainingProfile {
   return { id: 'training-a', profileId: 'profile-a', primaryGoal: 'hypertrophy', experienceLevel: 'intermediate', availableDaysPerWeek: 3, preferredTrainingDays: ['monday', 'wednesday', 'friday'], averageSessionMinutes: 60, trainingLocation: 'gym', availableEquipment: [], preferredExercises: [], avoidedExercises: [], weightUnit: 'kg', defaultLoadIncrement: 2.5, advancedMode: false, createdAt: '2026-08-21T12:00:00.000Z', updatedAt: '2026-08-21T12:00:00.000Z', ...overrides };
@@ -49,5 +49,25 @@ describe('biblioteca e planejador de treino', () => {
   it('alerta sem interpretar limitação informada', () => {
     const result = generateStarterPlan(profile({ informedLimitations: 'Dor no ombro' }), new Date('2026-08-21T12:00:00.000Z'), ids());
     expect(result.warnings.join(' ')).toMatch(/revisão manual/);
+  });
+
+  it('troca os dias de dois treinos vizinhos levando os exercícios junto e preserva a versão anterior', () => {
+    const plan = generateStarterPlan(profile(), new Date('2026-08-21T12:00:00.000Z'), ids()).plan;
+    const names = ['Legs', 'Pull', 'Push'];
+    const days: TrainingDay[] = ['tuesday', 'thursday', 'friday'];
+    const original = currentPlanVersion(plan).templates.map((item, index) => ({ ...item, name: names[index]!, scheduledDay: days[index]! }));
+
+    const swapped = swapAdjacentWorkoutDays(original, 0, 1);
+    expect(swapped.map((item) => [item.name, item.scheduledDay])).toEqual([['Pull', 'tuesday'], ['Legs', 'thursday'], ['Push', 'friday']]);
+    expect(swapped[0]?.id).toBe(original[1]?.id);
+    expect(swapped[1]?.id).toBe(original[0]?.id);
+    expect(swapped[1]?.exercises).toEqual(original[0]?.exercises);
+    expect(original[0]?.scheduledDay).toBe('tuesday');
+    expect(swapAdjacentWorkoutDays(swapped, 1, -1).map((item) => item.id)).toEqual(original.map((item) => item.id));
+    expect(swapAdjacentWorkoutDays(original, 0, -1)).toBe(original);
+
+    const saved = withNewPlanVersion(plan, swapped, 'Dias reorganizados', new Date('2026-08-22T12:00:00.000Z'));
+    expect(currentPlanVersion(saved).templates[1]?.exercises).toEqual(original[0]?.exercises);
+    expect(saved.versions[0]?.templates).toEqual(plan.versions[0]?.templates);
   });
 });
