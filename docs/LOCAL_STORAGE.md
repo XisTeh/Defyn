@@ -1,6 +1,6 @@
 # Armazenamento local
 
-O banco `defyn-local` usa IndexedDB por Dexie, atualmente no schema v9. Todas as entidades pessoais carregam `profileId` e as consultas de interface filtram esse proprietário.
+O banco `defyn-local` usa IndexedDB por Dexie, atualmente no schema v10. Todas as entidades pessoais carregam `profileId` e as consultas de interface filtram esse proprietário.
 
 Além dos stores de treino, hidratação, progresso e mídia, v7 adiciona `routineProfiles`, `routineDays`, `sleepRecords` e `reminderSnoozes`. A migração é aditiva: nenhum store existente é removido.
 
@@ -10,14 +10,12 @@ Fotos e avatares ficam como Blob otimizado em `media`. Quando a conta opta pela 
 
 ## Stores técnicas da 1.1.1
 
-`syncOutbox` preserva UPSERT/DELETE até confirmação remota; `syncMetadata` guarda estado e revisão; `syncCursors` mantém `(updated_at,id)` por tabela/conta; `syncConflicts` preserva as duas versões. Essas stores não aparecem na UI de domínio nem no backup v7.
+`syncOutbox` preserva UPSERT/DELETE até confirmação remota; `syncMetadata` guarda estado e revisão; `syncCursors` mantém `(updated_at,id)` por tabela/conta; `syncConflicts` preserva as duas versões. Essas stores não aparecem na UI de domínio nem no backup v7. `accountCaches` guarda, sob o UUID de cada conta, o cache local de quem já entrou neste navegador.
 
-A preferência técnica `localOwnerAccountId` guarda o UUID da conta Supabase que reivindicou os dados desta instalação. `sync:enrollmentAccountId` só é criado em instalação vazia ou após confirmação do bootstrap. Ambas ficam fora do backup.
-
-Dados legacy sem owner não são abertos silenciosamente: o usuário precisa confirmar o vínculo. Uma conta diferente recebe uma tela neutra e não acessa snapshots, perfis ou mídia. Logout preserva owner e conteúdo. O reset protegido limpa todas as preferências, incluindo o owner; se a sessão atual continuar autenticada, a instalação vazia é reivindicada novamente antes de reabrir o app.
+As preferências `sync:*` e a antiga `localOwnerAccountId` são técnicas e ficam fora do backup. Ao trocar de conta, o cache operacional anterior é salvo em `accountCaches` e o da conta autenticada é restaurado automaticamente. Assim, é possível usar contas diferentes no mesmo navegador sem misturar snapshots, perfis ou mídia.
 
 A 1.1.1 adiciona a migration local v8 → v9 sem remover stores. Ela converte IDs compostos antigos de `routineDays` em UUIDs e remapeia, na mesma transação, `syncOutbox`, `syncMetadata` e `syncConflicts`. Conteúdo, `profileId`, dia e horários são preservados; operações pendentes continuam aptas a retry.
 
-O reset limpa domínio, fila, metadata, cursores, conflitos e owner local numa única transação; não executa DELETE no Supabase. Restaurar backup limpa metadata de sync e exige novo bootstrap explícito, evitando tratar conteúdo restaurado como já enviado.
+O reset limpa domínio, fila, metadata, cursores, conflitos e todos os caches locais numa única transação; não executa DELETE no Supabase. Restaurar backup limpa metadata de sync e exige novo bootstrap explícito, evitando tratar conteúdo restaurado como já enviado.
 
 A sessão Supabase usa o storage padrão do cliente com a chave de namespace `defyn-auth`; tokens são gerenciados pela biblioteca, nunca impressos ou copiados para registros do domínio. Dados pessoais operacionais continuam no IndexedDB.

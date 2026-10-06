@@ -45,6 +45,6 @@ Não existem grants, policies, FKs ou tabelas remotas para `foods`, `recipes` ou
 
 ## Isolamento local não substitui RLS
 
-RLS protege registros remotos; `localOwnerAccountId` protege o IndexedDB compartilhado pelo mesmo navegador. O gate local nunca é usado como evidência de isolamento cloud e não muda `account_id` remoto. As duas barreiras são independentes e obrigatórias.
+RLS protege registros remotos; no navegador, caches locais são separados por conta em `accountCaches` antes de o conteúdo da sessão montar. O isolamento local nunca é usado como evidência de isolamento cloud e não muda `account_id` remoto. As duas camadas são independentes.
 
 O gateway de push ignora ownership fornecido pela UI: `account_id` é sempre o UUID da sessão autenticada recebido pelo boundary. A outbox também é particionada por esse UUID. `profile_id` vem da entidade local vinculada e continua validado pela FK composta/RLS. O frontend usa apenas Publishable Key; os runners remotos usam sessões QA comuns e nunca `service_role`.

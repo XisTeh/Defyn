@@ -2,11 +2,8 @@ import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent, type Reac
 import { flushSync } from 'react-dom';
 import type { Session } from '@supabase/supabase-js';
 import { AuthSessionService, type AuthSessionSnapshot } from '../../application/auth/auth-session';
-import { shouldExposeLocalData, type LocalOwnershipDecision } from '../../application/auth/local-installation-ownership';
-import { localInstallationOwnershipService } from '../../infrastructure/indexed-db/local-owner-repository';
 import { readViteSupabaseConfig, type SupabaseRuntimeConfig } from '../../infrastructure/supabase/config';
 import { Button } from '../../shared/components/Button';
-import { LocalDataAccessGuard } from './LocalDataAccessGuard';
 import type { DefynSupabaseClient } from '../../infrastructure/supabase/client';
 import './auth.css';
 
@@ -68,69 +65,7 @@ function ActiveSupabaseAuthBoundary({ service, client, children }: { service: Au
 }
 
 function AuthenticatedSession({ service, client, session, children }: { service: AuthSessionService; client: DefynSupabaseClient; session: Session; children: ReactNode }) {
-  const [decision, setDecision] = useState<LocalOwnershipDecision>();
-  const [ownershipError, setOwnershipError] = useState('');
-  const [linking, setLinking] = useState(false);
-  const [signingOut, setSigningOut] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    localInstallationOwnershipService.resolve(session.user.id)
-      .then((result) => { if (active) setDecision(result); })
-      .catch(() => { if (active) setOwnershipError('Não foi possível verificar a proteção dos dados deste dispositivo.'); });
-    return () => { active = false; };
-  }, [session.user.id]);
-
-  async function signOut() {
-    setSigningOut(true);
-    try { await service.signOut(); }
-    finally { setSigningOut(false); }
-  }
-
-  async function linkLegacyData() {
-    setLinking(true); setOwnershipError('');
-    try { setDecision(await localInstallationOwnershipService.linkLegacyData(session.user.id)); }
-    catch { setOwnershipError('Não foi possível vincular os dados locais com segurança.'); }
-    finally { setLinking(false); }
-  }
-
-  if (ownershipError) return <LocalOwnershipErrorScreen message={ownershipError} signingOut={signingOut} onSignOut={() => void signOut()} />;
-  if (!decision) return <div className="boot-screen"><span className="brand-mark">D</span><strong>DEFYN</strong><p>Protegendo os dados deste dispositivo…</p></div>;
-  if (decision.status === 'needs-link') return <LocalOwnershipScreen
-    kind="claim"
-    busy={linking || signingOut}
-    onPrimary={() => void linkLegacyData()}
-    onSignOut={() => void signOut()}
-  />;
-  if (decision.status === 'blocked') return <LocalOwnershipScreen
-    kind="blocked"
-    busy={signingOut}
-    onSignOut={() => void signOut()}
-  />;
-  if (!shouldExposeLocalData(decision)) return null;
-
-  return <LocalDataAccessGuard decision={decision}>
-    <Suspense fallback={<AuthBootScreen />}><SyncSessionBoundary accountId={session.user.id} email={session.user.email} client={client} onSignOut={() => service.signOut()}>{children}</SyncSessionBoundary></Suspense>
-  </LocalDataAccessGuard>;
-}
-
-function LocalOwnershipScreen({ kind, busy, onPrimary, onSignOut }: { kind: 'claim' | 'blocked'; busy: boolean; onPrimary?: () => void; onSignOut: () => void }) {
-  const claiming = kind === 'claim';
-  return <main className="auth-page single ownership-page"><section className="auth-card ownership-card">
-    <header><span className="auth-mobile-brand visible">DEFYN</span><span className="page-eyebrow">Proteção neste dispositivo</span><h2>{claiming ? 'Dados locais encontrados' : 'Dados vinculados a outra conta'}</h2><p>{claiming
-      ? 'Este dispositivo possui dados criados antes da conta online. Confirme se eles pertencem à conta atualmente conectada.'
-      : 'Este dispositivo possui dados locais vinculados a outra conta DEFYN. Para protegê-los, o conteúdo não será exibido nesta sessão.'}</p></header>
-    {claiming && <p className="ownership-note">O vínculo é somente neste dispositivo. Nenhum perfil, treino, foto ou registro será enviado ao Supabase agora.</p>}
-    {!claiming && <p className="ownership-note">Entre com a conta que vinculou esta instalação ou use outro dispositivo ou perfil do navegador.</p>}
-    <div className="ownership-actions">
-      {claiming && <Button type="button" loading={busy} onClick={onPrimary}>Vincular a esta conta</Button>}
-      <Button type="button" variant={claiming ? 'secondary' : 'primary'} disabled={busy} onClick={onSignOut}>Sair</Button>
-    </div>
-  </section></main>;
-}
-
-function LocalOwnershipErrorScreen({ message, signingOut, onSignOut }: { message: string; signingOut: boolean; onSignOut: () => void }) {
-  return <main className="auth-page single ownership-page"><section className="auth-card ownership-card" role="alert"><header><span className="auth-mobile-brand visible">DEFYN</span><span className="page-eyebrow">Proteção local</span><h2>Dados indisponíveis</h2><p>{message} Nenhum conteúdo local foi aberto.</p></header><div className="ownership-actions"><Button type="button" loading={signingOut} onClick={onSignOut}>Sair</Button></div></section></main>;
+  return <Suspense fallback={<AuthBootScreen />}><SyncSessionBoundary accountId={session.user.id} email={session.user.email} client={client} onSignOut={() => service.signOut()}>{children}</SyncSessionBoundary></Suspense>;
 }
 
 function AuthScreen({ service }: { service: AuthSessionService }) {

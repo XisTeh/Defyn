@@ -68,6 +68,7 @@ export function SyncSessionBoundary({ accountId, email, client, onSignOut, child
     let active = true;
     (async () => {
       try {
+        await store.prepareAccount(accountId);
         const [hasLocalData, enrolled, initialPullComplete] = await Promise.all([store.hasSyncableData(), store.isEnrolled(accountId), store.isInitialPullComplete(accountId)]);
         const decision = decideInitialSync({ enrolled, initialPullComplete, hasLocalData, online: navigator.onLine });
         if (decision === 'ready') {
@@ -196,7 +197,7 @@ export function SyncSessionBoundary({ accountId, email, client, onSignOut, child
 }
 
 function BootstrapConfirmation({ summary, busy, onConfirm, onLater }: { summary: BootstrapSummary; busy: boolean; onConfirm: () => void; onLater: () => void }) {
-  return <main className="auth-page single sync-bootstrap-page" data-pwa-update-blocking="true"><section className="auth-card sync-bootstrap-card"><header><span className="page-eyebrow">Sincronizar seus dados</span><h2>Encontramos dados locais vinculados à sua conta.</h2><p>Seus dados continuarão neste dispositivo enquanto uma cópia protegida é sincronizada com sua conta.</p></header><dl><div><dt>Perfis</dt><dd>{summary.profiles}</dd></div><div><dt>Treinos e séries</dt><dd>{summary.trainingPlans + summary.workoutSessions + summary.workoutSets}</dd></div><div><dt>Registros diários</dt><dd>{summary.hydration + summary.nutritionSummaries + summary.sleep}</dd></div><div><dt>Progresso e check-ins</dt><dd>{summary.progressRecords + summary.checkIns}</dd></div><div><dt>Fotos</dt><dd>{summary.photos}</dd></div></dl><Button type="button" loading={busy} onClick={onConfirm}>Sincronizar meus dados</Button><Button type="button" variant="secondary" disabled={busy} onClick={onLater}>Agora não</Button></section></main>;
+  return <main className="auth-page single sync-bootstrap-page" data-pwa-update-blocking="true"><section className="auth-card sync-bootstrap-card"><header><span className="page-eyebrow">Sincronizar seus dados</span><h2>Encontramos dados locais neste navegador.</h2><p>Seus dados continuarão neste dispositivo enquanto uma cópia protegida é sincronizada com sua conta.</p></header><dl><div><dt>Perfis</dt><dd>{summary.profiles}</dd></div><div><dt>Treinos e séries</dt><dd>{summary.trainingPlans + summary.workoutSessions + summary.workoutSets}</dd></div><div><dt>Registros diários</dt><dd>{summary.hydration + summary.nutritionSummaries + summary.sleep}</dd></div><div><dt>Progresso e check-ins</dt><dd>{summary.progressRecords + summary.checkIns}</dd></div><div><dt>Fotos</dt><dd>{summary.photos}</dd></div></dl><Button type="button" loading={busy} onClick={onConfirm}>Sincronizar meus dados</Button><Button type="button" variant="secondary" disabled={busy} onClick={onLater}>Agora não</Button></section></main>;
 }
 
 function SyncDetails({ status, conflicts, onClose, onRetry, onResolve }: { status: SyncStatusSnapshot; conflicts: SyncConflict[]; onClose: () => void; onRetry: () => void; onResolve: (id: string, choice: 'local' | 'remote') => void }) {

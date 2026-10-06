@@ -31,10 +31,6 @@
 .account-session-pill small { color: #919ba3; font-size: .5rem; text-transform: uppercase; letter-spacing: .1em; }
 .account-session-pill strong { overflow: hidden; font-size: .63rem; text-overflow: ellipsis; white-space: nowrap; }
 .account-session-pill button { min-height: 34px; padding: 0 .75rem; color: #f5f7f8; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: var(--radius-pill); font-size: .6rem; font-weight: 800; }
-.ownership-card h2 { font-size: clamp(2.25rem, 5vw, 3.8rem); }
-.ownership-note { margin: 0 0 1.25rem; padding: .85rem; color: var(--text-secondary); background: var(--accent-soft); border: 1px solid var(--border-subtle); border-radius: var(--radius-control); font-size: .7rem; line-height: 1.6; }
-.ownership-actions { display: grid; gap: .7rem; }
-.ownership-actions .defyn-button { width: 100%; }
 .error-state small { max-width: 560px; color: var(--text-muted); font-size: .65rem; }
 @media (max-width: 900px) {
   .account-session-pill { display: none; }
@@ -45,8 +41,6 @@
   .auth-card h2 { font-size: clamp(2.6rem, 13vw, 3.8rem); }
   .account-session-pill { right: .65rem; bottom: calc(.65rem + env(safe-area-inset-bottom)); max-width: calc(100vw - 1.3rem); }
   .account-session-pill strong { max-width: 150px; }
-  .ownership-page { align-items: center; }
-  .ownership-card h2 { font-size: clamp(2.2rem, 11vw, 3.3rem); }
 }
 @media (max-width: 360px) {
   .auth-card { padding: 1.05rem; }

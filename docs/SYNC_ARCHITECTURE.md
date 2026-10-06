@@ -39,6 +39,6 @@ A outbox persistente contém `UPSERT`/`DELETE`, conta, tipo/ID, perfil, snapshot
 
 O Modo Academia sempre persiste localmente. Sessão ativa, rascunhos, timer e conclusão nunca dependem de conexão. A UI mostra **Sincronizado**, **Sincronizando…**, **Offline · N alterações pendentes**, **Conflito** ou **Erro de sincronização**, sempre lembrando que os dados permanecem neste dispositivo.
 
-## Evolução para múltiplas contas locais
+## Contas no mesmo navegador
 
-A 1.1.1 vincula uma instalação a uma única conta por vez. Isso resolve o caso principal — uma conta em vários dispositivos — sem duplicar bancos locais. Se o produto precisar suportar várias contas offline no mesmo perfil de navegador, a evolução deverá particionar stores ou bancos por `account_id`; remover o gate sem essa partição reabriria vazamento local entre sessões.
+Cada sessão pode usar qualquer conta em qualquer dispositivo. Antes de uma troca de sessão, o cache operacional atual é salvo em `accountCaches` sob o UUID da conta; depois o cache da nova sessão é restaurado ou, no primeiro acesso, preenchido por pull remoto. Essa troca ocorre antes da UI de domínio montar, para que dados de uma conta não apareçam em outra.

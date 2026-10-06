@@ -1,16 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import type { DefynBackupData } from '../../domain/export/export-format';
-import { LOCAL_OWNER_ACCOUNT_ID_KEY } from '../../application/auth/local-installation-ownership';
+import { LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, SYNC_ENROLLMENT_ACCOUNT_ID_KEY } from '../sync/local-sync-state';
 import { IndexedDbBackupGateway } from './backup-gateway';
 import type { DefynDatabase } from './database';
 
-class FakeTable<T extends { key?: string }> {
+class FakeTable<T> {
   constructor(public rows: T[] = []) {}
   toArray() { return Promise.resolve(structuredClone(this.rows)); }
-  get(key: string) { return Promise.resolve(this.rows.find((row) => row.key === key)); }
+  get(key: string) { return Promise.resolve(this.rows.find((row) => (row as { key?: string }).key === key)); }
   clear() { this.rows = []; return Promise.resolve(); }
   bulkPut(rows: T[]) { this.rows.push(...structuredClone(rows)); return Promise.resolve(); }
-  put(row: T) { this.rows = this.rows.filter((item) => item.key !== row.key).concat(structuredClone(row)); return Promise.resolve(); }
+  put(row: T) {
+    const item = row as { key?: string };
+    this.rows = this.rows.filter((current) => (current as { key?: string }).key !== item.key).concat(structuredClone(row));
+    return Promise.resolve();
+  }
 }
 
 const tableNames = [
@@ -18,7 +22,7 @@ const tableNames = [
   'progressRecords', 'progressPhotos', 'preferences', 'foodPreferences', 'favoriteMeals', 'media',
   'trainingProfiles', 'exercises', 'exerciseFavorites', 'workoutPlans', 'workoutSessions', 'workoutSetLogs',
   'dailyNutritionSummaries', 'routineProfiles', 'routineDays', 'sleepRecords', 'reminderSnoozes',
-  'syncOutbox', 'syncMetadata', 'syncCursors', 'syncConflicts',
+  'syncOutbox', 'syncMetadata', 'syncCursors', 'syncConflicts', 'accountCaches',
 ] as const;
 
 function fakeDatabase() {
@@ -36,30 +40,39 @@ function emptyData(): DefynBackupData {
   };
 }
 
-describe('backup e ownership da instalação', () => {
-  it('não exporta localOwnerAccountId no JSON', async () => {
+describe('backup e estado técnico local', () => {
+  it('não exporta preferências técnicas no JSON', async () => {
     const database = fakeDatabase();
     const preferences = database.preferences as unknown as FakeTable<{ key: string; value: string }>;
-    preferences.rows = [{ key: LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-a' }, { key: 'activeProfileId', value: 'profile-a' }];
+    preferences.rows = [
+      { key: LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-a' },
+      { key: SYNC_ENROLLMENT_ACCOUNT_ID_KEY, value: 'account-a' },
+      { key: 'activeProfileId', value: 'profile-a' },
+    ];
     const exported = await new IndexedDbBackupGateway(database).readAll();
     expect(exported.preferences).toEqual([{ key: 'activeProfileId', value: 'profile-a' }]);
   });
 
-  it('restauração preserva o owner da instalação e rejeita owner vindo do backup', async () => {
+  it('restauração descarta preferências técnicas vindas do backup', async () => {
     const database = fakeDatabase();
     const preferences = database.preferences as unknown as FakeTable<{ key: string; value: string }>;
-    preferences.rows = [{ key: LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-a' }];
     const data = emptyData();
-    data.preferences = [{ key: LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-b' }, { key: 'activeProfileId', value: 'profile-a' }];
+    data.preferences = [
+      { key: LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-b' },
+      { key: SYNC_ENROLLMENT_ACCOUNT_ID_KEY, value: 'account-b' },
+      { key: 'activeProfileId', value: 'profile-a' },
+    ];
     await new IndexedDbBackupGateway(database).replaceAll(data);
-    expect(await preferences.get(LOCAL_OWNER_ACCOUNT_ID_KEY)).toEqual({ key: LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-a' });
+    expect(await preferences.get(LEGACY_LOCAL_OWNER_ACCOUNT_ID_KEY)).toBeUndefined();
+    expect(await preferences.get(SYNC_ENROLLMENT_ACCOUNT_ID_KEY)).toBeUndefined();
+    expect(await preferences.get('activeProfileId')).toEqual({ key: 'activeProfileId', value: 'profile-a' });
   });
 
-  it('reset local remove o owner técnico junto com os dados', async () => {
+  it('reset local remove os caches de todas as contas', async () => {
     const database = fakeDatabase();
-    const preferences = database.preferences as unknown as FakeTable<{ key: string; value: string }>;
-    preferences.rows = [{ key: LOCAL_OWNER_ACCOUNT_ID_KEY, value: 'account-a' }];
+    const caches = database.accountCaches as unknown as FakeTable<{ accountId: string }>;
+    caches.rows = [{ accountId: 'account-a' }];
     await new IndexedDbBackupGateway(database).clearAll();
-    expect(await preferences.get(LOCAL_OWNER_ACCOUNT_ID_KEY)).toBeUndefined();
+    expect(await caches.toArray()).toEqual([]);
   });
 });

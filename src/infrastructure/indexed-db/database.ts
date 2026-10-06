@@ -16,9 +16,10 @@ import { migrateFoodToV3, migrateProfileToV3 } from './migration-v3';
 import { migrateProgressPhotoToV5, migrateProgressRecordToV5 } from './migration-v5';
 import type { OutboxEvent, PullCursor, SyncConflict, SyncMetadata } from '../../application/sync/sync-contract';
 import { migrateRoutineDayIdentityV9 } from './migration-v9';
+import type { DefynBackupData } from '../../domain/export/export-format';
 
 export const DATABASE_NAME = 'defyn-local';
-export const DATABASE_VERSION = 9;
+export const DATABASE_VERSION = 10;
 
 const SYNC_STORES = {
   profiles: 'id, updatedAt', nutritionTargets: 'id, profileId, startsAt, endsAt, [profileId+startsAt]', foods: 'id, nameNormalized, searchTextNormalized, barcode, updatedAt', recipes: 'id, name, nameNormalized, updatedAt', diaryEntries: 'id, profileId, date, mealCategoryId, [profileId+date], [profileId+mealCategoryId]', mealCategories: 'id, profileId, order, [profileId+order]',
@@ -29,6 +30,16 @@ const SYNC_STORES = {
   syncCursors: 'id, accountId, entityType',
   syncConflicts: 'id, accountId, entityType, profileId, detectedAt, [accountId+entityType]',
 } as const;
+
+const CACHE_STORES = { ...SYNC_STORES, accountCaches: 'accountId, savedAt' } as const;
+
+export interface AccountLocalCache {
+  accountId: string;
+  data: DefynBackupData;
+  enrolled: boolean;
+  initialPullComplete: boolean;
+  savedAt: string;
+}
 
 export class DefynDatabase extends Dexie {
   profiles!: EntityTable<UserProfile, 'id'>;
@@ -59,6 +70,7 @@ export class DefynDatabase extends Dexie {
   syncMetadata!: EntityTable<SyncMetadata, 'id'>;
   syncCursors!: EntityTable<PullCursor, 'id'>;
   syncConflicts!: EntityTable<SyncConflict, 'id'>;
+  accountCaches!: EntityTable<AccountLocalCache, 'accountId'>;
 
   constructor() {
     super(DATABASE_NAME);
@@ -156,7 +168,8 @@ export class DefynDatabase extends Dexie {
       routineProfiles: 'id, &profileId, updatedAt', routineDays: 'id, profileId, dayOfWeek, &[profileId+dayOfWeek], updatedAt', sleepRecords: 'id, profileId, localDate, &[profileId+localDate], sleepStartedAt', reminderSnoozes: 'id, profileId, reminderKind, &[profileId+reminderKind], snoozedUntil',
     });
     this.version(8).stores(SYNC_STORES);
-    this.version(DATABASE_VERSION).stores(SYNC_STORES).upgrade((transaction) => migrateRoutineDayIdentityV9(transaction));
+    this.version(9).stores(SYNC_STORES).upgrade((transaction) => migrateRoutineDayIdentityV9(transaction));
+    this.version(DATABASE_VERSION).stores(CACHE_STORES);
   }
 }
 

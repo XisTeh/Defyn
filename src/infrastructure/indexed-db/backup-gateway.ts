@@ -1,7 +1,7 @@
 import type { BackupGateway } from '../../application/backup/backup-service';
 import type { DefynBackupData } from '../../domain/export/export-format';
 import type { DefynDatabase } from './database';
-import { isInstallationOnlyPreference, LOCAL_OWNER_ACCOUNT_ID_KEY } from '../../application/auth/local-installation-ownership';
+import { isInstallationOnlyPreference } from '../sync/local-sync-state';
 
 async function blobToDataUrl(blob: Blob): Promise<string> {
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -20,6 +20,21 @@ function dataUrlToBlob(dataUrl: string): Blob {
 
 export class IndexedDbBackupGateway implements BackupGateway {
   constructor(private readonly database: DefynDatabase) {}
+
+  private workingTables() {
+    return [
+      this.database.profiles, this.database.nutritionTargets, this.database.foods,
+      this.database.recipes, this.database.diaryEntries, this.database.mealCategories,
+      this.database.waterEntries, this.database.progressRecords,
+      this.database.progressPhotos, this.database.preferences,
+      this.database.foodPreferences, this.database.favoriteMeals, this.database.media,
+      this.database.trainingProfiles, this.database.exercises, this.database.exerciseFavorites,
+      this.database.workoutPlans, this.database.workoutSessions, this.database.workoutSetLogs,
+      this.database.dailyNutritionSummaries,
+      this.database.routineProfiles, this.database.routineDays, this.database.sleepRecords, this.database.reminderSnoozes,
+      this.database.syncOutbox, this.database.syncMetadata, this.database.syncCursors, this.database.syncConflicts,
+    ];
+  }
 
   async readAll(): Promise<DefynBackupData> {
     const [
@@ -63,19 +78,7 @@ export class IndexedDbBackupGateway implements BackupGateway {
   }
 
   async replaceAll(data: DefynBackupData): Promise<void> {
-    const localOwner = await this.database.preferences.get(LOCAL_OWNER_ACCOUNT_ID_KEY);
-    const tables = [
-      this.database.profiles, this.database.nutritionTargets, this.database.foods,
-      this.database.recipes, this.database.diaryEntries, this.database.mealCategories,
-      this.database.waterEntries, this.database.progressRecords,
-      this.database.progressPhotos, this.database.preferences,
-      this.database.foodPreferences, this.database.favoriteMeals, this.database.media,
-      this.database.trainingProfiles, this.database.exercises, this.database.exerciseFavorites,
-      this.database.workoutPlans, this.database.workoutSessions, this.database.workoutSetLogs,
-      this.database.dailyNutritionSummaries,
-      this.database.routineProfiles, this.database.routineDays, this.database.sleepRecords, this.database.reminderSnoozes,
-      this.database.syncOutbox, this.database.syncMetadata, this.database.syncCursors, this.database.syncConflicts,
-    ];
+    const tables = this.workingTables();
     await this.database.transaction('rw', tables, async () => {
       await Promise.all(tables.map((table) => table.clear()));
       await this.database.profiles.bulkPut(data.profiles);
@@ -88,7 +91,6 @@ export class IndexedDbBackupGateway implements BackupGateway {
       await this.database.progressRecords.bulkPut(data.progressRecords);
       await this.database.progressPhotos.bulkPut(data.progressPhotos);
       await this.database.preferences.bulkPut(data.preferences.filter((item) => !isInstallationOnlyPreference(item.key)));
-      if (localOwner) await this.database.preferences.put(localOwner);
       await this.database.foodPreferences.bulkPut(data.foodPreferences);
       await this.database.favoriteMeals.bulkPut(data.favoriteMeals);
       await this.database.media.bulkPut(data.media.map(({ dataUrl, ...item }) => ({ ...item, blob: dataUrlToBlob(dataUrl) })));
@@ -107,18 +109,14 @@ export class IndexedDbBackupGateway implements BackupGateway {
   }
 
   async clearAll(): Promise<void> {
-    const tables = [
-      this.database.profiles, this.database.nutritionTargets, this.database.foods,
-      this.database.recipes, this.database.diaryEntries, this.database.mealCategories,
-      this.database.waterEntries, this.database.progressRecords,
-      this.database.progressPhotos, this.database.preferences,
-      this.database.foodPreferences, this.database.favoriteMeals, this.database.media,
-      this.database.trainingProfiles, this.database.exercises, this.database.exerciseFavorites,
-      this.database.workoutPlans, this.database.workoutSessions, this.database.workoutSetLogs,
-      this.database.dailyNutritionSummaries,
-      this.database.routineProfiles, this.database.routineDays, this.database.sleepRecords, this.database.reminderSnoozes,
-      this.database.syncOutbox, this.database.syncMetadata, this.database.syncCursors, this.database.syncConflicts,
-    ];
+    const tables = [...this.workingTables(), this.database.accountCaches];
+    await this.database.transaction('rw', tables, async () => {
+      await Promise.all(tables.map((table) => table.clear()));
+    });
+  }
+
+  async clearWorkingData(): Promise<void> {
+    const tables = this.workingTables();
     await this.database.transaction('rw', tables, async () => {
       await Promise.all(tables.map((table) => table.clear()));
     });

@@ -21,7 +21,7 @@ class MemoryTable<T extends { id: string }> {
 
 describe('migration v8 → v9', () => {
   it('mantém o schema aditivo e eleva o IndexedDB para v9', () => {
-    expect(DATABASE_VERSION).toBe(9);
+    expect(DATABASE_VERSION).toBe(10);
     const database = new DefynDatabase();
     const schema = database.tables.map((table) => table.name);
     expect(schema).toEqual(expect.arrayContaining(['profiles', 'foods', 'recipes', 'syncOutbox', 'syncMetadata', 'syncCursors', 'syncConflicts']));

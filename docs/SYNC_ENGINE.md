@@ -40,7 +40,7 @@ Eventos com IDs diferentes coexistem. Para o mesmo ID, update usa comparação o
 
 ## Bootstrap local
 
-Instalação vazia ativa sync e baixa a conta. Dados existentes vinculados exibem contagens de perfis, treinos, registros e progresso. Somente **Sincronizar meus dados** gera a outbox inicial. Nenhum lado é apagado antes do upload; depois do push ocorre pull/merge.
+Instalação vazia ativa sync e baixa a conta. Dados locais legados exibem contagens de perfis, treinos, registros e progresso. Somente **Sincronizar meus dados** gera a outbox inicial. Nenhum lado é apagado antes do upload; depois do push ocorre pull/merge.
 
 ## Multi-tab
 
